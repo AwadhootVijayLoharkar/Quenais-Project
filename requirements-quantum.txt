@@ -1,0 +1,19 @@
+# Install after requirements-base.txt
+# pip install -r requirements-quantum.txt
+
+# PySCF compiles C/Fortran extensions — needs gcc, gfortran, cmake, openblas
+pyscf>=2.4
+
+# Qiskit ecosystem
+qiskit>=1.0
+qiskit-aer>=0.14
+qiskit-addon-sqd>=0.5
+
+# Fermion operators
+openfermion>=1.6
+
+# ffsim — Rust extension, pre-built wheels available on most platforms
+ffsim>=0.0.50
+
+# Utilities
+networkx>=3.0

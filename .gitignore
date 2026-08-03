@@ -1,0 +1,17 @@
+quenais-env/
+*.egg-info/
+__pycache__/
+*.pyc
+results/
+
+# Pickles are build output everywhere EXCEPT the regression golden set.
+# Those are validated reference data -- the entire test suite compares
+# against them, so they must be tracked. Without the negation below, a
+# fresh clone gets a test suite with nothing to test.
+*.pkl
+!tests/regression/golden/**/*.pkl
+
+# Hydra / GQE training artifacts
+outputs/
+gqe_train.log
+.cache/

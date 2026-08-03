@@ -1,0 +1,13 @@
+# Before running pip install, install system dependencies via conda:
+#   mamba install -c conda-forge clang cmake openblas
+#
+# Then install Python dependencies:
+# pip install -r requirements-base.txt
+jupyter
+ipykernel
+block2==0.5.2
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+h5py>=3.9
+pytest

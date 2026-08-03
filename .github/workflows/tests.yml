@@ -1,0 +1,63 @@
+name: tests
+
+# Runs the dependency-free portion of the suite: the comparator, the
+# settings groups, the thread guard, the patch checks and every structural
+# test. The PySCF and CUDA-Q paths are skipped here -- validating those
+# needs the same build the reference numbers came from, which is an HPC
+# concern, not a CI one.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install without the solver stacks
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy matplotlib pytest
+          pip install -e . --no-deps
+
+      - name: Run tests
+        run: pytest -q
+
+      - name: Confirm a Qiskit-only install can import the GQE modules
+        run: |
+          python - <<'PY'
+          import sys
+          class Blocker:
+              def find_module(self, name, path=None):
+                  root = name.split('.')[0]
+                  return self if root in {'cudaq','tequila','torch','gqe_qsci'} else None
+              def load_module(self, name):
+                  raise ImportError('blocked: ' + name)
+          sys.meta_path.insert(0, Blocker())
+          from quenais.quantum import gqe_adapter, gqe_pools, gqe_runner, gqe_setup
+          from quenais import cli, selftest
+          print("import isolation OK")
+          PY
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff
+      - run: ruff check quenais tools --output-format=github

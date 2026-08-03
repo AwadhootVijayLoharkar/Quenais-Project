@@ -1,0 +1,67 @@
+diff --git a/gqe_qsci/factory.py b/gqe_qsci/factory.py
+index 22eb0cb..8f0a7b2 100644
+--- a/gqe_qsci/factory.py
++++ b/gqe_qsci/factory.py
+@@ -15,6 +15,7 @@ from hydra.utils import instantiate
+ 
+ from gqe_qsci.gqe.loss import GRPOLoss, GSPOLoss
+ from gqe_qsci.gqe.operator_pool import PauliEvolutionPool, ExcitationPool
++from dmet_excitation_pool import DMETPauliEvolutionPool, DMETExcitationPool
+ from gqe_qsci.gqe.sampler import Sampler
+ from gqe_qsci.qsci.pipeline import QSCIPipeline
+ from gqe_qsci.wandb_logger import Logger
+@@ -83,6 +84,16 @@ class Factory:
+                 )
+             case "excitation":
+                 operator_pool = ExcitationPool(molecule, params=cfg.operator_pool.params, threshold=cfg.operator_pool.ccsd_threshold)
++            case "dmet_pauli_evolution":
++                operator_pool = DMETPauliEvolutionPool(
++                    molecule,
++                    params=cfg.operator_pool.params,
++                    threshold=cfg.operator_pool.ccsd_threshold,
++                    remove_z_ladder=cfg.operator_pool.remove_z_ladder,
++                    only_use_first_pauli=cfg.operator_pool.only_use_first_pauli
++                )
++            case "dmet_excitation":
++                operator_pool = DMETExcitationPool(molecule, params=cfg.operator_pool.params, threshold=cfg.operator_pool.ccsd_threshold)
+             case _:
+                 raise ValueError(f"Unknown operator pool specification: {cfg.operator_pool.spec}")
+         self.operator_pool = operator_pool
+diff --git a/gqe_qsci/gqe/sampler.py b/gqe_qsci/gqe/sampler.py
+index 16a8ca0..df7976a 100644
+--- a/gqe_qsci/gqe/sampler.py
++++ b/gqe_qsci/gqe/sampler.py
+@@ -38,7 +38,7 @@ class Sampler:
+         idx_output = state["idx"]
+         pool = self.pool  
+ 
+-        if cudaq.mpi.is_initialized():  
++        if self.mpi and cudaq.mpi.is_initialized():  
+             rank = cudaq.mpi.rank()  
+             numRanks = cudaq.mpi.num_ranks()  
+             total_elements = len(idx_output)  
+@@ -66,7 +66,7 @@ class Sampler:
+             res = [getResultFunctor(handle) for (handle, getResultFunctor) in res]  
+ 
+         # Gather results from all MPI ranks  
+-        if cudaq.mpi.is_initialized():  
++        if self.mpi and cudaq.mpi.is_initialized():  
+             res = MPI.COMM_WORLD.allgather(res)  
+             res = [x for xs in res for x in xs]  
+ 
+diff --git a/gqe_qsci/train_pipeline.py b/gqe_qsci/train_pipeline.py
+index bfed3fb..df94239 100644
+--- a/gqe_qsci/train_pipeline.py
++++ b/gqe_qsci/train_pipeline.py
+@@ -57,8 +57,9 @@ class TrainPipeline(pl.LightningModule):
+             log_inputs.append({"result": self.best_local_refined, "prefix": "Local-refined(best_so_far)"})
+         if self.best_global_refined is not None:
+             log_inputs.append({"result": self.best_global_refined, "prefix": "Global-refined(best_so_far)"})
+-        self.metric_logger.log_result(self, log_inputs)
+-        super().on_train_epoch_start()
++        metrics = self.metric_logger.log_result(self, log_inputs)
++        print(f"[epoch {self.current_epoch}] {metrics}", flush=True)
++        super().on_train_epoch_start() 
+     
+     def on_train_epoch_end(self):
+         super().on_train_epoch_end()

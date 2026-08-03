@@ -1,0 +1,61 @@
+# environment.yml
+#
+# Create:   mamba env create -f environment.yml -p ./quenais-env
+# Activate: mamba activate ./quenais-env
+# Then:     bash install.sh
+#
+# A local path (-p) rather than --name avoids read-only errors on shared
+# and HPC systems where the default conda envs directory is not writable.
+#
+# NOTE ON PySCF: this installs a generic wheel. On HPC, prefer your own
+# build -- a generic wheel may not use the CPU's vector extensions, and
+# the reference energies in this package came from an AVX-512 build. To
+# keep a hand-built PySCF, install the package with:
+#     pip install -e . --no-deps
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - pip
+
+  # Toolchain: PySCF and block2 compile C/Fortran extensions,
+  # ffsim and qiskit-fermions compile Rust.
+  - clang
+  - cmake
+  - openblas
+  - gfortran
+  - rust
+
+  # Scientific base -- installed before PySCF compiles against them.
+  - numpy>=1.24
+  - scipy>=1.10
+  - matplotlib>=3.7
+  - h5py>=3.9
+  - networkx>=3.0
+
+  # Notebooks and tests
+  - jupyter
+  - ipykernel
+  - pytest>=7.4
+
+  - pip:
+    - pyscf>=2.4
+
+    # Qiskit solver family -- quenais[qiskit]
+    - qiskit>=1.0
+    - qiskit-aer>=0.14
+    - qiskit-addon-sqd>=0.5
+    - ffsim>=0.0.50
+    - openfermion>=1.6
+
+    # block2, for the active-space finder's DMRG backend
+    - block2==0.5.2
+
+# The CUDA-Q solver family (quenais[cudaq]) is NOT installed here: cudaq
+# and torch are large, GPU-specific, and unnecessary for the Qiskit path.
+# Install separately when you want it:
+#     pip install -e ".[cudaq]"
+#     git submodule update --init --recursive
+#     quenais-gqe-setup --repo ./gqe-for-qsci

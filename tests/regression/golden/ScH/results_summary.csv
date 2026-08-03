@@ -1,0 +1,28 @@
+molecule,ScH
+basis,sto-3g
+
+-- Step 1: ASF --
+tier,3
+active_space_nel,4
+active_space_norb,6
+mo_list,"[9, 10, 11, 12, 13, 14]"
+correlation_strength,0.02298458848520345
+
+-- Step 2: DMET --
+n_imp,6
+n_bath,5
+n_emb,11
+sv2_coverage,1.0
+ecore_Ha,-750.01079611087
+mu_Ha,-2.400772052838401
+reference_density_method,casci
+
+-- Method comparison (Ha) --
+HF,-752.6387024083436
+MP2,-752.6876895544082
+CCSD,-752.7088401286874
+CCSD_T,-752.7098901513342
+CASSCF,-752.6816044804506
+NEVPT2,-752.7026705218929
+DMET+CASCI(active),-752.6995241811609
+"DMET+GQE (Global-refined, final)",-752.6775092580338

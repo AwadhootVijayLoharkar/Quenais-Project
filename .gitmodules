@@ -1,0 +1,3 @@
+[submodule "gqe-for-qsci"]
+	path = gqe-for-qsci
+	url = https://github.com/moken20/gqe-for-qsci.git
