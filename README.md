@@ -40,9 +40,8 @@ it.
 - Python 3.10 or 3.11
 - Linux or macOS. On Windows use WSL — `block2` has no working native
   Windows install path.
-- PySCF. On HPC, prefer your own build: a generic wheel may not use the
-  CPU's vector extensions, and the reference energies in this package were
-  produced with an AVX-512 build.
+- PySCF. The default wheel is fine — see [Performance](#performance) if
+  you care about speed on large systems.
 
 ## Install
 
@@ -56,7 +55,8 @@ mamba activate ./quenais-env
 pip install -e ".[qiskit]"        # or ".[cudaq]", or ".[all]"
 ```
 
-To keep a hand-built PySCF, install without dependencies:
+To keep a PySCF you built yourself, install without dependencies so pip
+does not replace it:
 
 ```bash
 pip install -e . --no-deps
@@ -181,6 +181,60 @@ Not every number reproduces to the same precision. `results_summary.csv`
 labels each one `deterministic`, `optimizer-dependent` or `stochastic` —
 see [docs/limitations.md](docs/limitations.md) before comparing results
 across machines.
+
+## Performance
+
+**None of this changes the numbers.** The reference values below have been
+reproduced to 5e-15 Ha on both a hand-built AVX-512 PySCF and a stock
+manylinux wheel, on different CPUs and different PySCF versions. A faster
+build is a speed choice, not a correctness one.
+
+In rough order of payoff:
+
+**Give it cores.** `OMP_NUM_THREADS` follows your scheduler's allocation
+automatically — `--cpus-per-task=24` under SLURM is used without any
+configuration. Without a scheduler it falls back to `cpu_count - 1`.
+OpenBLAS is deliberately pinned to a single thread: block2 is
+OpenMP-threaded, and two threading runtimes fighting over CPU affinity is a
+genuine hang risk, not just a slowdown.
+
+`quenais-selftest` prints what it decided:
+
+```
+[  ok  ] thread environment    OPENBLAS=1 OMP=24 (from SLURM_CPUS_PER_TASK)
+```
+
+**A GPU, for GQE.** Set `cfg.gqe.cudaq_target` to `"nvidia"` instead of the
+`"qpp-cpu"` default. `"tensornet"` and `"tensornet-mps"` are also available;
+the latter is approximate. This is applied through the
+`CUDAQ_DEFAULT_SIMULATOR` environment variable, because the external
+trainer never calls `cudaq.set_target()`.
+
+**Build PySCF from source.** Only worth it for large active spaces, where
+integral evaluation and DMRG dominate:
+
+```bash
+mamba activate ./quenais-env
+pip uninstall pyscf -y
+pip install --no-binary pyscf pyscf     # 20-30 min; needs cmake, gfortran, openblas
+quenais-selftest                        # confirm the numbers did not move
+```
+
+`environment.yml` already provides the toolchain. Re-run the self-test
+afterwards — not because a correct build would change anything, but
+because a *broken* one might, and quietly.
+
+**Cheaper GQE settings.** `reference_keys` containing `R-CASCI` triggers a
+full FCI over the whole embedding space before training starts, purely for
+logging. Intractable above roughly 12-16 embedding orbitals. Drop it if a
+run appears to hang at logger construction.
+
+### What does not help
+
+Nothing in the pipeline is I/O bound at these sizes, and the caches are
+already content-validated, so faster disks and warm caches make no
+difference. For LiH and N2 none of the above is measurable — the whole
+pipeline runs in seconds either way.
 
 ## Known limitations
 

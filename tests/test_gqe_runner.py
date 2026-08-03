@@ -486,3 +486,21 @@ def test_limitations_doc_exists_and_covers_the_known_issues():
     for topic in ("active space", "transition metal", "closed-shell",
                   "optimizer-dependent"):
         assert topic in text, f"docs/limitations.md does not cover: {topic}"
+
+
+def test_readme_documents_performance_levers():
+    """
+    Partners will ask how to make it faster. The answer must be in the
+    README, and must not imply a custom build is needed for correctness --
+    it is not, and claiming otherwise would put people off.
+    """
+    readme = (Path(gqe_setup.PATCH_PATH).parents[1] / "README.md").read_text()
+
+    assert "## Performance" in readme
+    for lever in ("OMP_NUM_THREADS", "cudaq_target", "--no-binary pyscf"):
+        assert lever in readme, f"performance section omits {lever}"
+
+    assert "None of this changes the numbers" in readme, (
+        "the performance section must state plainly that a faster build "
+        "does not change results"
+    )
