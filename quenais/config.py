@@ -26,8 +26,15 @@ from quenais.settings import (
     TierSettings,
 )
 from quenais.utils.cif_parser import load_geometry as _load_geometry
+from quenais.utils.geometry import (
+    BUILTIN_GEOMETRIES,
+    normalise_geometry,
+    parse_geometry_string,
+    parse_xyz,
+)
 
-__all__ = ["Config", "SOLVERS", "QISKIT_SOLVERS", "GQE_SOLVERS", "SOLVER_ALIASES"]
+__all__ = ["Config", "SOLVERS", "QISKIT_SOLVERS", "GQE_SOLVERS",
+           "SOLVER_ALIASES", "BUILTIN_GEOMETRIES"]
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -52,18 +59,6 @@ SOLVERS = QISKIT_SOLVERS + GQE_SOLVERS
 SOLVER_ALIASES = {"gqe_qsci": "gqe"}
 
 
-#: Explicit finite geometries, in Angstrom. Preferred over CIF lookup.
-BUILTIN_GEOMETRIES = {
-    "ScH": [("Sc", (0.0, 0.0, 0.0)), ("H", (0.0, 0.0, 1.7800))],
-    "LiH": [("Li", (0.0, 0.0, 0.0)), ("H", (0.0, 0.0, 1.5949))],
-    "N2": [("N", (0.0, 0.0, 0.0)), ("N", (0.0, 0.0, 1.0977))],
-    "H2O": [
-        ("O", (0.0, 0.0, 0.1173)),
-        ("H", (0.0, 0.7572, -0.4692)),
-        ("H", (0.0, -0.7572, -0.4692)),
-    ],
-}
-
 HARTREE_TO_EV = 27.211386245988          # NIST 2018 CODATA
 HARTREE_TO_KCAL_MOL = 627.5094740631
 
@@ -79,6 +74,9 @@ class Config:
         spin=0,
         basis="def2-svp",
         project_dir=None,
+        # ── Geometry: any one of these, or none to use a built-in/CIF ────
+        geometry=None,
+        xyz=None,
         # ── Solver selection ─────────────────────────────────────────────
         quantum_solver="sqd",
         # ── Classical reference methods ──────────────────────────────────
@@ -107,6 +105,12 @@ class Config:
         self.spin = spin
         self.basis = basis
         self.project_dir = project_dir or os.getcwd()
+
+        # Explicit geometry input, resolved in load_geometry(). Stored
+        # rather than applied here so Config stays cheap to construct and
+        # a bad path fails at the same point as a bad CIF would.
+        self._geometry_arg = geometry
+        self._xyz_arg = xyz
 
         # Solver
         self.quantum_solver = self._normalise_solver(quantum_solver)
@@ -206,18 +210,54 @@ class Config:
 
     # ── Methods ──────────────────────────────────────────────────────────
     def load_geometry(self):
-        """Resolve geometry from the built-in table, else from a CIF file."""
-        if self.molecule in BUILTIN_GEOMETRIES:
-            self.geometry = BUILTIN_GEOMETRIES[self.molecule]
-        else:
-            import warnings
+        """
+        Resolve the geometry, in order of precedence:
 
-            warnings.warn(
-                f"{self.molecule!r} has no built-in geometry -- falling back to "
-                f"a CIF lookup in {self.cif_dir}. Prefer an explicit geometry.",
-                RuntimeWarning,
+          1. geometry=  passed to Config -- a list, or a PySCF-style string
+          2. xyz=       passed to Config -- a path to an XYZ file
+          3. a built-in name (see quenais.utils.geometry.BUILTIN_GEOMETRIES)
+          4. <molecule>.cif in cfg.cif_dir
+
+        Explicit input wins over the built-in table, so a partner can
+        override LiH's bundled bond length without renaming their system.
+        """
+        if self._geometry_arg is not None and self._xyz_arg is not None:
+            raise ValueError(
+                "pass either geometry= or xyz=, not both -- otherwise which "
+                "one was actually used is a coin toss"
             )
+
+        if self._geometry_arg is not None:
+            if isinstance(self._geometry_arg, str):
+                self.geometry = parse_geometry_string(self._geometry_arg)
+                self.geometry_source = "geometry string"
+            else:
+                self.geometry = normalise_geometry(self._geometry_arg)
+                self.geometry_source = "geometry list"
+
+        elif self._xyz_arg is not None:
+            self.geometry = parse_xyz(self._xyz_arg)
+            self.geometry_source = f"xyz file {self._xyz_arg}"
+
+        elif self.molecule in BUILTIN_GEOMETRIES:
+            self.geometry = BUILTIN_GEOMETRIES[self.molecule]
+            self.geometry_source = "built-in"
+
+        else:
+            cif = os.path.join(self.cif_dir, f"{self.molecule}.cif")
+            if not os.path.exists(cif):
+                raise FileNotFoundError(
+                    f"No geometry for {self.molecule!r}.\n\n"
+                    f"Provide one of:\n"
+                    f"  Config(molecule={self.molecule!r}, "
+                    f"xyz='path/to/{self.molecule}.xyz')\n"
+                    f"  Config(molecule={self.molecule!r}, "
+                    f"geometry='X 0 0 0; Y 0 0 1.1')\n"
+                    f"  a CIF file at {cif}\n\n"
+                    f"Built-in names: {sorted(BUILTIN_GEOMETRIES)}"
+                )
             self.geometry = _load_geometry(self.molecule, self.cif_dir)
+            self.geometry_source = f"cif file {cif}"
 
         self.atom_syms = [a[0] for a in self.geometry]
         self.n_atoms = len(self.geometry)

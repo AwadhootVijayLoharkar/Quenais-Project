@@ -63,6 +63,16 @@ Quantities are labelled in `results_summary.csv` by trust tier:
 | `optimizer-dependent` | ~1 mHa | CASSCF, NEVPT2 |
 | `stochastic` | varies by design | DMET+GQE |
 
+## Untested on systems unlike the validated ones
+
+The pipeline accepts any geometry (`--geometry`, `--xyz`, or a CIF), but
+"accepts" is not "validated". Reference values exist for LiH, N2 and ScH
+only. On anything else, treat the three checks in
+`notebooks/04_full_workflow.ipynb` section 8 as the minimum bar before
+believing a number: embedded SCF within 2e-7 Ha of full UHF, DMET+CASCI
+between HF and CCSD(T), and NEVPT2 at or below CCSD(T) if a transition
+metal is involved.
+
 ## Only closed-shell systems are validated
 
 Unequal-spin code paths exist but are untested.

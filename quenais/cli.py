@@ -46,6 +46,16 @@ def build_parser():
     parser.add_argument("--shots", type=int, default=8192)
     parser.add_argument("--project-dir", default=".")
     parser.add_argument(
+        "--xyz", default=None,
+        help="path to an XYZ file. Overrides the built-in geometry table "
+             "and any CIF of the same name.",
+    )
+    parser.add_argument(
+        "--geometry", default=None,
+        help="geometry inline, PySCF style: 'Li 0 0 0; H 0 0 1.5949'. "
+             "Angstrom.",
+    )
+    parser.add_argument(
         "--force-active-space", nargs="+", type=int, default=None,
         help="explicit MO indices, bypassing ASF/DMRG. Transition-metal "
              "systems generally need this -- see docs/limitations.md",
@@ -75,6 +85,8 @@ def build_config(args):
         spin=args.spin,
         quantum_solver=args.solver,
         project_dir=os.path.abspath(args.project_dir),
+        geometry=args.geometry,
+        xyz=args.xyz,
         asf=AsfSettings(force_active_space=args.force_active_space),
         dmet=DmetSettings(reference=args.dmet_reference),
         qiskit=QiskitSolverSettings(

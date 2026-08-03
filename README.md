@@ -112,6 +112,10 @@ seconds with no optional dependencies at all.
 # LiH, classical + active space + embedding
 quenais-run --molecule LiH --basis sto-3g --steps 0 1 2
 
+# your own molecule -- see "Bringing your own molecule" below
+quenais-run --molecule BeH2 --basis sto-3g \
+            --geometry "Be 0 0 0; H 0 0 1.33; H 0 0 -1.33" --steps 0 1 2
+
 # transition metals need an explicit active space -- see docs/limitations.md
 quenais-run --molecule ScH --basis sto-3g \
             --force-active-space 9 10 11 12 13 14
@@ -149,6 +153,53 @@ print(step2["embedded_scf_check"])
 
 Settings are grouped rather than flat: `cfg.dmet.bath_tolerance`,
 `cfg.gqe.ngates`, `cfg.asf.gap_degeneracy_tol`.
+
+## Bringing your own molecule
+
+Nothing about the pipeline is specific to the bundled systems. Give it a
+geometry and it runs.
+
+```bash
+# inline, straight out of a paper. Angstrom.
+quenais-run --molecule BeH2 --basis sto-3g \
+            --geometry "Be 0 0 0; H 0 0 1.33; H 0 0 -1.33" --steps 0 1 2
+
+# from an XYZ file
+quenais-run --molecule MyMol --basis 6-31g --xyz ./mymol.xyz --steps 0 1 2
+```
+
+```python
+cfg = Config(molecule="BeH2", basis="sto-3g",
+             geometry="Be 0 0 0; H 0 0 1.33; H 0 0 -1.33")
+cfg = Config(molecule="MyMol", basis="6-31g", xyz="mymol.xyz")
+cfg = Config(molecule="FeCO", geometry=[("Fe", (0, 0, 0)), ("C", (0, 0, 1.8))])
+```
+
+Geometry is resolved in this order, so explicit input always overrides a
+bundled one:
+
+| source | use it when |
+|---|---|
+| `geometry=` | pasting a geometry from a paper |
+| `xyz=` | you have an XYZ file |
+| built-in name | `LiH`, `N2`, `ScH`, `H2O` |
+| `cif_files/<molecule>.cif` | crystallographic input |
+
+`molecule` only names the cache files — any string works. Passing both
+`geometry=` and `xyz=` is an error rather than a silent preference.
+
+Two things to expect on an unfamiliar system:
+
+- **Transition metals need `--force-active-space`.** Automatic selection
+  under-selects for the d-block. Check by comparing NEVPT2 with CCSD(T):
+  if NEVPT2 lands above it, the space is too small. See
+  [docs/limitations.md](docs/limitations.md).
+- **Only closed-shell (`spin=0`) systems are validated.** Open-shell runs
+  exercise untested code paths.
+
+[`notebooks/04_full_workflow.ipynb`](notebooks/04_full_workflow.ipynb) walks
+the whole thing end to end on a non-bundled molecule with every tunable
+parameter annotated.
 
 ## Validated reference values
 
