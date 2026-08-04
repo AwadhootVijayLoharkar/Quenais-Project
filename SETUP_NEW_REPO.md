@@ -43,21 +43,29 @@ git commit -m "add validated reference pickles"
 `.gitmodules` already declares it. Register the pinned commit:
 
 ```bash
-git submodule add https://github.com/moken20/gqe-for-qsci.git gqe-for-qsci
+git submodule add -f https://github.com/moken20/gqe-for-qsci.git gqe-for-qsci
 cd gqe-for-qsci
-git checkout 732c1ea
+git checkout 0a201ea
 cd ..
 git add gqe-for-qsci
-git commit -m "pin gqe-for-qsci at 732c1ea"
+git commit -m "pin gqe-for-qsci at 0a201ea"
 git push
 ```
 
-**Note:** `732c1ea` may not be fetchable from the public upstream — it was
-not reachable from a fresh clone during development. If `git submodule
-update` fails for a collaborator, either fork the upstream repo and push
-that commit to your fork, or drop the submodule and document a manual
-clone instead. The patch and the shim modules do not care where the
-checkout came from, only that it is at the right commit.
+**Note:** `0a201ea` is upstream `main` as of August 2026 and clones cleanly.
+
+An earlier revision of this repo pinned `732c1ea`, a local commit that never
+existed on the public upstream. Every fresh clone failed to resolve it while
+`.gitmodules` looked perfectly correct, and `git submodule status` printed
+nothing at all. If you re-pin, verify the base first:
+
+```bash
+git -C gqe-for-qsci apply --check ../patches/gqe_dmet_source.patch
+```
+
+and update `UPSTREAM_SHA` in `quenais/quantum/gqe_setup.py` in the same commit
+— a test asserts the two agree. The patch and the shim modules do not care
+where the checkout came from, only that it is at the right commit.
 
 ## 4. Verify a clean clone works
 

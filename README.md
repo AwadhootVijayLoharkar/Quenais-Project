@@ -83,7 +83,7 @@ which quantity drifted, which is most of the diagnosis.
 
 ### The GQE solver needs one extra step
 
-`gqe-for-qsci` is a git submodule pinned at `732c1ea`, and the DMET
+`gqe-for-qsci` is a git submodule pinned at `0a201ea`, and the DMET
 integration requires three source edits to it. A plain
 `git submodule update` gives a checkout that cannot run this pipeline.
 

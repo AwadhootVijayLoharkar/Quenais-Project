@@ -51,7 +51,7 @@ from pathlib import Path
 __all__ = ["main", "verify_gqe_repo", "PATCHED_FILES", "UPSTREAM_SHA"]
 
 #: Upstream commit the patch was written against.
-UPSTREAM_SHA = "732c1ea"
+UPSTREAM_SHA = "0a201ea"
 
 #: Files the patch touches. configs/trainer/default.yaml is deliberately absent.
 PATCHED_FILES = (

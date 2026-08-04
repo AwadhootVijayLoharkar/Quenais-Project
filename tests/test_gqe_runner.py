@@ -181,7 +181,7 @@ def test_patch_includes_the_log_emitting_hunk():
 
 
 def test_upstream_sha_is_pinned():
-    assert gqe_setup.UPSTREAM_SHA == "732c1ea"
+    assert gqe_setup.UPSTREAM_SHA == "0a201ea"
 
 
 def test_resolve_repo_reports_a_missing_path():
