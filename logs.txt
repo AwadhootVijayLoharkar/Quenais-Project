@@ -1,51 +1,38 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
-# 1. Does import ORDER matter? (these clashes usually are order-dependent)
-python -c "import pytorch_lightning, torch, cudaq; print('lightning -> cudaq  OK')" ; echo "exit=$?"
-python -c "import cudaq, torch, pytorch_lightning; print('cudaq -> lightning  OK')" ; echo "exit=$?"
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ bash -n install.sh && echo "syntax ok"
+syntax ok
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-doctor 
+quenais-doctor  --  python 3.11.15 on Linux-5.15.0-186-generic-x86_64-with-glibc2.41
 
-# 2. Is triton the second LLVM?
-python -c "import cudaq, torch; import triton; print('triton is the clash')" ; echo "exit=$?"
+[  ok  ] CPU AVX-512                            absent, but PySCF was built from source
+[  ok  ] GPU                                    NVIDIA A100-SXM4-40GB (cc 8.0)
+[  ok  ] setuptools                             81.0.0, pkg_resources importable
+[ warn ] CUDAQ_DEFAULT_SIMULATOR                not set
+           -> CUDA-Q reads this at import; setting it inside a script is
+           -> too late. quenais sets it for the training subprocess from
+           -> cfg.gqe.cudaq_target, but set it in the shell for anything
+           -> you launch by hand.
+[  ok  ] WANDB_MODE                             disabled
+[  ok  ] MPI ABI                                both link libmpi.so.40.40.7
+[  ok  ] required packages                      all 13 importable
+[  ok  ] torch/cudaq coexistence                torch -> pytorch_lightning -> gqe_qsci -> cudaq
+[  ok  ] GQE shims                              dmet_excitation_pool, dmet_molecule_adapter
+[  ok  ] shipped patch                          /home/loharkar/quenais-standalone/Quenais-Project/quenais/patches/gqe_dmet_source.patch
+[  ok  ] gqe-for-qsci checkout                  patched at /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
 
-# 3. What order does upstream actually use?
-head -30 gqe-for-qsci/train.py
-lightning -> cudaq  OK
-exit=0
-: CommandLine Error: Option 'debug-counter' registered more than once!
-LLVM ERROR: inconsistency in registered CommandLine options
-Aborted (core dumped)
-exit=134
-: CommandLine Error: Option 'debug-counter' registered more than once!
-LLVM ERROR: inconsistency in registered CommandLine options
-Aborted (core dumped)
-exit=134
-import os
-import functools
+10 ok, 1 warnings, 0 failures
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-selftest 
 
-import torch
-import hydra, wandb
-from omegaconf import DictConfig, OmegaConf
-from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
+QuEnAIS self-test -- LiH
+==================================================================
+[  ok  ] thread environment                           OPENBLAS=1 OMP=1 (from SLURM_CPUS_PER_TASK)
+[  ok  ] HF energy                                    -7.862026959 Ha  (delta 1.8e-15)
+[  ok  ] MP2 energy                                   -7.874890917 Ha  (delta 5.3e-12)
+[  ok  ] CCSD energy                                  -7.882392917 Ha  (delta 1.8e-15)
+[ FAIL ] active-space stage                           ValueError: not enough values to unpack (expected 4, got 3)
 
-from gqe_qsci.train_pipeline import TrainPipeline
-from gqe_qsci.factory import Factory
+==================================================================
+  4 passed, 1 failed, 0 skipped
 
-torch.load = functools.partial(torch.load, weights_only=False)
-
-os.environ["OMP_NUM_THREADS"] = "1"
-torch.set_float32_matmul_precision("medium")
-
-
-def setup_callbacks(cfg):
-    callbacks = [
-        ModelCheckpoint(
-            dirpath=f"{cfg.output}/models",
-            filename="{epoch:02d}",
-            save_top_k=1,
-            monitor="epoch",
-            mode="max",
-            save_last=True,
-            every_n_epochs=cfg.trainer.checkpoint_every_n_iters,
-            enable_version_counter=False
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+  Something drifted. Attach this output to a bug report --
+  it identifies which quantity, which is most of the diagnosis.
+==================================================================
