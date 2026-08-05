@@ -1,4 +1,4 @@
-python -c "import numpy, pyscf; print('numpy', numpy.__version__, '/ pyscf', pyscf.__version__)"
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python -c "import numpy, pyscf; print('numpy', numpy.__version__, '/ pyscf', pyscf.__version__)"
 
 python -c "
 import numpy as np
@@ -10,3 +10,23 @@ print(lib.einsum('xp,xy,yq->pq', a, a, a))
 
 python -c "import importlib.metadata as m; print(m.requires('pyscf'))"   # what pyscf claims to accept
 pip install "numpy<2.3"                                                   # then re-run the repro
+numpy 2.4.6 / pyscf 2.11.0
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/lib/numpy_helper.py", line 245, in einsum
+    inds, idx_rm, einsum_str, remaining = contraction[:4]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 4, got 3)
+['numpy!=1.16,!=1.17,>=1.13', 'scipy>=1.6.0', 'h5py>=2.7', 'setuptools', 'pyscf-forge; extra == "forge"', 'pyberny>=0.6.2; extra == "geomopt"', 'geometric>=0.9.7.2; extra == "geomopt"', 'pyscf-qsdopt; extra == "geomopt"', 'pyscf-doci; extra == "doci"', 'pyscf-properties; extra == "properties"', 'pyscf-semiempirical; extra == "semiempirical"', 'cppe; extra == "cppe"', 'pyqmc; extra == "pyqmc"', 'basis-set-exchange; extra == "bse"', 'pyscf-dispersion; extra == "dispersion"', 'coupled-cluster-py; extra == "ccpy"', 'pyscf[bse,ccpy,cppe,dispersion,doci,forge,geomopt,properties,pyqmc,semiempirical]; extra == "all"', 'pyscf-cornell-shci; extra == "cornell-shci"', 'pyscf-nao; extra == "nao"', 'pyscf-fciqmc; extra == "fciqmcscf"', 'pyscf-tblis; extra == "tblis"', 'pyscf-icmpspt; extra == "icmpspt"', 'pyscf-shciscf; extra == "shciscf"']
+Collecting numpy<2.3
+  Using cached numpy-2.2.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+Using cached numpy-2.2.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.8 MB)
+Installing collected packages: numpy
+  Attempting uninstall: numpy
+    Found existing installation: numpy 2.4.6
+    Uninstalling numpy-2.4.6:
+      Successfully uninstalled numpy-2.4.6
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+ffsim 0.0.83 requires pyscf>=2.12, but you have pyscf 2.11.0 which is incompatible.
+Successfully installed numpy-2.2.6
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
