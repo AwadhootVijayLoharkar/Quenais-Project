@@ -1,103 +1,12 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cd ~/quenais-standalone/Quenais-Project
-python - <<'PY'ceback
-import sys, tracebackests/regression")
-sys.path.insert(0, "tests/regression")
-import reference_values as rvnfig
-from quenais.config import Configettings
-from quenais.settings import AsfSettings
-ref = rv.SYSTEMS["LiH"]
-ref = rv.SYSTEMS["LiH"]LiH", basis=ref["basis"], project_dir="/tmp/quenais_dbg",
-cfg = Config(molecule="LiH", basis=ref["basis"], project_dir="/tmp/quenais_dbg",
-             classical_methods=["HF", "MP2", "CCSD"],force_active_space"]))
-             asf=AsfSettings(force_active_space=ref["force_active_space"]))
-cfg.validate().make_dirs().load_geometry()
-from quenais.classical import runner
-from quenais.classical import runner
-runner.main(cfg, force=True)
-from quenais.active_space import finder
-from quenais.active_space import finder
-try:finder.main(cfg, force=True)
-    finder.main(cfg, force=True)
-except Exception:nt_exc()
-    traceback.print_exc()
-PY
+python -c "import numpy, pyscf; print('numpy', numpy.__version__, '/ pyscf', pyscf.__version__)"
 
-============================================================
-[Step 0] Classical Methods -- LiH
-============================================================
-  Basis     : sto-3g
-  Charge    : 0   Spin (2S): 0
-  Methods   : ['HF', 'MP2', 'CCSD']
-  Electrons : 4   AOs: 6
-  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+python -c "
+import numpy as np
+from pyscf import lib
+a = np.ones((3,3))
+print(lib.einsum('xp,xy,yq->pq', a, a, a))
+"
 
--- HF --
-  [HF] done in 0.1s
-  RHF energy: -7.86202696 Ha (converged: True)
 
--- MP2 --
-  [MP2] done in 0.0s
-  E_corr: -0.01286396 Ha   MP2 energy: -7.87489092 Ha
-
--- CCSD --
-  [CCSD] done in 0.0s
-  E_corr: -0.02036596 Ha   CCSD energy: -7.88239292 Ha   Converged: True
-
-========================================================================
-[Step 0] Results -- LiH / sto-3g
-========================================================================
-
-  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
-  ----------------------------------------------------------------------
-  HF               -7.86202696     +0.000000       +0.00  deterministic       
-  MP2              -7.87489092     -0.012864       -8.07  deterministic       
-  CCSD             -7.88239292     -0.020366      -12.78  deterministic       
-
-  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
-  Total time: 0.8s
-========================================================================
-
-[Step 0] Saved -> /tmp/quenais_dbg/results/step0_classical.pkl
-
-============================================================
-[Step 1] Active Space Finder -- LiH
-============================================================
-  Atoms     : 2 ['Li', 'H']  Basis: sto-3g
-  Electrons : 4  AOs: 6
-
--- Phase A: UHF + Classification --
-  UHF energy = -7.86202696 Ha (converged: True)
-  Spin  : 0.0000  contaminated=False
-  Gap   : min=9.9041 eV
-  TM    : False  ->  Tier 1
-
--- Phase B: MP2 Density + ASF --
-  MP2 used: True  E_corr: -0.012864 Ha
-  ASF (Tier 1): entropy_threshold=0.05, max_norb=12, min_norb=2
-
---------------------------------------------------------------------------------
-Calculating MP2 natural orbitals
---------------------------------------------------------------------------------
-
-Traceback (most recent call last):
-  File "<stdin>", line 18, in <module>
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/active_space/finder.py", line 450, in main
-    active_space = find_from_scf(
-                   ^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/asf/wrapper.py", line 417, in find_from_scf
-    space_mp2 = preselection.select()
-                ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/asf/preselection.py", line 118, in select
-    natocc, natorb = self.compute_natorbs()
-                     ^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/asf/preselection.py", line 106, in compute_natorbs
-    natocc, natorb = DFUMP2(self.scf).make_natorbs()
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/mp/dfump2_native.py", line 201, in make_natorbs
-    Sab = lib.einsum('xp,xy,yq->pq', self.mo_coeff[0, :, :], SAO, self.mo_coeff[1, :, :])
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/lib/numpy_helper.py", line 245, in einsum
-    inds, idx_rm, einsum_str, remaining = contraction[:4]
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ValueError: not enough values to unpack (expected 4, got 3)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+python -c "import importlib.metadata as m; print(m.requires('pyscf'))"   # what pyscf claims to accept
+pip install "numpy<2.3"                                                   # then re-run the repro
