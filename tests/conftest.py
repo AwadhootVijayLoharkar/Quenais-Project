@@ -66,3 +66,16 @@ def pytest_collection_modifyitems(config, items):
 @pytest.fixture(scope="session")
 def golden_dir():
     return ROOT / "tests" / "regression" / "golden"
+
+
+# The DMET pools import `gqe_qsci` from the submodule. The runner puts that
+# directory on PYTHONPATH for the training subprocess; pytest runs in-process,
+# so add it here too when the submodule is present.
+import os as _os
+import sys as _sys
+
+_GQE_REPO = _os.path.join(
+    _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "gqe-for-qsci"
+)
+if _os.path.isdir(_GQE_REPO) and _GQE_REPO not in _sys.path:
+    _sys.path.insert(0, _GQE_REPO)
