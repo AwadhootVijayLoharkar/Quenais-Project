@@ -325,8 +325,24 @@ ok "pyscf $(python -c 'import pyscf; print(pyscf.__version__)') ($PYSCF_BUILD)"
 # ─────────────────────────────────────────────────────────────────────────
 step 16 "Verifying"
 
+# TWO passes, deliberately.
+#
+# torch bundles triton, which embeds its own copy of LLVM; cudaq embeds
+# MLIR/LLVM. Both register the same global LLVM CommandLine options, and
+# whichever loads second aborts the interpreter outright:
+#
+#   : CommandLine Error: Option 'debug-counter' registered more than once!
+#   LLVM ERROR: inconsistency in registered CommandLine options
+#
+# torch first is fine; cudaq first is fatal. That is an abort in native
+# code -- no traceback, no catchable exception -- so a single flat loop
+# over every package core-dumps the installer at whichever one happens to
+# be second. The first pass therefore covers everything else, and the
+# second imports the LLVM-carrying four in the order gqe-for-qsci's
+# train.py already uses (torch, pytorch_lightning, then gqe_qsci/cudaq).
+
 python - <<'PY'
-import importlib, os, sys
+import importlib
 checks = [
     ("quenais",                 "quenais"),
     ("pyscf",                   "pyscf"),
@@ -339,20 +355,11 @@ checks = [
     ("asf.wrapper",             "asf"),
     ("qiskit_fermions.circuit", "qiskit-fermions"),
     ("pyci",                    "pyci (theochem)"),
-    ("cudaq",                   "cudaq"),
-    ("torch",                   "torch"),
-    ("pytorch_lightning",       "pytorch-lightning"),
     ("hydra",                   "hydra-core"),
     ("tequila",                 "tequila"),
     ("wandb",                   "wandb"),
     ("mpi4py",                  "mpi4py"),
-    ("gqe_qsci",                "gqe-for-qsci"),
-    ("dmet_excitation_pool",    "dmet pool shim"),
-    ("dmet_molecule_adapter",   "dmet adapter shim"),
 ]
-sys.path.insert(0, os.path.join(
-    os.path.dirname(importlib.import_module("quenais").__file__),
-    "quantum", "_gqe_shims"))
 bad = []
 for mod, label in checks:
     try:
@@ -363,7 +370,22 @@ for mod, label in checks:
         bad.append(label)
 if bad:
     print("\nMissing or broken: " + ", ".join(bad))
-    sys.exit(1)
+    raise SystemExit(1)
+PY
+
+python - <<'PY' || exit 1
+import importlib, os, sys
+sys.path.insert(0, os.path.join(
+    os.path.dirname(importlib.import_module("quenais").__file__),
+    "quantum", "_gqe_shims"))
+# Order matters. Do not reshuffle these.
+import torch;                     print("   ok  torch")
+import pytorch_lightning;         print("   ok  pytorch-lightning")
+import gqe_qsci;                  print("   ok  gqe-for-qsci")
+import cudaq;                     print("   ok  cudaq")
+import dmet_excitation_pool;      print("   ok  dmet pool shim")
+import dmet_molecule_adapter;     print("   ok  dmet adapter shim")
+print("   ok  torch/cudaq coexist in one process")
 PY
 
 echo ""

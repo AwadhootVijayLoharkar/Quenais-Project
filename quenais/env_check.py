@@ -286,6 +286,11 @@ def check_mpi(rep):
 # Packages and the submodule
 # ─────────────────────────────────────────────────────────────────────────
 
+#: Packages safe to import in this process, in any order.
+#:
+#: torch, pytorch_lightning, cudaq and gqe_qsci are deliberately ABSENT --
+#: see _LLVM_ORDER below. Importing them here would abort the doctor
+#: itself.
 _REQUIRED = [
     ("pyscf", "pyscf"), ("block2", "block2"),
     ("qiskit", "qiskit"), ("qiskit_aer", "qiskit-aer"),
@@ -293,11 +298,31 @@ _REQUIRED = [
     ("openfermion", "openfermion"), ("asf.wrapper", "asf"),
     ("qiskit_fermions.circuit", "qiskit-fermions"),
     ("pyci", "pyci (theochem)"),
-    ("cudaq", "cudaq"), ("torch", "torch"),
-    ("pytorch_lightning", "pytorch-lightning"),
     ("hydra", "hydra-core"), ("tequila", "tequila"), ("wandb", "wandb"),
-    ("gqe_qsci", "gqe-for-qsci"),
 ]
+
+#: Modules that must be imported IN THIS ORDER, in one process.
+#:
+#: torch bundles triton, which embeds its own copy of LLVM; cudaq embeds
+#: MLIR/LLVM. Both register the same global LLVM CommandLine options, and
+#: the second one to load aborts the interpreter:
+#:
+#:     : CommandLine Error: Option 'debug-counter' registered more than once!
+#:     LLVM ERROR: inconsistency in registered CommandLine options
+#:
+#: torch first is fine; cudaq first is fatal. Measured on torch 2.13.0 with
+#: cudaq 0.15.1.
+#:
+#: This is an abort inside native code, not a Python exception -- there is
+#: no traceback and no try/except that can catch it. So it cannot be
+#: checked in-process alongside everything else; it gets a subprocess.
+#:
+#: gqe-for-qsci's train.py already imports in the safe order (torch line 4,
+#: pytorch_lightning line 7, gqe_qsci lines 11-12), which is why training
+#: works. Nothing enforces that, though, so this check exists to notice if
+#: it ever stops being true.
+_LLVM_ORDER = ("torch", "pytorch_lightning", "gqe_qsci", "cudaq",
+               "dmet_excitation_pool", "dmet_molecule_adapter")
 
 
 def check_imports(rep):
@@ -312,6 +337,47 @@ def check_imports(rep):
                 "\n".join(missing) + "\nRe-run install.sh")
     else:
         rep.add(PASS, "required packages", f"all {len(_REQUIRED)} importable")
+
+
+def check_llvm_order(rep):
+    """
+    Import the torch and cudaq families together, in the order train.py
+    uses, in a subprocess. Covers both "are they installed" and "can they
+    coexist" for the four modules check_imports cannot safely touch.
+    """
+    shim = Path(__file__).resolve().parent / "quantum" / "_gqe_shims"
+    code = ("import sys\n"
+            f"sys.path.insert(0, {str(shim)!r})\n"
+            + "".join(f"import {m}\n" for m in _LLVM_ORDER))
+    try:
+        proc = subprocess.run([sys.executable, "-c", code],
+                              capture_output=True, text=True, timeout=600)
+    except Exception as exc:
+        rep.add(WARN, "torch/cudaq coexistence",
+                f"could not run subprocess: {exc}")
+        return
+
+    if proc.returncode == 0:
+        rep.add(PASS, "torch/cudaq coexistence",
+                " -> ".join(_LLVM_ORDER[:4]))
+        return
+
+    output = (proc.stderr or "") + (proc.stdout or "")
+    if "registered more than once" in output:
+        rep.add(FAIL, "torch/cudaq coexistence",
+                "LLVM CommandLine clash even in the safe order",
+                "torch/triton and cudaq each embed their own LLVM. Loading\n"
+                "cudaq first has always been fatal; this says loading torch\n"
+                "first no longer helps either, so GQE training cannot run.\n"
+                "Try dropping torch's compiler stack, which is what carries\n"
+                "the second LLVM and is not needed for GQE:\n"
+                "  pip uninstall triton\n"
+                "Then re-run quenais-doctor.")
+    else:
+        tail = output.strip().splitlines()[-6:]
+        rep.add(FAIL, "torch/cudaq coexistence",
+                f"subprocess exited {proc.returncode}",
+                "\n".join(tail) + "\nRe-run install.sh")
 
 
 def check_shims(rep):
@@ -374,7 +440,8 @@ def run_checks(repo=None, verbose=True):
     rep = Report(verbose=verbose)
     for fn in (check_avx512, check_gpu, check_setuptools,
                check_cudaq_target, check_wandb, check_mpi,
-               check_imports, check_shims, check_patch_shipped):
+               check_imports, check_llvm_order, check_shims,
+               check_patch_shipped):
         try:
             fn(rep)
         except Exception as exc:                      # never crash the doctor

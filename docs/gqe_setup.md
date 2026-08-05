@@ -272,3 +272,50 @@ uses the right one; this only bites when overriding by hand.
 | 11 | `TypeError: 'NoneType' object is not iterable` | upstream geometry-based pool on a geometry-free embedding | `GqeSettings.validate()` rejects non-`dmet_*` pools |
 | 12 | `quenais-gqe-setup`: "Patch not found" | `patches/` sat at the repo root while `package_data` looked under `quenais/` | patch moved to `quenais/patches/` |
 | 13 | Run hangs at logger construction | `R-CASCI` reference key triggers full FCI over the embedding space | drop the key; the runner warns above `n_emb > 14` |
+| 14 | `Option 'debug-counter' registered more than once!` + `Aborted (core dumped)` | torch/triton and cudaq each embed their own LLVM; whichever loads second aborts | import torch and pytorch_lightning **before** cudaq — see below |
+
+---
+
+## The torch / cudaq import-order constraint
+
+`torch` bundles `triton`, which embeds its own copy of LLVM. `cudaq`
+embeds MLIR/LLVM. Both register the same global LLVM `CommandLine`
+options, and the second one into the process kills it:
+
+```
+: CommandLine Error: Option 'debug-counter' registered more than once!
+LLVM ERROR: inconsistency in registered CommandLine options
+Aborted (core dumped)
+```
+
+Measured on torch 2.13.0 with cudaq 0.15.1:
+
+```bash
+python -c "import pytorch_lightning, torch, cudaq"   # exit 0
+python -c "import cudaq, torch, pytorch_lightning"   # exit 134, core dumped
+python -c "import cudaq, torch; import triton"       # exit 134, core dumped
+```
+
+So **torch first is fine, cudaq first is fatal**, and the third line
+confirms triton is where the second LLVM comes from.
+
+This is an `abort()` inside native code — not a Python exception. There is
+no traceback, and no `try`/`except` can catch it. A script that imports
+these in a loop just dies at whichever one happens to be second.
+
+**GQE training is unaffected.** `gqe-for-qsci`'s `train.py` already
+imports in the safe order: `torch` on line 4, `pytorch_lightning` on line
+7, `gqe_qsci` (which pulls cudaq) on lines 11–12. Nothing enforces that,
+though, so `quenais-doctor` checks it explicitly, and install.sh's
+verification step imports the two families in two separate passes for the
+same reason.
+
+If the safe order ever stops working, the fallback is to remove the second
+LLVM rather than reorder anything:
+
+```bash
+pip uninstall triton
+```
+
+GQE training does not use `torch.compile`, so nothing in this pipeline
+needs triton.
