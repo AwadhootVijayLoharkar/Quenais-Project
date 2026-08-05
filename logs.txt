@@ -1,5 +1,4 @@
-cd ~/software_package/Quenais-Project
-
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
 # 1. Does import ORDER matter? (these clashes usually are order-dependent)
 python -c "import pytorch_lightning, torch, cudaq; print('lightning -> cudaq  OK')" ; echo "exit=$?"
 python -c "import cudaq, torch, pytorch_lightning; print('cudaq -> lightning  OK')" ; echo "exit=$?"
@@ -9,3 +8,44 @@ python -c "import cudaq, torch; import triton; print('triton is the clash')" ; e
 
 # 3. What order does upstream actually use?
 head -30 gqe-for-qsci/train.py
+lightning -> cudaq  OK
+exit=0
+: CommandLine Error: Option 'debug-counter' registered more than once!
+LLVM ERROR: inconsistency in registered CommandLine options
+Aborted (core dumped)
+exit=134
+: CommandLine Error: Option 'debug-counter' registered more than once!
+LLVM ERROR: inconsistency in registered CommandLine options
+Aborted (core dumped)
+exit=134
+import os
+import functools
+
+import torch
+import hydra, wandb
+from omegaconf import DictConfig, OmegaConf
+from pytorch_lightning import Trainer
+from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
+
+from gqe_qsci.train_pipeline import TrainPipeline
+from gqe_qsci.factory import Factory
+
+torch.load = functools.partial(torch.load, weights_only=False)
+
+os.environ["OMP_NUM_THREADS"] = "1"
+torch.set_float32_matmul_precision("medium")
+
+
+def setup_callbacks(cfg):
+    callbacks = [
+        ModelCheckpoint(
+            dirpath=f"{cfg.output}/models",
+            filename="{epoch:02d}",
+            save_top_k=1,
+            monitor="epoch",
+            mode="max",
+            save_last=True,
+            every_n_epochs=cfg.trainer.checkpoint_every_n_iters,
+            enable_version_counter=False
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
