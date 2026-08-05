@@ -1,22 +1,11 @@
-cd ~/quenais-standalone/quenais
-pip install pytorch-lightning
+cd ~/software_package/Quenais-Project
 
-PYTHONPATH=$PWD/gqe-for-qsci python -c "
-import torch, hydra, wandb, omegaconf, pytorch_lightning
-import gqe_qsci.train_pipeline, gqe_qsci.factory
-print('all upstream imports resolve')
-"
+# 1. Does import ORDER matter? (these clashes usually are order-dependent)
+python -c "import pytorch_lightning, torch, cudaq; print('lightning -> cudaq  OK')" ; echo "exit=$?"
+python -c "import cudaq, torch, pytorch_lightning; print('cudaq -> lightning  OK')" ; echo "exit=$?"
 
-python - <<'EOF'
-import tomllib, pathlib
-d = tomllib.loads(pathlib.Path("gqe-for-qsci/pyproject.toml").read_text())
-p = d.get("project", {})
-print("deps:", p.get("dependencies"))
-print("poetry:", d.get("tool", {}).get("poetry", {}).get("dependencies"))
-EOF
+# 2. Is triton the second LLVM?
+python -c "import cudaq, torch; import triton; print('triton is the clash')" ; echo "exit=$?"
 
-python -c "import numpy, scipy, pyscf, torch; print(numpy.__version__, scipy.__version__, pyscf.__version__, torch.__version__)"
-quenais-selftest
-
-quenais-run --molecule LiH --basis sto-3g --solver gqe --force \
-            --steps 3 --project-dir runs/lih_gqe 2>&1 | tee -a lih_gqe.log
+# 3. What order does upstream actually use?
+head -30 gqe-for-qsci/train.py
