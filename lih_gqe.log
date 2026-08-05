@@ -1,38 +1,3 @@
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ pytest -q
-............................................................................................................................................................................................................................................................ [ 84%]
-...............................................                                                                                                                                                                                                              [100%]
-========================================================================================================================= warnings summary =========================================================================================================================
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
-  /home/loharkar/quenais-standalone/quenais/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
-    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-299 passed, 3 warnings in 34.94s
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-run --molecule --basis sto-3g --solver gqe --steps 0 1 2 3 --project-dir runs/lih_gqe 2>&1 | tee lih_gqe.log
-usage: quenais-run [-h] [--molecule MOLECULE] [--basis BASIS]
-                   [--charge CHARGE] [--spin SPIN]
-                   [--solver {sqd,skqd,sqdrift,gqe}] [--ansatz {su2,lucj}]
-                   [--mapping {jw,bk}] [--backend {local,mps,ibm}]
-                   [--shots SHOTS] [--project-dir PROJECT_DIR] [--xyz XYZ]
-                   [--geometry GEOMETRY]
-                   [--force-active-space FORCE_ACTIVE_SPACE [FORCE_ACTIVE_SPACE ...]]
-                   [--dmet-reference {casci,mp2}] [--steps STEPS [STEPS ...]]
-                   [--force] [--no-scan] [--no-quantum-scan]
-quenais-run: error: argument --molecule: expected one argument
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-run LiH --molecule --basis sto-3g --solver gqe --steps 0 1 2 3 --project-dir runs/lih_gqe 2>&1 | tee lih_gqe.log
-usage: quenais-run [-h] [--molecule MOLECULE] [--basis BASIS]
-                   [--charge CHARGE] [--spin SPIN]
-                   [--solver {sqd,skqd,sqdrift,gqe}] [--ansatz {su2,lucj}]
-                   [--mapping {jw,bk}] [--backend {local,mps,ibm}]
-                   [--shots SHOTS] [--project-dir PROJECT_DIR] [--xyz XYZ]
-                   [--geometry GEOMETRY]
-                   [--force-active-space FORCE_ACTIVE_SPACE [FORCE_ACTIVE_SPACE ...]]
-                   [--dmet-reference {casci,mp2}] [--steps STEPS [STEPS ...]]
-                   [--force] [--no-scan] [--no-quantum-scan]
-quenais-run: error: argument --molecule: expected one argument
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-run --molecule LiH --basis sto-3g --solver gqe --steps 0 1 2 3 --project-dir runs/lih_gqe 2>&1 | tee lih_gqe.log
 
 ============================================================
   Step 0: Classical
@@ -224,4 +189,3 @@ Traceback (most recent call last):
   File "/home/loharkar/quenais-standalone/quenais/quenais/quantum/gqe_setup.py", line 90, in resolve_repo
     raise FileNotFoundError(
 FileNotFoundError: The gqe-for-qsci checkout was not found. Pass --repo, set cfg.gqe.repo_path, or export GQE_QSCI_REPO_PATH.
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ 
