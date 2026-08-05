@@ -1,82 +1,63 @@
-export GQE_QSCI_REPO_PATH=$PWD/gqe-for-qsci 
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-run --molecule LiH --basis sto-3g --solver gqe --steps 3 --project-dir runs/lih_gqe 2>&1 | tee -a lih_gqe.log
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ pip install wandb
+Collecting wandb
+  Downloading wandb-0.28.1-py3-none-manylinux_2_28_x86_64.whl.metadata (11 kB)
+Collecting click>=8.2.0 (from wandb)
+  Using cached click-8.4.2-py3-none-any.whl.metadata (2.6 kB)
+Requirement already satisfied: packaging in ./quenais-env/lib/python3.11/site-packages (from wandb) (26.2)
+Requirement already satisfied: platformdirs in ./quenais-env/lib/python3.11/site-packages (from wandb) (4.11.0)
+Collecting protobuf!=5.28.0,!=5.29.0,<8,>=5 (from wandb)
+  Using cached protobuf-7.35.1-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+Collecting pydantic<3,>=2.6 (from wandb)
+  Downloading pydantic-2.13.4-py3-none-any.whl.metadata (109 kB)
+Requirement already satisfied: pyyaml in ./quenais-env/lib/python3.11/site-packages (from wandb) (6.0.3)
+Requirement already satisfied: requests<3,>=2.0.0 in ./quenais-env/lib/python3.11/site-packages (from wandb) (2.34.2)
+Collecting sentry-sdk>=2.0.0 (from wandb)
+  Downloading sentry_sdk-2.66.1-py3-none-any.whl.metadata (11 kB)
+Requirement already satisfied: typing-extensions<5,>=4.8 in ./quenais-env/lib/python3.11/site-packages (from wandb) (4.16.0)
+Collecting annotated-types>=0.6.0 (from pydantic<3,>=2.6->wandb)
+  Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.46.4 (from pydantic<3,>=2.6->wandb)
+  Downloading pydantic_core-2.46.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)
+Collecting typing-inspection>=0.4.2 (from pydantic<3,>=2.6->wandb)
+  Using cached typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+Requirement already satisfied: charset_normalizer<4,>=2 in ./quenais-env/lib/python3.11/site-packages (from requests<3,>=2.0.0->wandb) (3.4.9)
+Requirement already satisfied: idna<4,>=2.5 in ./quenais-env/lib/python3.11/site-packages (from requests<3,>=2.0.0->wandb) (3.18)
+Requirement already satisfied: urllib3<3,>=1.26 in ./quenais-env/lib/python3.11/site-packages (from requests<3,>=2.0.0->wandb) (2.7.0)
+Requirement already satisfied: certifi>=2023.5.7 in ./quenais-env/lib/python3.11/site-packages (from requests<3,>=2.0.0->wandb) (2026.7.22)
+Downloading wandb-0.28.1-py3-none-manylinux_2_28_x86_64.whl (26.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 26.5/26.5 MB 16.1 MB/s  0:00:01
+Using cached protobuf-7.35.1-cp310-abi3-manylinux2014_x86_64.whl (327 kB)
+Downloading pydantic-2.13.4-py3-none-any.whl (472 kB)
+Downloading pydantic_core-2.46.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 16.6 MB/s  0:00:00
+Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+Using cached click-8.4.2-py3-none-any.whl (119 kB)
+Downloading sentry_sdk-2.66.1-py3-none-any.whl (505 kB)
+Using cached typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Installing collected packages: typing-inspection, sentry-sdk, pydantic-core, protobuf, click, annotated-types, pydantic, wandb
+Successfully installed annotated-types-0.8.0 click-8.4.2 protobuf-7.35.1 pydantic-2.13.4 pydantic-core-2.46.4 sentry-sdk-2.66.1 typing-inspection-0.4.2 wandb-0.28.1
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ export WANDB_MODE=disabled
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ head -20 gqe-for-qsci/train.py 
+import os
+import functools
 
-============================================================
-  Step 3: Quantum solver
-============================================================
+import torch
+import hydra, wandb
+from omegaconf import DictConfig, OmegaConf
+from pytorch_lightning import Trainer
+from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
 
-============================================================
-[Step 3] GQE training -- LiH
-============================================================
-  repo     : /home/loharkar/quenais-standalone/quenais/gqe-for-qsci
-  embedding: 4 orbitals (8 qubits)
-  backend  : qpp-cpu
-  pool     : dmet_excitation
-  log      : /home/loharkar/quenais-standalone/quenais/runs/lih_gqe/results/gqe_train.log
-  overrides: molecule=dmet_embedding trainer.max_iters=120 trainer.num_samples=100 trainer.batch_size=100 trainer.warmup_size=100 trainer.buffer_size=100 trainer.load_checkpoint=false ngates=40 operator_pool.spec=dmet_excitation operator_pool.remove_z_ladder=false operator_pool.only_use_first_pauli=false qsci.max_dim=10000 molecule.step2_pickle_path=/home/loharkar/quenais-standalone/quenais/runs/lih_gqe/results/step2_hamiltonian.pkl
+from gqe_qsci.train_pipeline import TrainPipeline
+from gqe_qsci.factory import Factory
 
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/quenais/gqe-for-qsci/train.py", line 5, in <module>
-    import hydra, wandb
-ModuleNotFoundError: No module named 'wandb'
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/quenais/quenais-env/bin/quenais-run", line 6, in <module>
-    sys.exit(run_pipeline())
-             ^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/quenais/quenais/cli.py", line 138, in run_pipeline
-    run_step(step, cfg, args)
-  File "/home/loharkar/quenais-standalone/quenais/quenais/cli.py", line 107, in run_step
-    return dispatch(cfg, force=args.force)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/quenais/quenais/quantum/__init__.py", line 56, in dispatch
-    return gqe_runner.main(cfg, force=force, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/quenais/quenais/quantum/gqe_runner.py", line 219, in main
-    raise RuntimeError(
-RuntimeError: train.py exited with code 1. See /home/loharkar/quenais-standalone/quenais/runs/lih_gqe/results/gqe_train.log.
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ export WANDB_MODE=offline
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-run --molecule LiH --basis sto-3g --solver gqe --steps 3 --project-dir runs/lih_gqe 2>&1 | tee -a lih_gqe.log
+torch.load = functools.partial(torch.load, weights_only=False)
 
-============================================================
-  Step 3: Quantum solver
-============================================================
-[Step 3] GQE log already present: /home/loharkar/quenais-standalone/quenais/runs/lih_gqe/results/gqe_train.log
-         Pass force=True to retrain.
+os.environ["OMP_NUM_THREADS"] = "1"
+torch.set_float32_matmul_precision("medium")
 
-[QuEnAIS] Pipeline complete.
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-run --molecule LiH --basis sto-3g --solver gqe --force --steps 3 --project-dir runs/lih_gqe 2>&1 | tee -a lih_gqe.log
 
-============================================================
-  Step 3: Quantum solver
-============================================================
-
-============================================================
-[Step 3] GQE training -- LiH
-============================================================
-  repo     : /home/loharkar/quenais-standalone/quenais/gqe-for-qsci
-  embedding: 4 orbitals (8 qubits)
-  backend  : qpp-cpu
-  pool     : dmet_excitation
-  log      : /home/loharkar/quenais-standalone/quenais/runs/lih_gqe/results/gqe_train.log
-  overrides: molecule=dmet_embedding trainer.max_iters=120 trainer.num_samples=100 trainer.batch_size=100 trainer.warmup_size=100 trainer.buffer_size=100 trainer.load_checkpoint=false ngates=40 operator_pool.spec=dmet_excitation operator_pool.remove_z_ladder=false operator_pool.only_use_first_pauli=false qsci.max_dim=10000 molecule.step2_pickle_path=/home/loharkar/quenais-standalone/quenais/runs/lih_gqe/results/step2_hamiltonian.pkl
-
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/quenais/gqe-for-qsci/train.py", line 5, in <module>
-    import hydra, wandb
-ModuleNotFoundError: No module named 'wandb'
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/quenais/quenais-env/bin/quenais-run", line 6, in <module>
-    sys.exit(run_pipeline())
-             ^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/quenais/quenais/cli.py", line 138, in run_pipeline
-    run_step(step, cfg, args)
-  File "/home/loharkar/quenais-standalone/quenais/quenais/cli.py", line 107, in run_step
-    return dispatch(cfg, force=args.force)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/quenais/quenais/quantum/__init__.py", line 56, in dispatch
-    return gqe_runner.main(cfg, force=force, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/quenais/quenais/quantum/gqe_runner.py", line 219, in main
-    raise RuntimeError(
-RuntimeError: train.py exited with code 1. See /home/loharkar/quenais-standalone/quenais/runs/lih_gqe/results/gqe_train.log.
+def setup_callbacks(cfg):
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ ls gqe-for-qsci/requirements*.txt gqe-for-qsci/pyproject.toml 2>/dev/null
+ gqe-for-qsci/pyproject.toml
 (/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ 
