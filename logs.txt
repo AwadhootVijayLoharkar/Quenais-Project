@@ -1,16 +1,363 @@
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ git submodule --init --recursive
-usage: git submodule [--quiet] [--cached]
-   or: git submodule [--quiet] add [-b <branch>] [-f|--force] [--name <name>] [--reference <repository>] [--] <repository> [<path>]
-   or: git submodule [--quiet] status [--cached] [--recursive] [--] [<path>...]
-   or: git submodule [--quiet] init [--] [<path>...]
-   or: git submodule [--quiet] deinit [-f|--force] (--all| [--] <path>...)
-   or: git submodule [--quiet] update [--init [--filter=<filter-spec>]] [--remote] [-N|--no-fetch] [-f|--force] [--checkout|--merge|--rebase] [--[no-]recommend-shallow] [--reference <repository>] [--recursive] [--[no-]single-branch] [--] [<path>...]
-   or: git submodule [--quiet] set-branch (--default|--branch <branch>) [--] <path>
-   or: git submodule [--quiet] set-url [--] <path> <newurl>
-   or: git submodule [--quiet] summary [--cached|--files] [--summary-limit <n>] [commit] [--] [<path>...]
-   or: git submodule [--quiet] foreach [--recursive] <command>
-   or: git submodule [--quiet] sync [--recursive] [--] [<path>...]
-   or: git submodule [--quiet] absorbgitdirs [--] [<path>...]
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ git submodule update --init --recursive
+Submodule 'gqe-for-qsci' (https://github.com/moken20/gqe-for-qsci.git) registered for path 'gqe-for-qsci'
+Cloning into '/home/loharkar/quenais-standalone/quenais/gqe-for-qsci'...
+Submodule path 'gqe-for-qsci': checked out '0a201eafb94a85dc49b9dbfe33338087efe1e969'
 (/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ git submodule status
--0a201eafb94a85dc49b9dbfe33338087efe1e969 gqe-for-qsci
+ 0a201eafb94a85dc49b9dbfe33338087efe1e969 gqe-for-qsci (heads/main)
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-gqe-setup --repo ./gqe-for-qsci/
+repo: /home/loharkar/quenais-standalone/quenais/gqe-for-qsci
+Applied gqe_dmet_source.patch to /home/loharkar/quenais-standalone/quenais/gqe-for-qsci
+  patched: gqe_qsci/factory.py
+  patched: gqe_qsci/gqe/sampler.py
+  patched: gqe_qsci/train_pipeline.py
+
+Ready: submodule is at the expected commit and patched.
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ cd gqe-for-qsci/
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:gqe-for-qsci]$ git status --short 
+ M gqe_qsci/factory.py
+ M gqe_qsci/gqe/sampler.py
+ M gqe_qsci/train_pipeline.py
+?? .quenais_patch_applied
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:gqe-for-qsci]$ cd ..
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ pytest -q
+.........................................................................................................................................................................ssss............................................................................... [ 84%]
+...............................................                                                                                                                                                                                                              [100%]
+295 passed, 4 skipped in 38.49s
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ python -c "import cudaq ; print('cudaq', cudaq.__version__)"
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'cudaq'
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ pip freeze > ~/env_before_cudaq.txt
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ python -c "import numpy, scipy, pyscf; print(numpy.__version__, scipy.__version__, pyscf.__version__)"
+2.4.6 1.17.1 2.14.0
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ pip install -e ".[cudaq]"
+Obtaining file:///home/loharkar/quenais-standalone/quenais
+  Installing build dependencies ... done
+  Checking if build backend supports build_editable ... done
+  Getting requirements to build editable ... done
+  Preparing editable metadata (pyproject.toml) ... done
+Requirement already satisfied: numpy>=1.24 in ./quenais-env/lib/python3.11/site-packages (from quenais==0.2.0) (2.4.6)
+Requirement already satisfied: scipy>=1.10 in ./quenais-env/lib/python3.11/site-packages (from quenais==0.2.0) (1.17.1)
+Requirement already satisfied: matplotlib>=3.7 in ./quenais-env/lib/python3.11/site-packages (from quenais==0.2.0) (3.11.1)
+Requirement already satisfied: pyscf>=2.3 in ./quenais-env/lib/python3.11/site-packages (from quenais==0.2.0) (2.14.0)
+Collecting cudaq (from quenais==0.2.0)
+  Downloading cudaq-0.15.1.tar.gz (12 kB)
+  Installing build dependencies ... done
+  Getting requirements to build wheel ... done
+  Preparing metadata (pyproject.toml) ... done
+Requirement already satisfied: openfermion>=1.6 in ./quenais-env/lib/python3.11/site-packages (from quenais==0.2.0) (1.8.1)
+Collecting tequila-basic (from quenais==0.2.0)
+  Downloading tequila_basic-1.9.11-py3-none-any.whl.metadata (19 kB)
+Collecting torch (from quenais==0.2.0)
+  Downloading torch-2.13.0-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (38 kB)
+Collecting hydra-core>=1.3 (from quenais==0.2.0)
+  Downloading hydra_core-1.3.4-py3-none-any.whl.metadata (5.7 kB)
+Collecting omegaconf<2.4,>=2.2 (from hydra-core>=1.3->quenais==0.2.0)
+  Downloading omegaconf-2.3.1-py3-none-any.whl.metadata (4.5 kB)
+Collecting antlr4-python3-runtime==4.9.* (from hydra-core>=1.3->quenais==0.2.0)
+  Using cached antlr4_python3_runtime-4.9.3-py3-none-any.whl
+Requirement already satisfied: packaging in ./quenais-env/lib/python3.11/site-packages (from hydra-core>=1.3->quenais==0.2.0) (26.2)
+Requirement already satisfied: PyYAML>=5.1.0 in ./quenais-env/lib/python3.11/site-packages (from omegaconf<2.4,>=2.2->hydra-core>=1.3->quenais==0.2.0) (6.0.3)
+Requirement already satisfied: contourpy>=1.0.1 in ./quenais-env/lib/python3.11/site-packages (from matplotlib>=3.7->quenais==0.2.0) (1.3.3)
+Requirement already satisfied: cycler>=0.10 in ./quenais-env/lib/python3.11/site-packages (from matplotlib>=3.7->quenais==0.2.0) (0.12.1)
+Requirement already satisfied: fonttools>=4.28.2 in ./quenais-env/lib/python3.11/site-packages (from matplotlib>=3.7->quenais==0.2.0) (4.63.0)
+Requirement already satisfied: kiwisolver>=1.3.1 in ./quenais-env/lib/python3.11/site-packages (from matplotlib>=3.7->quenais==0.2.0) (1.5.0)
+Requirement already satisfied: pillow>=9 in ./quenais-env/lib/python3.11/site-packages (from matplotlib>=3.7->quenais==0.2.0) (12.3.0)
+Requirement already satisfied: pyparsing>=3 in ./quenais-env/lib/python3.11/site-packages (from matplotlib>=3.7->quenais==0.2.0) (3.3.2)
+Requirement already satisfied: python-dateutil>=2.7 in ./quenais-env/lib/python3.11/site-packages (from matplotlib>=3.7->quenais==0.2.0) (2.9.0.post0)
+Requirement already satisfied: cirq-core>=1.6.0 in ./quenais-env/lib/python3.11/site-packages (from openfermion>=1.6->quenais==0.2.0) (1.7.0)
+Requirement already satisfied: deprecation in ./quenais-env/lib/python3.11/site-packages (from openfermion>=1.6->quenais==0.2.0) (2.1.0)
+Requirement already satisfied: h5py in ./quenais-env/lib/python3.11/site-packages (from openfermion>=1.6->quenais==0.2.0) (3.16.0)
+Requirement already satisfied: networkx in ./quenais-env/lib/python3.11/site-packages (from openfermion>=1.6->quenais==0.2.0) (3.6.1)
+Requirement already satisfied: pubchempy in ./quenais-env/lib/python3.11/site-packages (from openfermion>=1.6->quenais==0.2.0) (1.0.5)
+Requirement already satisfied: requests in ./quenais-env/lib/python3.11/site-packages (from openfermion>=1.6->quenais==0.2.0) (2.34.2)
+Requirement already satisfied: sympy in ./quenais-env/lib/python3.11/site-packages (from openfermion>=1.6->quenais==0.2.0) (1.14.0)
+Requirement already satisfied: attrs>=21.3.0 in ./quenais-env/lib/python3.11/site-packages (from cirq-core>=1.6.0->openfermion>=1.6->quenais==0.2.0) (26.1.0)
+Requirement already satisfied: duet>=0.2.8 in ./quenais-env/lib/python3.11/site-packages (from cirq-core>=1.6.0->openfermion>=1.6->quenais==0.2.0) (0.2.9)
+Requirement already satisfied: pandas<3.1.0.dev,>=2.3 in ./quenais-env/lib/python3.11/site-packages (from cirq-core>=1.6.0->openfermion>=1.6->quenais==0.2.0) (3.0.5)
+Requirement already satisfied: tqdm>=4.12 in ./quenais-env/lib/python3.11/site-packages (from cirq-core>=1.6.0->openfermion>=1.6->quenais==0.2.0) (4.70.0)
+Requirement already satisfied: setuptools in ./quenais-env/lib/python3.11/site-packages (from pyscf>=2.3->quenais==0.2.0) (83.0.0)
+Requirement already satisfied: six>=1.5 in ./quenais-env/lib/python3.11/site-packages (from python-dateutil>=2.7->matplotlib>=3.7->quenais==0.2.0) (1.17.0)
+Collecting cuda-quantum-cu13==0.15.1 (from cudaq->quenais==0.2.0)
+  Downloading cuda_quantum_cu13-0.15.1-cp311-cp311-manylinux_2_28_x86_64.whl.metadata (9.2 kB)
+Collecting astpretty~=3.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Using cached astpretty-3.0.0-py2.py3-none-any.whl.metadata (5.5 kB)
+Collecting custatevec-cu13~=1.13.1 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading custatevec_cu13-1.13.1-py3-none-manylinux2014_x86_64.whl.metadata (2.4 kB)
+Collecting cutensornet-cu13~=2.12.1 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading cutensornet_cu13-2.12.2-py3-none-manylinux2014_x86_64.whl.metadata (2.4 kB)
+Collecting cudensitymat-cu13~=0.5.1 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading cudensitymat_cu13-0.5.2-py3-none-manylinux2014_x86_64.whl.metadata (2.5 kB)
+Collecting nvidia-cublas~=13.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cublas-13.6.1.10-py3-none-manylinux_2_27_x86_64.whl.metadata (1.8 kB)
+Collecting nvidia-curand~=10.4 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_curand-10.4.3.29-py3-none-manylinux_2_27_x86_64.whl.metadata (1.8 kB)
+Collecting nvidia-cusparse~=12.6 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cusparse-12.8.2.51-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.8 kB)
+Collecting nvidia-cuda-runtime~=13.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cuda_runtime-13.3.29-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.8 kB)
+Collecting nvidia-cusolver~=12.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cusolver-12.2.6.9-py3-none-manylinux_2_27_x86_64.whl.metadata (1.9 kB)
+Collecting nvidia-cuda-nvrtc~=13.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cuda_nvrtc-13.3.33-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl.metadata (1.8 kB)
+Collecting cupy-cuda13x~=13.6.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading cupy_cuda13x-13.6.0-cp311-cp311-manylinux2014_x86_64.whl.metadata (2.4 kB)
+Collecting cutensor-cu13<3,>=2.5 (from cudensitymat-cu13~=0.5.1->cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading cutensor_cu13-2.7.0-py3-none-manylinux2014_x86_64.whl.metadata (2.2 kB)
+Collecting fastrlock>=0.5 (from cupy-cuda13x~=13.6.0->cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Using cached fastrlock-0.8.3-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_28_x86_64.whl.metadata (7.7 kB)
+Collecting nvidia-nvjitlink (from nvidia-cusolver~=12.0->cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_nvjitlink-13.3.33-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl.metadata (1.8 kB)
+Requirement already satisfied: charset_normalizer<4,>=2 in ./quenais-env/lib/python3.11/site-packages (from requests->openfermion>=1.6->quenais==0.2.0) (3.4.9)
+Requirement already satisfied: idna<4,>=2.5 in ./quenais-env/lib/python3.11/site-packages (from requests->openfermion>=1.6->quenais==0.2.0) (3.18)
+Requirement already satisfied: urllib3<3,>=1.26 in ./quenais-env/lib/python3.11/site-packages (from requests->openfermion>=1.6->quenais==0.2.0) (2.7.0)
+Requirement already satisfied: certifi>=2023.5.7 in ./quenais-env/lib/python3.11/site-packages (from requests->openfermion>=1.6->quenais==0.2.0) (2026.7.22)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in ./quenais-env/lib/python3.11/site-packages (from sympy->openfermion>=1.6->quenais==0.2.0) (1.3.0)
+Collecting autograd (from tequila-basic->quenais==0.2.0)
+  Using cached autograd-1.9.1-py3-none-any.whl.metadata (6.1 kB)
+Requirement already satisfied: pytest in ./quenais-env/lib/python3.11/site-packages (from tequila-basic->quenais==0.2.0) (9.1.1)
+Requirement already satisfied: iniconfig>=1.0.1 in ./quenais-env/lib/python3.11/site-packages (from pytest->tequila-basic->quenais==0.2.0) (2.3.0)
+Requirement already satisfied: pluggy<2,>=1.5 in ./quenais-env/lib/python3.11/site-packages (from pytest->tequila-basic->quenais==0.2.0) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in ./quenais-env/lib/python3.11/site-packages (from pytest->tequila-basic->quenais==0.2.0) (2.20.0)
+Collecting filelock (from torch->quenais==0.2.0)
+  Downloading filelock-3.32.2-py3-none-any.whl.metadata (2.0 kB)
+Requirement already satisfied: typing-extensions>=4.10.0 in ./quenais-env/lib/python3.11/site-packages (from torch->quenais==0.2.0) (4.16.0)
+Requirement already satisfied: jinja2 in ./quenais-env/lib/python3.11/site-packages (from torch->quenais==0.2.0) (3.1.6)
+Collecting fsspec>=0.8.5 (from torch->quenais==0.2.0)
+  Downloading fsspec-2026.7.0-py3-none-any.whl.metadata (10 kB)
+Collecting cuda-toolkit==13.0.3 (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch->quenais==0.2.0)
+  Downloading cuda_toolkit-13.0.3.0-py2.py3-none-any.whl.metadata (17 kB)
+Collecting cuda-bindings<14,>=13.0.3 (from torch->quenais==0.2.0)
+  Downloading cuda_bindings-13.3.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (2.5 kB)
+Collecting nvidia-cudnn-cu13==9.20.0.48 (from torch->quenais==0.2.0)
+  Downloading nvidia_cudnn_cu13-9.20.0.48-py3-none-manylinux_2_27_x86_64.whl.metadata (1.9 kB)
+Collecting nvidia-cusparselt-cu13==0.8.1 (from torch->quenais==0.2.0)
+  Downloading nvidia_cusparselt_cu13-0.8.1-py3-none-manylinux2014_x86_64.whl.metadata (12 kB)
+Collecting nvidia-nccl-cu13==2.29.7 (from torch->quenais==0.2.0)
+  Downloading nvidia_nccl_cu13-2.29.7-py3-none-manylinux_2_18_x86_64.whl.metadata (2.1 kB)
+Collecting nvidia-nvshmem-cu13==3.4.5 (from torch->quenais==0.2.0)
+  Downloading nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.1 kB)
+Collecting triton==3.7.1 (from torch->quenais==0.2.0)
+  Downloading triton-3.7.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (1.7 kB)
+Collecting nvidia-cublas~=13.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_x86_64.whl.metadata (1.8 kB)
+Collecting nvidia-cuda-nvrtc~=13.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl.metadata (1.7 kB)
+Collecting nvidia-cuda-runtime~=13.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.7 kB)
+Collecting nvidia-cufft==12.0.0.61.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch->quenais==0.2.0)
+  Downloading nvidia_cufft-12.0.0.61-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.8 kB)
+Collecting nvidia-cufile==1.15.1.6.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch->quenais==0.2.0)
+  Downloading nvidia_cufile-1.15.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.7 kB)
+Collecting nvidia-cuda-cupti==13.0.85.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch->quenais==0.2.0)
+  Downloading nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl.metadata (1.7 kB)
+Collecting nvidia-curand~=10.4 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_x86_64.whl.metadata (1.7 kB)
+Collecting nvidia-cusolver~=12.0 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_x86_64.whl.metadata (1.8 kB)
+Collecting nvidia-cusparse~=12.6 (from cuda-quantum-cu13==0.15.1->cudaq->quenais==0.2.0)
+  Downloading nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (1.8 kB)
+Collecting nvidia-nvtx==13.0.85.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch->quenais==0.2.0)
+  Downloading nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl.metadata (1.8 kB)
+Collecting cuda-pathfinder>=1.4.2 (from cuda-bindings<14,>=13.0.3->torch->quenais==0.2.0)
+  Downloading cuda_pathfinder-1.6.0-py3-none-any.whl.metadata (1.9 kB)
+Requirement already satisfied: MarkupSafe>=2.0 in ./quenais-env/lib/python3.11/site-packages (from jinja2->torch->quenais==0.2.0) (3.0.3)
+Downloading hydra_core-1.3.4-py3-none-any.whl (155 kB)
+Downloading omegaconf-2.3.1-py3-none-any.whl (79 kB)
+Downloading cuda_quantum_cu13-0.15.1-cp311-cp311-manylinux_2_28_x86_64.whl (126.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 126.4/126.4 MB 16.2 MB/s  0:00:07
+Using cached astpretty-3.0.0-py2.py3-none-any.whl (4.9 kB)
+Downloading cudensitymat_cu13-0.5.2-py3-none-manylinux2014_x86_64.whl (15.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.8/15.8 MB 19.1 MB/s  0:00:00
+Downloading cupy_cuda13x-13.6.0-cp311-cp311-manylinux2014_x86_64.whl (54.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 54.7/54.7 MB 12.3 MB/s  0:00:04
+Downloading custatevec_cu13-1.13.1-py3-none-manylinux2014_x86_64.whl (58.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 58.8/58.8 MB 17.6 MB/s  0:00:03
+Downloading cutensor_cu13-2.7.0-py3-none-manylinux2014_x86_64.whl (242.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 242.6/242.6 MB 17.0 MB/s  0:00:14
+Downloading cutensornet_cu13-2.12.2-py3-none-manylinux2014_x86_64.whl (3.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.0/3.0 MB 18.4 MB/s  0:00:00
+Using cached fastrlock-0.8.3-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_28_x86_64.whl (54 kB)
+Downloading nvidia_nvjitlink-13.3.33-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl (40.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.7/40.7 MB 19.0 MB/s  0:00:02
+Downloading tequila_basic-1.9.11-py3-none-any.whl (321 kB)
+Using cached autograd-1.9.1-py3-none-any.whl (54 kB)
+Downloading torch-2.13.0-cp311-cp311-manylinux_2_28_x86_64.whl (526.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 526.6/526.6 MB 16.6 MB/s  0:00:31
+Downloading cuda_toolkit-13.0.3.0-py2.py3-none-any.whl (2.5 kB)
+Downloading nvidia_cudnn_cu13-9.20.0.48-py3-none-manylinux_2_27_x86_64.whl (366.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 366.2/366.2 MB 17.6 MB/s  0:00:20
+Downloading nvidia_cusparselt_cu13-0.8.1-py3-none-manylinux2014_x86_64.whl (170.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 170.1/170.1 MB 17.5 MB/s  0:00:09
+Downloading nvidia_nccl_cu13-2.29.7-py3-none-manylinux_2_18_x86_64.whl (206.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 206.0/206.0 MB 16.8 MB/s  0:00:12
+Downloading nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (60.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 60.4/60.4 MB 16.9 MB/s  0:00:03
+Downloading triton-3.7.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (197.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 197.7/197.7 MB 17.2 MB/s  0:00:11
+Downloading cuda_bindings-13.3.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (6.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.7/6.7 MB 9.3 MB/s  0:00:00
+Downloading nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_x86_64.whl (423.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 423.1/423.1 MB 15.6 MB/s  0:00:27
+Downloading nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl (10.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.7/10.7 MB 16.9 MB/s  0:00:00
+Downloading nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl (90.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.2/90.2 MB 15.3 MB/s  0:00:05
+Downloading nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 14.8 MB/s  0:00:00
+Downloading nvidia_cufft-12.0.0.61-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (214.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 214.1/214.1 MB 15.1 MB/s  0:00:14
+Downloading nvidia_cufile-1.15.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 15.9 MB/s  0:00:00
+Downloading nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_x86_64.whl (59.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 59.5/59.5 MB 18.0 MB/s  0:00:03
+Downloading nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_x86_64.whl (200.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 200.9/200.9 MB 17.7 MB/s  0:00:11
+Downloading nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (145.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 145.9/145.9 MB 17.9 MB/s  0:00:08
+Downloading nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl (148 kB)
+Downloading cuda_pathfinder-1.6.0-py3-none-any.whl (54 kB)
+Downloading fsspec-2026.7.0-py3-none-any.whl (206 kB)
+Downloading filelock-3.32.2-py3-none-any.whl (98 kB)
+Building wheels for collected packages: quenais, cudaq
+  Building editable for quenais (pyproject.toml) ... done
+  Created wheel for quenais: filename=quenais-0.2.0-0.editable-py3-none-any.whl size=9478 sha256=853255ee721369997ebba3941bc2e7e97ed82ff3154a04f8a57e05710bb669f5
+  Stored in directory: /tmp/pip-ephem-wheel-cache-kx3n4abq/wheels/75/f2/69/e9436e4d34deb4b79a0973accc0afe7bd9ffffcffdf9e51db5
+  Building wheel for cudaq (pyproject.toml) ... done
+  Created wheel for cudaq: filename=cudaq-0.15.1-py3-none-any.whl size=11140 sha256=0f7be557a7add388a5b21f1063749dd6f8d92ce11332d156d76c3a5227fdf791
+  Stored in directory: /home/loharkar/.cache/pip/wheels/9f/9a/e9/e50da7859c39ba5cd11dfa02cd2e253b7d5b1805a398ad2ccf
+Successfully built quenais cudaq
+Installing collected packages: nvidia-cusparselt-cu13, fastrlock, cutensor-cu13, custatevec-cu13, cuda-toolkit, antlr4-python3-runtime, triton, omegaconf, nvidia-nvtx, nvidia-nvshmem-cu13, nvidia-nvjitlink, nvidia-nccl-cu13, nvidia-curand, nvidia-cufile, nvidia-cuda-runtime, nvidia-cuda-nvrtc, nvidia-cuda-cupti, fsspec, filelock, cutensornet-cu13, cupy-cuda13x, cuda-pathfinder, autograd, astpretty, nvidia-cusparse, nvidia-cufft, nvidia-cublas, hydra-core, cudensitymat-cu13, cuda-bindings, quenais, nvidia-cusolver, nvidia-cudnn-cu13, cuda-quantum-cu13, torch, tequila-basic, cudaq
+  Attempting uninstall: quenais
+    Found existing installation: quenais 0.2.0
+    Uninstalling quenais-0.2.0:
+      Successfully uninstalled quenais-0.2.0
+Successfully installed antlr4-python3-runtime-4.9.3 astpretty-3.0.0 autograd-1.9.1 cuda-bindings-13.3.1 cuda-pathfinder-1.6.0 cuda-quantum-cu13-0.15.1 cuda-toolkit-13.0.3.0 cudaq-0.15.1 cudensitymat-cu13-0.5.2 cupy-cuda13x-13.6.0 custatevec-cu13-1.13.1 cutensor-cu13-2.7.0 cutensornet-cu13-2.12.2 fastrlock-0.8.3 filelock-3.32.2 fsspec-2026.7.0 hydra-core-1.3.4 nvidia-cublas-13.1.1.3 nvidia-cuda-cupti-13.0.85 nvidia-cuda-nvrtc-13.0.88 nvidia-cuda-runtime-13.0.96 nvidia-cudnn-cu13-9.20.0.48 nvidia-cufft-12.0.0.61 nvidia-cufile-1.15.1.6 nvidia-curand-10.4.0.35 nvidia-cusolver-12.0.4.66 nvidia-cusparse-12.6.3.3 nvidia-cusparselt-cu13-0.8.1 nvidia-nccl-cu13-2.29.7 nvidia-nvjitlink-13.3.33 nvidia-nvshmem-cu13-3.4.5 nvidia-nvtx-13.0.85 omegaconf-2.3.1 quenais-0.2.0 tequila-basic-1.9.11 torch-2.13.0 triton-3.7.1
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ python -c "import numpy, scipy, pyscf; print(numpy.__version__, scipy.__version__, pyscf.__version__)"
+2.4.6 1.17.1 2.14.0
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-selftest 
+
+QuEnAIS self-test -- LiH
+==================================================================
+[  ok  ] thread environment                           OPENBLAS=1 OMP=1 (from SLURM_CPUS_PER_TASK)
+[  ok  ] HF energy                                    -7.862026959 Ha  (delta 5.3e-15)
+[  ok  ] MP2 energy                                   -7.874890917 Ha  (delta 3.0e-12)
+[  ok  ] CCSD energy                                  -7.882392917 Ha  (delta 5.3e-15)
+[  ok  ] active space                                 (2e, 2o) MOs=[1, 2]
+[  ok  ] step 1 provides dm_ao_alpha_mp2              required by the embedding stage
+[  ok  ] step 1 provides dm_ao_beta_mp2               required by the embedding stage
+[  ok  ] bath orbital count                           2 (expected 2)
+[  ok  ] embedded electron count                      (2a, 2b) -- from the reference density, not the active space
+[  ok  ] ecore                                        -5.010051310 Ha  (delta 2.0e-10)
+[  ok  ] embedded SCF vs full UHF                     delta -2.91e-09 Ha  (tol 2e-07)
+
+==================================================================
+  11 passed, 0 failed, 0 skipped
+
+  Install looks sound.
+==================================================================
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ pytest -q
+............................................................................................................................................................................F............................................................................... [ 84%]
+...............................................                                                                                                                                                                                                              [100%]
+============================================================================================================================= FAILURES =============================================================================================================================
+___________________________________________________________________________________________________________________ test_pool_classes_construct ____________________________________________________________________________________________________________________
+
+golden_dir = PosixPath('/home/loharkar/quenais-standalone/quenais/tests/regression/golden'), tmp_path = PosixPath('/tmp/pytest-of-loharkar/pytest-18/test_pool_classes_construct0')
+
+    @pytest.mark.needs_cudaq
+    @pytest.mark.slow
+    def test_pool_classes_construct(golden_dir, tmp_path):
+        """Smoke test: the pools build against a real embedding."""
+        mol = gqe_adapter.load_from_dmet_pickle(
+            str(golden_dir / "LiH" / "step2_hamiltonian.pkl"),
+            cache_dir=tmp_path / ".cache",
+        )
+>       pool = gqe_pools.DMETExcitationPool(mol, params=None, threshold=1e-8)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_gqe_adapter.py:291: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais/quantum/gqe_pools.py:310: in __getattr__
+    return _build_classes()[name]
+           ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build_classes():
+        if _CLASS_CACHE:
+            return _CLASS_CACHE
+    
+        from abc import ABC
+        from collections import Counter
+    
+        import cudaq
+>       from gqe_qsci.gqe.operator_pool import OperatorPool
+E       ModuleNotFoundError: No module named 'gqe_qsci'
+
+quenais/quantum/gqe_pools.py:180: ModuleNotFoundError
+========================================================================================================================= warnings summary =========================================================================================================================
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
+  /home/loharkar/quenais-standalone/quenais/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
+    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+===================================================================================================================== short test summary info ======================================================================================================================
+FAILED tests/test_gqe_adapter.py::test_pool_classes_construct - ModuleNotFoundError: No module named 'gqe_qsci'
+1 failed, 298 passed, 3 warnings in 60.53s (0:01:00)
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ git submodule update --init --recursive
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ quenais-gqe-setup --repo ./gqe-for-qsci/
+repo: /home/loharkar/quenais-standalone/quenais/gqe-for-qsci
+Patch already applied to /home/loharkar/quenais-standalone/quenais/gqe-for-qsci -- nothing to do.
+
+Ready: submodule is at the expected commit and patched.
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ pytest -q
+............................................................................................................................................................................F............................................................................... [ 84%]
+...............................................                                                                                                                                                                                                              [100%]
+============================================================================================================================= FAILURES =============================================================================================================================
+___________________________________________________________________________________________________________________ test_pool_classes_construct ____________________________________________________________________________________________________________________
+
+golden_dir = PosixPath('/home/loharkar/quenais-standalone/quenais/tests/regression/golden'), tmp_path = PosixPath('/tmp/pytest-of-loharkar/pytest-19/test_pool_classes_construct0')
+
+    @pytest.mark.needs_cudaq
+    @pytest.mark.slow
+    def test_pool_classes_construct(golden_dir, tmp_path):
+        """Smoke test: the pools build against a real embedding."""
+        mol = gqe_adapter.load_from_dmet_pickle(
+            str(golden_dir / "LiH" / "step2_hamiltonian.pkl"),
+            cache_dir=tmp_path / ".cache",
+        )
+>       pool = gqe_pools.DMETExcitationPool(mol, params=None, threshold=1e-8)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_gqe_adapter.py:291: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais/quantum/gqe_pools.py:310: in __getattr__
+    return _build_classes()[name]
+           ^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _build_classes():
+        if _CLASS_CACHE:
+            return _CLASS_CACHE
+    
+        from abc import ABC
+        from collections import Counter
+    
+        import cudaq
+>       from gqe_qsci.gqe.operator_pool import OperatorPool
+E       ModuleNotFoundError: No module named 'gqe_qsci'
+
+quenais/quantum/gqe_pools.py:180: ModuleNotFoundError
+========================================================================================================================= warnings summary =========================================================================================================================
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
+  /home/loharkar/quenais-standalone/quenais/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
+    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+===================================================================================================================== short test summary info ======================================================================================================================
+FAILED tests/test_gqe_adapter.py::test_pool_classes_construct - ModuleNotFoundError: No module named 'gqe_qsci'
+1 failed, 298 passed, 3 warnings in 32.40s
 (/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ 
