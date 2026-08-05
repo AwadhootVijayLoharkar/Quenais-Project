@@ -1,29 +1,16 @@
-python -c "
-import pyscf; print('pyscf', pyscf.__version__)
-from quenais.quantum.gqe_adapter import load_from_dmet_pickle
-m = load_from_dmet_pickle('tests/regression/golden/LiH/step2_hamiltonian.pkl')
-print('casci', m.compute_casci())
-print('civec', m._last_casci_civec.shape)
-"
-python -c "from pyblock2.driver.core import DMRGDriver; print('block2 OK')"
-nproc; free -g
-
-
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ python -c "
-import pyscf; print('pyscf', pyscf.__version__)
-from quenais.quantum.gqe_adapter import load_from_dmet_pickle
-m = load_from_dmet_pickle('tests/regression/golden/LiH/step2_hamiltonian.pkl')
-print('casci', m.compute_casci())
-print('civec', m._last_casci_civec.shape)
-"
-pyscf 2.14.0
-casci -7.881246151999262
-civec (6, 6)
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ python -c "from pyblock2.driver.core import DMRGDriver; print('block2 OK')"
-block2 OK
-(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ nproc; free -g
-24
-               total        used        free      shared  buff/cache   available
-Mem:             503          13         479           0          14         490
-Swap:              0           0           0
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ git submodule --init --recursive
+usage: git submodule [--quiet] [--cached]
+   or: git submodule [--quiet] add [-b <branch>] [-f|--force] [--name <name>] [--reference <repository>] [--] <repository> [<path>]
+   or: git submodule [--quiet] status [--cached] [--recursive] [--] [<path>...]
+   or: git submodule [--quiet] init [--] [<path>...]
+   or: git submodule [--quiet] deinit [-f|--force] (--all| [--] <path>...)
+   or: git submodule [--quiet] update [--init [--filter=<filter-spec>]] [--remote] [-N|--no-fetch] [-f|--force] [--checkout|--merge|--rebase] [--[no-]recommend-shallow] [--reference <repository>] [--recursive] [--[no-]single-branch] [--] [<path>...]
+   or: git submodule [--quiet] set-branch (--default|--branch <branch>) [--] <path>
+   or: git submodule [--quiet] set-url [--] <path> <newurl>
+   or: git submodule [--quiet] summary [--cached|--files] [--summary-limit <n>] [commit] [--] [<path>...]
+   or: git submodule [--quiet] foreach [--recursive] <command>
+   or: git submodule [--quiet] sync [--recursive] [--] [<path>...]
+   or: git submodule [--quiet] absorbgitdirs [--] [<path>...]
+(/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ git submodule status
+-0a201eafb94a85dc49b9dbfe33338087efe1e969 gqe-for-qsci
 (/home/loharkar/quenais-standalone/quenais/quenais-env) [loharkar@erebos05:quenais]$ 
