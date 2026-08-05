@@ -11,8 +11,11 @@ Two solver families are selectable by configuration:
 | Qiskit | `sqd`, `skqd`, `sqdrift` | `quenais[qiskit]` | in-process |
 | CUDA-Q | `gqe` | `quenais[cudaq]` + a patched `gqe-for-qsci` checkout | subprocess |
 
-Neither stack is required for the other. The DMET pipeline itself needs
-only PySCF.
+The two stacks stay independent at the *package* level — installing one
+never drags in the other, and the DMET pipeline itself needs only PySCF.
+`install.sh`, however, installs **both**: a partially-provisioned
+environment is how this project repeatedly ended up with runs that
+reported success and produced nothing. See [Install](#install).
 
 Developed as part of Awadhoot Loharkar's Master's thesis at the Fraunhofer
 Institute for Industrial Mathematics (ITWM), within the
@@ -38,10 +41,15 @@ it.
 ## Requirements
 
 - Python 3.10 or 3.11
-- Linux or macOS. On Windows use WSL — `block2` has no working native
-  Windows install path.
-- PySCF. The default wheel is fine — see [Performance](#performance) if
-  you care about speed on large systems.
+- Linux, or WSL on Windows — `block2` has no working native Windows path.
+  macOS runs the DMET pipeline but not the CUDA-Q solver.
+- A compiler toolchain (`clang`, `cmake`, `make`, `gfortran`), Rust
+  (`cargo`), and MPI (`mpicc`). `environment.yml` installs all of them.
+- **AVX-512 is not required**, but its absence changes how PySCF must be
+  installed — `install.sh` detects this and builds from source. See
+  [docs/gqe_setup.md](docs/gqe_setup.md#cpu--avx-512-and-pyscf).
+- A GPU is optional. Without one, or with a GPU below compute capability
+  8.0, the installer selects CUDA-Q's `qpp-cpu` simulator automatically.
 
 ## Install
 
@@ -52,26 +60,71 @@ cd quenais
 mamba env create -f environment.yml -p ./quenais-env
 mamba activate ./quenais-env
 
-pip install -e ".[qiskit]"        # or ".[cudaq]", or ".[all]"
+bash install.sh
+
+# pick up the variables install.sh persisted into the env
+mamba deactivate && mamba activate ./quenais-env
 ```
 
-To keep a PySCF you built yourself, install without dependencies so pip
-does not replace it:
+`install.sh` leaves the environment ready to run everything — both solver
+families, including GQE. It is 16 steps and **every one is required**; the
+script exits non-zero with a remediation message if any of them fails.
+
+In particular it does four things a plain `pip install -e ".[all]"` does
+not:
+
+| | why |
+|---|---|
+| initialises **both** submodules and builds `theochem/pyci` from source | `gqe-for-qsci` needs it and it has no wheel; the `pyci` / `qc-PyCI` packages on PyPI are unrelated projects |
+| installs `gqe-for-qsci` and **applies the source patch** | the DMET operator pools are unregistered without it, and an unpatched checkout trains to completion producing nothing parseable |
+| compiles CUDA-Q's **MPI plugin** and persists `LD_LIBRARY_PATH`, `MPI_PATH`, `CUDAQ_DEFAULT_SIMULATOR`, `WANDB_MODE` into the env | CUDA-Q ships the plugin uncompiled; `CUDAQ_DEFAULT_SIMULATOR` is read at import, so setting it inside a script is too late |
+| installs **PySCF last**, from source when this CPU lacks AVX-512 | the prebuilt wheel's `libcgto.so` SIGILLs on non-AVX-512 CPUs; installing it last stops an earlier pip step from replacing a good build |
+
+### Overrides
 
 ```bash
-pip install -e . --no-deps
+QUENAIS_PYSCF_BUILD=source bash install.sh   # force the from-source build
+QUENAIS_CUDAQ_TARGET=qpp-cpu bash install.sh # pin the simulator target
+QUENAIS_SKIP_SELFTEST=1 bash install.sh      # CI only
 ```
+
+There is no flag to skip the GQE stack. If you only want the Qiskit
+solvers, `pip install -e ".[qiskit]"` still works and is unchanged — but
+it is not what `install.sh` does, and `quenais-doctor` will report the
+missing CUDA-Q pieces.
 
 ### Verify before trusting anything
 
+Two checks, in order. The first asks "will anything run at all" and takes
+a second; the second asks "does the physics reproduce". `install.sh` runs
+both at the end.
+
 ```bash
-quenais-selftest
+quenais-doctor      # environment, hardware, submodule state
+quenais-selftest    # LiH end to end against known-good values
 ```
 
-Runs LiH end to end in seconds and checks each quantity against
-known-good values, including the two silent physics bugs this package
-exists to not have. Attach its output to any bug report — it identifies
-which quantity drifted, which is most of the diagnosis.
+`quenais-doctor` covers every failure this project has actually hit —
+AVX-512 versus the PySCF build, GPU compute capability versus the CUDA-Q
+target, whether mpi4py and CUDA-Q's plugin link the same `libmpi`, the
+`setuptools<82` / `pkg_resources` ceiling, `WANDB_MODE` in
+non-interactive contexts, and whether the submodule is present and
+correctly patched. Every one of those presents as something other than
+what it is; the background on each is in
+[docs/gqe_setup.md](docs/gqe_setup.md).
+
+```
+[  ok  ] CPU AVX-512                          absent, but PySCF was built from source
+[  ok  ] GPU                                  none detected -- CPU simulator path
+[  ok  ] setuptools                           81.2.0, pkg_resources importable
+[  ok  ] MPI ABI                              both link libmpi.so.40
+[  ok  ] gqe-for-qsci checkout                patched at /home/…/gqe-for-qsci
+```
+
+`quenais-selftest` runs LiH end to end in seconds and checks each quantity
+against known-good values, including the two silent physics bugs this
+package exists to not have. Attach its output to any bug report — it
+identifies which quantity drifted, which is most of the diagnosis.
 
 ```
 [  ok  ] thread environment            OPENBLAS=1 OMP=24 (from SLURM_CPUS_PER_TASK)
@@ -81,19 +134,23 @@ which quantity drifted, which is most of the diagnosis.
 [  ok  ] embedded SCF vs full UHF      delta -3.02e-09 Ha  (tol 2e-07)
 ```
 
-### The GQE solver needs one extra step
+### Re-applying the GQE patch
 
-`gqe-for-qsci` is a git submodule pinned at `0a201ea`, and the DMET
-integration requires three source edits to it. A plain
-`git submodule update` gives a checkout that cannot run this pipeline.
+`install.sh` does this for you. You only need it by hand after a
+`git submodule update`, which silently reverts the patch:
 
 ```bash
 quenais-gqe-setup --repo ./gqe-for-qsci
 ```
 
-Idempotent, verifies the commit SHA before touching anything, and writes a
-stamp so the runner can check readiness before spending GPU time. See
-[docs/gqe_integration.md](docs/gqe_integration.md).
+Idempotent, verifies the pinned commit (`0a201ea`) before touching
+anything, and writes a stamp the runner checks before spending GPU time.
+`quenais-doctor` catches a reverted patch by comparing that stamp's hash
+against the shipped patch.
+
+See [docs/gqe_integration.md](docs/gqe_integration.md) for what the patch
+does and [docs/gqe_setup.md](docs/gqe_setup.md) for everything about
+getting the stack to run.
 
 ## Notebooks
 
@@ -235,10 +292,13 @@ across machines.
 
 ## Performance
 
-**None of this changes the numbers.** The reference values below have been
+**None of this changes the numbers.** The reference values above have been
 reproduced to 5e-15 Ha on both a hand-built AVX-512 PySCF and a stock
-manylinux wheel, on different CPUs and different PySCF versions. A faster
-build is a speed choice, not a correctness one.
+manylinux wheel, on different CPUs and different PySCF versions. Which
+PySCF build you get is a speed choice, not a correctness one — *except* on
+a CPU without AVX-512, where the wheel does not run at all. That is an
+install-time concern, not a tuning one; see
+[docs/gqe_setup.md](docs/gqe_setup.md#cpu--avx-512-and-pyscf).
 
 In rough order of payoff:
 
@@ -255,20 +315,22 @@ genuine hang risk, not just a slowdown.
 [  ok  ] thread environment    OPENBLAS=1 OMP=24 (from SLURM_CPUS_PER_TASK)
 ```
 
-**A GPU, for GQE.** Set `cfg.gqe.cudaq_target` to `"nvidia"` instead of the
-`"qpp-cpu"` default. `"tensornet"` and `"tensornet-mps"` are also available;
-the latter is approximate. This is applied through the
-`CUDAQ_DEFAULT_SIMULATOR` environment variable, because the external
-trainer never calls `cudaq.set_target()`.
+**A GPU, for GQE.** `install.sh` picks the CUDA-Q target from the GPU's
+compute capability and persists it, so this is usually already right. To
+override, set `cfg.gqe.cudaq_target` — `"nvidia"` needs cc ≥ 8.0,
+`"tensornet"` and `"tensornet-mps"` are also available, the latter
+approximate. Applied through the `CUDAQ_DEFAULT_SIMULATOR` environment
+variable, because the external trainer never calls `cudaq.set_target()`.
 
-**Build PySCF from source.** Only worth it for large active spaces, where
-integral evaluation and DMRG dominate:
+**Rebuild PySCF from source.** On an AVX-512 machine this is optional and
+only worth it for large active spaces, where integral evaluation and DMRG
+dominate:
 
 ```bash
 mamba activate ./quenais-env
-pip uninstall pyscf -y
-pip install --no-binary pyscf pyscf     # 20-30 min; needs cmake, gfortran, openblas
-quenais-selftest                        # confirm the numbers did not move
+QUENAIS_PYSCF_BUILD=source bash install.sh   # or, by hand:
+pip install pyscf==2.11.0 --no-binary pyscf --force-reinstall --no-deps
+quenais-selftest                             # confirm the numbers did not move
 ```
 
 `environment.yml` already provides the toolchain. Re-run the self-test
@@ -315,16 +377,24 @@ quenais/
 ├── config.py            Config; settings groups live in settings/
 ├── _threads.py          thread-count guard, imported before NumPy
 ├── provenance.py        environment block stamped into every result
-├── selftest.py          quenais-selftest
+├── selftest.py          quenais-selftest   -- does the physics reproduce
+├── env_check.py         quenais-doctor     -- will anything run at all
 ├── classical/runner.py  step 0
 ├── active_space/        step 1
 ├── embedding/           step 2 -- hamiltonian.py + side-effect-free dmet_lib.py
 ├── quantum/             step 3 -- solver.py (Qiskit), gqe_*.py (CUDA-Q)
 │   └── _gqe_shims/      top-level module names the external repo imports
-└── visualization/       step 4
-patches/                 the gqe-for-qsci source patch
+├── visualization/       step 4
+└── patches/             the gqe-for-qsci source patch (package_data)
+external/pyci/           submodule: theochem/pyci, built from source
+gqe-for-qsci/            submodule: the external GQE trainer, patched
 tests/regression/golden/ validated reference pickles
 ```
+
+`patches/` lives *inside* the package rather than at the repo root because
+`setup.cfg` ships it as `package_data`. At the root the glob matched
+nothing, so any non-editable install carried no patch at all and
+`quenais-gqe-setup` failed with "Patch not found".
 
 ## Licensing
 
@@ -332,7 +402,11 @@ This package is Apache-2.0.
 
 `gqe-for-qsci` is a third-party project with its own `LICENSE` and
 `NOTICE`. The four DMET integration files are original work implementing
-against its interfaces; `patches/gqe_dmet_source.patch` modifies upstream
-source and redistributes its context lines. **Check upstream's `NOTICE`
-for attribution terms that carry into derived work before publishing to
-PyPI or a public repository.**
+against its interfaces; `quenais/patches/gqe_dmet_source.patch` modifies
+upstream source and redistributes its context lines. **Check upstream's
+`NOTICE` for attribution terms that carry into derived work before
+publishing to PyPI or a public repository.**
+
+`theochem/pyci` is likewise a third-party project carried as a submodule
+with its own license — it is built from source, not vendored, so nothing
+of it is redistributed here.

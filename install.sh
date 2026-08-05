@@ -1,62 +1,114 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+#
+# QuEnAIS installation.
+#
+# Every step below is REQUIRED. Nothing is skipped silently. If a step
+# fails the script exits non-zero and says what to do -- an install that
+# half-works is how this project has repeatedly ended up with plausible,
+# meaningless numbers.
+#
+# What changed from the 0.2 script, and why:
+#   * gqe-for-qsci is no longer "optional". It is initialised, installed,
+#     patched and verified here. The old script printed a warning and
+#     exited 0 when the submodule was empty, which is how people ended up
+#     with a "successful" install that could not run the GQE solver.
+#   * PySCF is built from source when the CPU lacks AVX-512. The prebuilt
+#     wheel's libcgto.so has a non-dispatching AVX-512 codepath and dies
+#     with `Illegal instruction (core dumped)` on Zen 1/Zen 2 and other
+#     non-AVX-512 chips. That was previously a footnote in the docs.
+#   * theochem/pyci is built from source as a submodule (gqe-for-qsci
+#     needs it; the PyPI `pyci`/`qc-PyCI` packages are unrelated projects).
+#   * setuptools is pinned <82 before anything else installs.
+#   * CUDA-Q's MPI plugin is compiled and its env vars persisted into the
+#     conda env, rather than left to a one-off export.
+#
+# Recommended:
+#   mamba env create -f environment.yml -p ./quenais-env
+#   mamba activate ./quenais-env
+#   bash install.sh
+#
+# Overrides (env vars):
+#   QUENAIS_PYSCF_BUILD=source|wheel|auto   default auto (AVX-512 detection)
+#   QUENAIS_CUDAQ_TARGET=qpp-cpu|nvidia|... default auto (GPU cc detection)
+#   QUENAIS_SKIP_SELFTEST=1                 skip the final physics check
+#
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$REPO_ROOT"
+
+TOTAL=16
+step() { printf '\n[%02d/%02d] %s\n' "$1" "$TOTAL" "$2"; }
+ok()   { printf '   ok  %s\n' "$1"; }
+die()  { printf '\nERROR: %s\n' "$1" >&2; exit 1; }
 
 echo "=== QuEnAIS Installation ==="
+echo "    repo: $REPO_ROOT"
 
-# ── Recommended: create environment from environment.yml first ────────────────
-# mamba env create -f environment.yml
-# mamba activate quenais
-# Then run this script.
-# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
+step 1 "Checking system requirements"
 
-# ── Check system requirements ─────────────────────────────────────────────────
-echo "[0/6] Checking system requirements..."
+for cmd in python pip git make; do
+    command -v "$cmd" >/dev/null || die "$cmd not found"
+done
+command -v cargo >/dev/null || die "cargo (Rust) not found.
+  Fix: mamba install -c conda-forge rust
+   or: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+command -v clang >/dev/null || die "clang not found.
+  Fix: mamba install -c conda-forge clang"
+command -v cmake >/dev/null || die "cmake not found.
+  Fix: mamba install -c conda-forge cmake"
+command -v mpicc >/dev/null || die "mpicc not found. gqe-for-qsci needs MPI
+  (mpi4py, and CUDA-Q's distributed interface plugin).
+  Fix: mamba install -c conda-forge openmpi mpi4py
+   or, on a cluster: module load openmpi"
 
-command -v python || { echo "ERROR: python not found"; exit 1; }
-command -v pip    || { echo "ERROR: pip not found"; exit 1; }
-command -v git    || { echo "ERROR: git not found"; exit 1; }
-command -v cargo  || { echo "ERROR: cargo (Rust) not found."; \
-                       echo "  Fix option 1: mamba install -c conda-forge rust"; \
-                       echo "  Fix option 2: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"; \
-                       exit 1; }
-command -v clang  || { echo "ERROR: clang not found."; \
-                       echo "  Fix: mamba install -c conda-forge clang"; \
-                       echo "  OR:  conda install -c conda-forge clang"; \
-                       exit 1; }
+if [ -z "${CONDA_PREFIX:-}" ]; then
+    die "CONDA_PREFIX is not set. Activate the conda/mamba environment first:
+  mamba env create -f environment.yml -p ./quenais-env
+  mamba activate ./quenais-env"
+fi
 
-PYTHON_VERSION=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-echo "  Python $PYTHON_VERSION"
+PY_VER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+SITE_PACKAGES=$(python -c "import sysconfig; print(sysconfig.get_paths()['purelib'])")
+ok "python $PY_VER  ($CONDA_PREFIX)"
 
-# ── Step 1: Base dependencies ─────────────────────────────────────────────────
-# numpy/scipy MUST be installed before pyscf compiles
-echo "[1/6] Installing base dependencies..."
+# ─────────────────────────────────────────────────────────────────────────
+step 2 "Pinning setuptools <82"
+# setuptools >=82.0.0 (Feb 2026) removed pkg_resources outright. tequila and
+# several other deps still import it, so the pin has to land BEFORE anything
+# that would pull a newer setuptools in.
+pip install "setuptools<82" wheel
+ok "setuptools $(python -c 'import setuptools; print(setuptools.__version__)')"
+
+# ─────────────────────────────────────────────────────────────────────────
+step 3 "Installing base dependencies"
+# numpy/scipy must exist before pyscf or block2 compile against them.
 pip install -r requirements-base.txt
-echo "  ✓ base done"
+ok "base"
 
-# ── Step 2: Quantum dependencies ──────────────────────────────────────────────
-# pyscf, qiskit, ffsim etc.
-echo "[2/6] Installing quantum dependencies..."
+# ─────────────────────────────────────────────────────────────────────────
+step 4 "Installing quantum dependencies"
 pip install -r requirements-quantum.txt
-echo "  ✓ quantum done"
+ok "quantum"
 
-# ── Step 3: Generate block2 wrapper ──────────────────────────────────────────
-echo "[3/6] Generating block2 wrapper..."
+# ─────────────────────────────────────────────────────────────────────────
+step 5 "Generating block2 wrapper"
 
 BLOCK2_DIR=$(python -c "import block2, os; print(os.path.dirname(block2.__file__))")
 BLOCK2_LIBS="${BLOCK2_DIR}.libs"
 BLOCK2MAIN=$(python -c "import sys, os; print(os.path.join(os.path.dirname(sys.executable), 'block2main'))")
-WRAPPER_PATH="$HOME/block2main_wrapper.sh"
+WRAPPER_PATH="${QUENAIS_BLOCK2_WRAPPER:-$HOME/block2main_wrapper.sh}"
 
-CPU_VENDOR=$(grep -m1 'vendor_id' /proc/cpuinfo 2>/dev/null | awk '{print $3}')
-echo "  CPU vendor: ${CPU_VENDOR:-unknown}"
+CPU_VENDOR=$(grep -m1 'vendor_id' /proc/cpuinfo 2>/dev/null | awk '{print $3}' || true)
+echo "   CPU vendor: ${CPU_VENDOR:-unknown}"
 
 if [ "$CPU_VENDOR" = "AuthenticAMD" ]; then
-    echo "  AMD CPU detected — applying MKL workaround"
+    echo "   AMD CPU -- applying MKL threading workaround"
     cat > "$WRAPPER_PATH" << WRAPPER
 #!/bin/bash
-# Auto-generated by QuEnAIS install.sh — AMD MKL workaround
+# Auto-generated by QuEnAIS install.sh -- AMD MKL workaround
 BLOCK2_LIBS=${BLOCK2_LIBS}
-
 export LD_PRELOAD="\
 \$BLOCK2_LIBS/libgomp-a34b3233.so.1.0.0:\
 \$BLOCK2_LIBS/libmkl_avx2.so.1:\
@@ -64,98 +116,245 @@ export LD_PRELOAD="\
 \$BLOCK2_LIBS/libmkl_core-a1f8e95a.so.1:\
 \$BLOCK2_LIBS/libmkl_gnu_thread-76126a9d.so.1:\
 \$BLOCK2_LIBS/libmkl_intel_lp64-eeafede9.so.1"
-
 export MKL_THREADING_LAYER=GNU
 export MKL_DEBUG_CPU_TYPE=5
 export LD_LIBRARY_PATH=\$BLOCK2_LIBS:\$LD_LIBRARY_PATH
-
 exec ${BLOCK2MAIN} "\$@"
 WRAPPER
 else
-    echo "  Intel/other CPU — simple wrapper"
     cat > "$WRAPPER_PATH" << WRAPPER
 #!/bin/bash
 # Auto-generated by QuEnAIS install.sh
 exec ${BLOCK2MAIN} "\$@"
 WRAPPER
 fi
-
 chmod +x "$WRAPPER_PATH"
-echo "  ✓ block2 wrapper → $WRAPPER_PATH"
+ok "block2 wrapper -> $WRAPPER_PATH"
 
-# ── Step 4: Install ASF ───────────────────────────────────────────────────────
-echo "[4/6] Installing ASF (Active Space Finder)..."
+# ─────────────────────────────────────────────────────────────────────────
+step 6 "Installing ASF (Active Space Finder)"
 ASF_TMP=$(mktemp -d)
-git clone https://github.com/HQSquantumsimulations/ActiveSpaceFinder.git "$ASF_TMP"
+QF_TMP=""
+trap 'rm -rf "${ASF_TMP:-}" "${QF_TMP:-}"' EXIT
+git clone --depth 1 https://github.com/HQSquantumsimulations/ActiveSpaceFinder.git "$ASF_TMP"
 pip install "$ASF_TMP"
 "$ASF_TMP/init_dmrgscf_settings.sh"
-rm -rf "$ASF_TMP"
-echo "  ✓ ASF installed"
+ok "asf"
 
-# ── Step 5: Install qiskit-fermions ──────────────────────────────────────────
-echo "[5/6] Installing qiskit-fermions (Rust compilation)..."
+# ─────────────────────────────────────────────────────────────────────────
+step 7 "Installing qiskit-fermions (Rust build)"
 QF_TMP=$(mktemp -d)
-git clone https://github.com/Qiskit/qiskit-fermions.git "$QF_TMP"
-cd "$QF_TMP"
-pip install --group build
-pip install --no-build-isolation .
-cd -
-rm -rf "$QF_TMP"
-echo "  ✓ qiskit-fermions installed"
+( cd "$QF_TMP" \
+  && git clone --depth 1 https://github.com/Qiskit/qiskit-fermions.git . \
+  && pip install --group build \
+  && pip install --no-build-isolation . )
+ok "qiskit-fermions"
 
-# ── Step 6: Install quenais ───────────────────────────────────────────────────
-echo "[6/7] Installing quenais..."
-cd "$(dirname "$0")"
-pip install -e ".[qiskit]"
-echo "  ✓ quenais installed"
+# ─────────────────────────────────────────────────────────────────────────
+step 8 "Initialising submodules (pyci, gqe-for-qsci)"
+# These are REQUIRED. The 0.2 script treated gqe-for-qsci as optional and
+# exited 0 without it -- producing an install that reported success and
+# could not run the GQE solver.
+git submodule sync --recursive
+git submodule update --init --recursive \
+  || die "git submodule update failed.
+  If this checkout was downloaded as a zip rather than cloned, the
+  submodules are not present and cannot be fetched. Clone instead:
+    git clone --recurse-submodules <repo-url>"
 
-# ── Step 7: Prepare the GQE submodule (optional) ──────────────────────────────
-# The CUDA-Q solver needs a patched gqe-for-qsci checkout. Skipped silently
-# when the submodule is absent -- the Qiskit path does not need it.
-echo "[7/7] Preparing the GQE submodule..."
+[ -f external/pyci/setup.py ] || [ -f external/pyci/Makefile ] \
+  || die "external/pyci is empty after submodule init.
+  Expected theochem/pyci (NOT the unrelated 'pyci'/'qc-PyCI' on PyPI).
+  Check .gitmodules, then: git submodule update --init --recursive"
+[ -f gqe-for-qsci/train.py ] \
+  || die "gqe-for-qsci is empty after submodule init.
+  Check .gitmodules, then: git submodule update --init --recursive"
+ok "submodules present"
 
-if [ -d "gqe-for-qsci/.git" ] || [ -f "gqe-for-qsci/train.py" ]; then
-    if quenais-gqe-setup --repo ./gqe-for-qsci; then
-        echo "  ✓ gqe-for-qsci patched"
-    else
-        echo "  ! gqe-for-qsci could not be prepared -- the GQE solver will"
-        echo "    not run. The Qiskit solvers are unaffected."
-    fi
+# ─────────────────────────────────────────────────────────────────────────
+step 9 "Building theochem/pyci from source"
+# theochem/pyci has no usable wheel and is not the PyPI package of the same
+# name. It must be compiled here.
+( cd external/pyci && make && pip install --no-deps . )
+python -c "import pyci; print('   pyci ->', getattr(pyci, '__file__', '?'))"
+ok "pyci"
+
+# ─────────────────────────────────────────────────────────────────────────
+step 10 "Installing quenais (all extras)"
+pip install -e ".[all]"
+ok "quenais"
+
+# ─────────────────────────────────────────────────────────────────────────
+step 11 "Installing gqe-for-qsci"
+# --no-deps on purpose: gqe-for-qsci pins qiskit==2.0.0, which would
+# downgrade the 2.4.x this pipeline needs for qiskit-fermions and
+# qiskit-ibm-runtime. Verified upstream never imports qiskit -- the pin is
+# dead. Its real deps are declared in quenais's [cudaq] extra instead, so
+# step 10 has already installed them.
+pip install --no-deps -e ./gqe-for-qsci
+ok "gqe-for-qsci (--no-deps; its qiskit==2.0.0 pin is unused upstream)"
+
+# ─────────────────────────────────────────────────────────────────────────
+step 12 "Patching gqe-for-qsci"
+# Three files: factory.py (registers the dmet_* pools), sampler.py (makes
+# sampler.mpi authoritative -- without it a single-process run crashes on
+# an unpicklable cudaq.SampleResult), train_pipeline.py (prints the per-
+# epoch metrics the visualisation stage parses).
+quenais-gqe-setup --repo ./gqe-for-qsci \
+  || die "gqe-for-qsci could not be patched. The GQE solver will not run.
+  Diagnose with:
+    quenais-gqe-setup --repo ./gqe-for-qsci --verify-only
+  See docs/gqe_setup.md."
+ok "gqe-for-qsci patched"
+
+# ─────────────────────────────────────────────────────────────────────────
+step 13 "Building the CUDA-Q MPI plugin"
+# CUDA-Q ships this uncompiled. Without it, anything MPI-aware fails with
+#   RuntimeError: Unable to open distributed interface library
+#                 ...libcudaq_distributed_interface_mpi.so
+MPI_ACTIVATE="$SITE_PACKAGES/distributed_interfaces/activate_custom_mpi.sh"
+if [ -f "$MPI_ACTIVATE" ]; then
+    MPI_PATH="$CONDA_PREFIX" bash "$MPI_ACTIVATE" \
+      || die "activate_custom_mpi.sh failed. Check that mpicc points into the
+  conda env: $(command -v mpicc). See docs/gqe_setup.md."
+    ok "cudaq MPI plugin built"
 else
-    echo "  - gqe-for-qsci not present, skipping."
-    echo "    For the GQE solver: git submodule update --init --recursive"
-    echo "    then: quenais-gqe-setup --repo ./gqe-for-qsci"
+    die "CUDA-Q's distributed_interfaces/ was not found under $SITE_PACKAGES.
+  cudaq is installed but incomplete -- reinstall it: pip install -U cudaq"
 fi
 
-# ── Verify ────────────────────────────────────────────────────────────────────
-echo ""
-echo "=== Verifying Installation ==="
-python -c "import quenais;                              print('  ✓ quenais')"
-python -c "import pyscf;                                print('  ✓ pyscf')"
-python -c "import block2;                               print('  ✓ block2')"
-python -c "import qiskit;                               print('  ✓ qiskit')"
-python -c "import qiskit_aer;                           print('  ✓ qiskit-aer')"
-python -c "import qiskit_addon_sqd;                     print('  ✓ qiskit-addon-sqd')"
-python -c "import ffsim;                                print('  ✓ ffsim')"
-python -c "from asf.wrapper import find_from_scf;       print('  ✓ asf')"
-python -c "from qiskit_fermions.circuit import FermionicCircuit; print('  ✓ qiskit-fermions')"
+# Persist, so they survive future activations. A bare export does not.
+conda env config vars set -p "$CONDA_PREFIX" \
+    LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}" \
+    MPI_PATH="$CONDA_PREFIX" >/dev/null
+ok "LD_LIBRARY_PATH and MPI_PATH persisted to the env"
 
-# ── Self-test: does the physics reproduce? ────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────
+step 14 "Selecting the CUDA-Q simulator target"
+# cuQuantum/cuStateVec needs compute capability >= 8.0. On a TITAN V
+# (Volta, cc 7.0) the nvidia target dies with "architecture mismatch".
+CUDAQ_TARGET="${QUENAIS_CUDAQ_TARGET:-auto}"
+if [ "$CUDAQ_TARGET" = "auto" ]; then
+    CC=$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | head -1 || true)
+    if [ -z "$CC" ]; then
+        CUDAQ_TARGET=qpp-cpu; echo "   no GPU detected"
+    elif [ "$(printf '%s\n8.0\n' "$CC" | sort -g | head -1)" = "8.0" ]; then
+        CUDAQ_TARGET=nvidia;  echo "   GPU compute capability $CC"
+    else
+        CUDAQ_TARGET=qpp-cpu; echo "   GPU compute capability $CC is below 8.0 (cuQuantum unsupported)"
+    fi
+fi
+conda env config vars set -p "$CONDA_PREFIX" \
+    CUDAQ_DEFAULT_SIMULATOR="$CUDAQ_TARGET" \
+    WANDB_MODE="${WANDB_MODE:-offline}" >/dev/null
+export CUDAQ_DEFAULT_SIMULATOR="$CUDAQ_TARGET"
+export WANDB_MODE="${WANDB_MODE:-offline}"
+ok "CUDAQ_DEFAULT_SIMULATOR=$CUDAQ_TARGET, WANDB_MODE=$WANDB_MODE"
+
+# ─────────────────────────────────────────────────────────────────────────
+step 15 "Installing PySCF for this CPU"
+# LAST, deliberately: every earlier pip step could otherwise replace a
+# source build with a wheel.
+#
+# PySCF's prebuilt libcgto.so takes an AVX-512 codepath WITHOUT runtime CPU
+# dispatch (unlike numpy/OpenBLAS). On a CPU without AVX-512 the first
+# integral call is `Illegal instruction (core dumped)` -- confirmed on
+# Threadripper 1920X (Zen 1) and EPYC 7402 (Zen 2).
+PYSCF_BUILD="${QUENAIS_PYSCF_BUILD:-auto}"
+if [ "$PYSCF_BUILD" = "auto" ]; then
+    if grep -qo 'avx512' /proc/cpuinfo 2>/dev/null; then
+        PYSCF_BUILD=wheel
+        echo "   AVX-512: present ($(grep -o 'avx512[a-z]*' /proc/cpuinfo | sort -u | tr '\n' ' '))"
+    else
+        PYSCF_BUILD=source
+        echo "   AVX-512: ABSENT -- the prebuilt wheel would SIGILL here"
+    fi
+fi
+
+if [ "$PYSCF_BUILD" = "source" ]; then
+    echo "   building pyscf from source (this takes 10-20 minutes)"
+    # --no-deps so nothing else in the env is disturbed. Safe alongside
+    # pyscf-dmrgscf / openfermionpyscf: neither pins pyscf tightly.
+    pip install "pyscf==2.11.0" --no-binary pyscf --force-reinstall --no-deps
+else
+    pip install "pyscf>=2.4"
+fi
+python -c "from pyscf import gto, scf; m = gto.M(atom='H 0 0 0; H 0 0 0.74', basis='sto-3g', verbose=0); scf.RHF(m).run()" >/dev/null \
+  || die "PySCF crashed on a trivial H2 SCF. If this was 'Illegal instruction',
+  force the source build:  QUENAIS_PYSCF_BUILD=source bash install.sh"
+ok "pyscf $(python -c 'import pyscf; print(pyscf.__version__)') ($PYSCF_BUILD)"
+
+# ─────────────────────────────────────────────────────────────────────────
+step 16 "Verifying"
+
+python - <<'PY'
+import importlib, os, sys
+checks = [
+    ("quenais",                 "quenais"),
+    ("pyscf",                   "pyscf"),
+    ("block2",                  "block2"),
+    ("qiskit",                  "qiskit"),
+    ("qiskit_aer",              "qiskit-aer"),
+    ("qiskit_addon_sqd",        "qiskit-addon-sqd"),
+    ("ffsim",                   "ffsim"),
+    ("openfermion",             "openfermion"),
+    ("asf.wrapper",             "asf"),
+    ("qiskit_fermions.circuit", "qiskit-fermions"),
+    ("pyci",                    "pyci (theochem)"),
+    ("cudaq",                   "cudaq"),
+    ("torch",                   "torch"),
+    ("pytorch_lightning",       "pytorch-lightning"),
+    ("hydra",                   "hydra-core"),
+    ("tequila",                 "tequila"),
+    ("wandb",                   "wandb"),
+    ("mpi4py",                  "mpi4py"),
+    ("gqe_qsci",                "gqe-for-qsci"),
+    ("dmet_excitation_pool",    "dmet pool shim"),
+    ("dmet_molecule_adapter",   "dmet adapter shim"),
+]
+sys.path.insert(0, os.path.join(
+    os.path.dirname(importlib.import_module("quenais").__file__),
+    "quantum", "_gqe_shims"))
+bad = []
+for mod, label in checks:
+    try:
+        importlib.import_module(mod)
+        print(f"   ok  {label}")
+    except Exception as exc:
+        print(f"  FAIL {label}: {type(exc).__name__}: {exc}")
+        bad.append(label)
+if bad:
+    print("\nMissing or broken: " + ", ".join(bad))
+    sys.exit(1)
+PY
+
 echo ""
-echo "=== Self-test ==="
-echo "Running LiH end to end against known-good values."
-echo "If this fails, the install is not sound -- do not trust later results."
-echo ""
-quenais-selftest || {
+echo "=== Environment doctor ==="
+quenais-doctor || die "quenais-doctor reported problems -- see above and docs/gqe_setup.md"
+
+if [ "${QUENAIS_SKIP_SELFTEST:-0}" != "1" ]; then
     echo ""
-    echo "  ! SELF-TEST FAILED. Attach the output above to a bug report --"
-    echo "    it identifies which quantity drifted."
-    exit 1
-}
+    echo "=== Self-test ==="
+    echo "Running LiH end to end against known-good values."
+    echo "If this fails the install is not sound -- do not trust later results."
+    quenais-selftest || die "SELF-TEST FAILED. Attach the output above to a bug
+  report -- it identifies which quantity drifted."
+fi
 
-echo ""
-echo "=== Installation Complete ==="
-echo "  block2 wrapper : $WRAPPER_PATH"
-echo "  Run pipeline   : quenais-run --help"
-echo "  Verify anytime : quenais-selftest"
-echo "  Notebooks      : notebooks/01_quickstart.ipynb"
+cat <<EOF
+
+=== Installation Complete ===
+  block2 wrapper  : $WRAPPER_PATH
+  pyscf build     : $PYSCF_BUILD
+  cudaq target    : $CUDAQ_TARGET
+  gqe-for-qsci    : ./gqe-for-qsci (patched)
+
+  IMPORTANT: reactivate the environment once, so the persisted variables
+  (LD_LIBRARY_PATH, MPI_PATH, CUDAQ_DEFAULT_SIMULATOR, WANDB_MODE) take
+  effect:
+      mamba deactivate && mamba activate $CONDA_PREFIX
+
+  Run pipeline    : quenais-run --help
+  Verify anytime  : quenais-doctor && quenais-selftest
+  Notebooks       : notebooks/01_quickstart.ipynb
+EOF

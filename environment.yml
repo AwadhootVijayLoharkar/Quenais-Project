@@ -7,29 +7,47 @@
 # A local path (-p) rather than --name avoids read-only errors on shared
 # and HPC systems where the default conda envs directory is not writable.
 #
-# NOTE ON PySCF: this installs a stock manylinux wheel, which is correct
-# but does not use the CPU's vector extensions. Verified: the wheel and a
-# hand-built AVX-512 PySCF give identical energies to 5e-15 Ha, so this is
-# a speed choice only. See the Performance section of the README.
+# This file installs the *toolchain and conda-only* pieces. It deliberately
+# does NOT install pyscf, cudaq, torch or gqe-for-qsci -- install.sh owns
+# those, because each needs a decision this file cannot make:
 #
-# If you have already built PySCF yourself, install the package with
-#     pip install -e . --no-deps
-# so pip does not replace it.
+#   pyscf  : wheel or source build, depending on whether the CPU has
+#            AVX-512 (the wheel SIGILLs without it).
+#   cudaq  : which simulator target, depending on GPU compute capability,
+#            plus a locally compiled MPI plugin.
+#   gqe    : submodule init + source patch.
+#
+# Everything the GQE solver needs is now MANDATORY. There is no
+# Qiskit-only path through install.sh any more.
 
 channels:
   - conda-forge
 
 dependencies:
   - python=3.11
-  - pip
 
-  # Toolchain: PySCF and block2 compile C/Fortran extensions,
-  # ffsim and qiskit-fermions compile Rust.
+  # setuptools<82 -- 82.0.0 removed pkg_resources, which tequila and other
+  # deps still import. Pinned here as well as in setup.cfg so the ceiling
+  # holds from the moment the env exists.
+  - pip
+  - setuptools<82
+
+  # Toolchain: PySCF and block2 compile C/Fortran extensions, theochem/pyci
+  # compiles C++, ffsim and qiskit-fermions compile Rust.
   - clang
+  - cxx-compiler
   - cmake
+  - make
   - openblas
   - gfortran
   - rust
+
+  # MPI. mpi4py and CUDA-Q's distributed-interface plugin must link the
+  # SAME libmpi -- installing both from conda-forge here is what guarantees
+  # that. Mixing a conda mpi4py with a system MPI is the ABI mismatch
+  # described in docs/gqe_setup.md.
+  - openmpi
+  - mpi4py>=3.1
 
   # Scientific base -- installed before PySCF compiles against them.
   - numpy>=1.24
@@ -44,10 +62,8 @@ dependencies:
   - pytest>=7.4
 
   - pip:
-    - pyscf>=2.4
-
     # Qiskit solver family -- quenais[qiskit]
-    - qiskit>=1.0
+    - qiskit>=1.0,<3
     - qiskit-aer>=0.14
     - qiskit-addon-sqd>=0.5
     - ffsim>=0.0.50
@@ -56,9 +72,12 @@ dependencies:
     # block2, for the active-space finder's DMRG backend
     - block2==0.5.2
 
-# The CUDA-Q solver family (quenais[cudaq]) is NOT installed here: cudaq
-# and torch are large, GPU-specific, and unnecessary for the Qiskit path.
-# Install separately when you want it:
-#     pip install -e ".[cudaq]"
-#     git submodule update --init --recursive
-#     quenais-gqe-setup --repo ./gqe-for-qsci
+# After `mamba env create`, run install.sh. It will:
+#   git submodule update --init --recursive   (external/pyci, gqe-for-qsci)
+#   build theochem/pyci from source
+#   pip install -e ".[all]"                   (adds cudaq/torch/tequila/...)
+#   pip install --no-deps -e ./gqe-for-qsci
+#   quenais-gqe-setup --repo ./gqe-for-qsci
+#   build the CUDA-Q MPI plugin and persist LD_LIBRARY_PATH / MPI_PATH
+#   install pyscf (source build if this CPU lacks AVX-512)
+#   quenais-doctor && quenais-selftest

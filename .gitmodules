@@ -1,3 +1,13 @@
+### Save this file as `.gitmodules` at the repo root. ###
+
 [submodule "gqe-for-qsci"]
 	path = gqe-for-qsci
 	url = https://github.com/moken20/gqe-for-qsci.git
+
+# theochem/pyci. Required by gqe-for-qsci and source-build only -- there is
+# no usable wheel. NOT the same project as the `pyci` or `qc-PyCI` packages
+# on PyPI; installing either of those instead produces confusing import
+# errors rather than a clean failure.
+[submodule "external/pyci"]
+	path = external/pyci
+	url = https://github.com/theochem/pyci.git

@@ -63,8 +63,33 @@ PATCHED_FILES = (
 #: Written into the repo after a successful apply, holding the patch hash.
 STAMP_NAME = ".quenais_patch_applied"
 
+def _find_patch():
+    """
+    Locate the shipped patch.
+
+    It lives in quenais/patches/, which is what setup.cfg's package_data
+    entry (`quenais = patches/*.patch`) actually matches. Before 0.3 the
+    directory sat at the repo ROOT while package_data still said
+    `patches/*.patch`, so the glob matched nothing and every non-editable
+    install shipped without it -- surfacing much later as "Patch not
+    found" from quenais-gqe-setup.
+
+    The repo-root location is checked second, so a checkout that has not
+    moved the directory yet keeps working.
+    """
+    here = Path(__file__).resolve()
+    candidates = (
+        here.parents[1] / "patches" / "gqe_dmet_source.patch",  # quenais/patches
+        here.parents[2] / "patches" / "gqe_dmet_source.patch",  # legacy: repo root
+    )
+    for path in candidates:
+        if path.exists():
+            return path
+    return candidates[0]  # canonical location, for the error message
+
+
 #: Shipped patch location.
-PATCH_PATH = Path(__file__).resolve().parents[2] / "patches" / "gqe_dmet_source.patch"
+PATCH_PATH = _find_patch()
 
 
 def _git(args, cwd):
