@@ -140,7 +140,19 @@ class GqeSettings:
     # ── Backend ──────────────────────────────────────────────────────────
     #: Applied via the CUDAQ_DEFAULT_SIMULATOR environment variable, not a
     #: Hydra key: the external repo never calls cudaq.set_target().
-    cudaq_target: str = "qpp-cpu"
+    #:
+    #: Defaults to whatever CUDAQ_DEFAULT_SIMULATOR already says, which
+    #: install.sh sets from the GPU's compute capability ("nvidia" at
+    #: cc>=8.0, "qpp-cpu" otherwise) and persists into the environment.
+    #: Falling back to a hardcoded "qpp-cpu" meant build_env() overwrote
+    #: that detection on every run, so `quenais-run --solver gqe` never
+    #: used the GPU simulator no matter the hardware.
+    #:
+    #: An explicit value still wins -- this is a default, not an override.
+    cudaq_target: str = field(
+        default_factory=lambda: os.environ.get(
+            "CUDAQ_DEFAULT_SIMULATOR", "qpp-cpu")
+    )
 
     #: Extra raw Hydra overrides, appended last so they win.
     extra_overrides: list = field(default_factory=list)
