@@ -1,88 +1,35 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cd ~/quenais-standalone/Quenais-Project
-
-pip install "pyscf>=2.12" --no-binary pyscf --force-reinstall --no-deps
-
-python -c "
-import pyscf, pathlib
-p = pathlib.Path(pyscf.__file__).parent / 'lib' / 'numpy_helper.py'
-print('pyscf', pyscf.__version__)
-print('numpy 2.4 fix present:', 'numpy 2.4.0 changes the einsum_path' in p.read_text())
-"
-Collecting pyscf>=2.12
-  Downloading pyscf-2.14.0.tar.gz (11.6 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.6/11.6 MB 18.7 MB/s  0:00:00
-  Installing build dependencies ... done
-  Getting requirements to build wheel ... done
-  Preparing metadata (pyproject.toml) ... done
-Building wheels for collected packages: pyscf
-  Building wheel done
-  Created wheel for pyscf: filename=pyscf-2.14.0-py3-none-linux_x86_64.whl size=73906534 sha256=f871de29d6d86ed7eb2fe6f591667b88faa8826caa955dc106c94fe17f5f39ec
-  Stored in directory: /home/loharkar/.cache/pip/wheels/8b/41/a7/2747509e6c370fd0518a783c9b3e0210e1d1929fdba3cb9670
-Successfully built pyscf
-Installing collected packages: pyscf
-  Attempting uninstall: pyscf
-    Found existing installation: pyscf 2.11.0
-    Uninstalling pyscf-2.11.0:
-      Successfully uninstalled pyscf-2.11.0
-Successfully installed pyscf-2.14.0
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python -c "
-import pyscf, pathlib
-p = pathlib.Path(pyscf.__file__).parent / 'lib' / 'numpy_helper.py'
-print('pyscf', pyscf.__version__)
-print('numpy 2.4 fix present:', 'numpy 2.4.0 changes the einsum_path' in p.read_text())
-"
-pyscf 2.14.0
-numpy 2.4 fix present: True
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ pip install -U numpy
-Requirement already satisfied: numpy in ./quenais-env/lib/python3.11/site-packages (2.2.6)
-Collecting numpy
-  Using cached numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
-Using cached numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
-Installing collected packages: numpy
-  Attempting uninstall: numpy
-    Found existing installation: numpy 2.2.6
-    Uninstalling numpy-2.2.6:
-      Successfully uninstalled numpy-2.2.6
-Successfully installed numpy-2.4.6
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-doctor 
+(base) [loharkar@makaria10:quenais-standalone]$ cd Quenais-Project/
+(base) [loharkar@makaria10:Quenais-Project]$ mamba activate ./quenais-env/
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria10:Quenais-Project]$ git pull
+remote: Enumerating objects: 15, done.
+remote: Counting objects: 100% (15/15), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 8 (delta 6), reused 8 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (8/8), 3.79 KiB | 28.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+   8b9925d..3f2d295  main       -> origin/main
+Updating 8b9925d..3f2d295
+Fast-forward
+ docs/gqe_setup.md    | 48 ++++++++++++++++++++++++++++++++++++++++++++++++
+ install.sh           | 19 ++++++++++++++++---
+ quenais/env_check.py | 55 +++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ setup.cfg            | 12 +++++++++++-
+ 4 files changed, 128 insertions(+), 6 deletions(-)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria10:Quenais-Project]$ quenais-doctor 
 quenais-doctor  --  python 3.11.15 on Linux-5.15.0-186-generic-x86_64-with-glibc2.41
 
 [  ok  ] CPU AVX-512                            absent, but PySCF was built from source
-[  ok  ] GPU                                    NVIDIA A100-SXM4-40GB (cc 8.0)
+[  ok  ] GPU                                    NVIDIA GeForce RTX 4070 Ti SUPER (cc 8.9)
 [  ok  ] setuptools                             81.0.0, pkg_resources importable
-[ warn ] CUDAQ_DEFAULT_SIMULATOR                not set
-           -> CUDA-Q reads this at import; setting it inside a script is
-           -> too late. quenais sets it for the training subprocess from
-           -> cfg.gqe.cudaq_target, but set it in the shell for anything
-           -> you launch by hand.
+[  ok  ] CUDAQ_DEFAULT_SIMULATOR                nvidia
 [  ok  ] WANDB_MODE                             disabled
 [  ok  ] MPI ABI                                both link libmpi.so.40.40.7
 [  ok  ] required packages                      all 13 importable
+[  ok  ] numpy/pyscf einsum                     pyscf 2.14.0 / numpy 2.4.6
 [  ok  ] torch/cudaq coexistence                torch -> pytorch_lightning -> gqe_qsci -> cudaq
 [  ok  ] GQE shims                              dmet_excitation_pool, dmet_molecule_adapter
 [  ok  ] shipped patch                          /home/loharkar/quenais-standalone/Quenais-Project/quenais/patches/gqe_dmet_source.patch
 [  ok  ] gqe-for-qsci checkout                  patched at /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
 
-10 ok, 1 warnings, 0 failures
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-selftest 
-
-QuEnAIS self-test -- LiH
-==================================================================
-[  ok  ] thread environment                           OPENBLAS=1 OMP=1 (from SLURM_CPUS_PER_TASK)
-[  ok  ] HF energy                                    -7.862026959 Ha  (delta 5.3e-15)
-[  ok  ] MP2 energy                                   -7.874890917 Ha  (delta 8.1e-12)
-[  ok  ] CCSD energy                                  -7.882392917 Ha  (delta 4.4e-15)
-[  ok  ] active space                                 (2e, 2o) MOs=[1, 2]
-[  ok  ] step 1 provides dm_ao_alpha_mp2              required by the embedding stage
-[  ok  ] step 1 provides dm_ao_beta_mp2               required by the embedding stage
-[  ok  ] bath orbital count                           2 (expected 2)
-[  ok  ] embedded electron count                      (2a, 2b) -- from the reference density, not the active space
-[  ok  ] ecore                                        -5.010051310 Ha  (delta 5.9e-11)
-[  ok  ] embedded SCF vs full UHF                     delta -3.23e-09 Ha  (tol 2e-07)
-
-==================================================================
-  11 passed, 0 failed, 0 skipped
-
-  Install looks sound.
-==================================================================
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+12 ok, 0 warnings, 0 failures
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria10:Quenais-Project]$ 
