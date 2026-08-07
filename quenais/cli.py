@@ -77,6 +77,26 @@ def build_parser():
         "--dmet-reference", default="casci", choices=["casci", "mp2"],
         help="reference density for the Schmidt decomposition",
     )
+    # Mirrors METHOD_TIERS in quenais.classical.runner. Hardcoded rather
+    # than imported because that module pulls in PySCF, and building the
+    # parser must stay cheap enough for --help to work anywhere.
+    #
+    # Config defaults to ["HF", "MP2"] and there was no way to change that
+    # from the command line at all, so every quenais-run produced a
+    # two-row results table while the README advertised six methods.
+    #
+    # Note "CCSD_T", not "CCSD(T)" -- parentheses would need quoting.
+    parser.add_argument(
+        "--classical-methods", nargs="+", default=None,
+        choices=["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "NEVPT2"],
+        help="step 0 reference methods (default: HF MP2). CASSCF and "
+             "NEVPT2 reuse step 1's active space IF step 1 has already "
+             "run -- on a first pass they fall back to a guess and warn. "
+             "For meaningful values, run steps 0 1 2 first, then re-run "
+             "step 0 with --force. Both are labelled "
+             "'optimizer-dependent' in results_summary.csv: they are not "
+             "reproducible to tight tolerance across machines.",
+    )
 
     # ── GQE solver (--solver gqe) ────────────────────────────────────────
     gqe = parser.add_argument_group(
@@ -169,6 +189,8 @@ def build_config(args):
         project_dir=os.path.abspath(args.project_dir),
         geometry=args.geometry,
         xyz=args.xyz,
+        # None lets Config apply its own ["HF", "MP2"] default.
+        classical_methods=args.classical_methods,
         asf=AsfSettings(force_active_space=args.force_active_space),
         dmet=DmetSettings(reference=args.dmet_reference),
         qiskit=QiskitSolverSettings(
