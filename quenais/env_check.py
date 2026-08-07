@@ -339,6 +339,57 @@ def check_imports(rep):
         rep.add(PASS, "required packages", f"all {len(_REQUIRED)} importable")
 
 
+def check_einsum(rep):
+    """
+    Run a three-operand pyscf.lib.einsum. Two lines, catches a whole class
+    of numpy/pyscf version skew.
+
+    NumPy 2.4.0 changed numpy.einsum_path's contraction tuples from 5
+    elements to 3. PySCF's lib.einsum unpacked 4 of them unconditionally,
+    so on numpy>=2.4 any three-operand contraction died with
+
+        ValueError: not enough values to unpack (expected 4, got 3)
+
+    PySCF handles both shapes from 2.12 on.
+
+    Worth checking explicitly because of HOW it failed: two-operand
+    contractions take a different code path, so HF, MP2 and CCSD all
+    passed cleanly and the break only appeared inside ASF's DFUMP2
+    natural-orbital step -- four stages into a pipeline run, in a
+    third-party library, with nothing in the message naming numpy.
+    """
+    try:
+        import numpy as np
+        import pyscf
+        from pyscf import lib
+    except Exception as exc:
+        rep.add(FAIL, "numpy/pyscf einsum", f"{type(exc).__name__}: {exc}")
+        return
+
+    versions = f"pyscf {pyscf.__version__} / numpy {np.__version__}"
+    try:
+        a = np.ones((3, 3))
+        lib.einsum("xp,xy,yq->pq", a, a, a)
+    except ValueError as exc:
+        if "not enough values to unpack" in str(exc):
+            rep.add(FAIL, "numpy/pyscf einsum", versions,
+                    "This pyscf predates numpy 2.4's einsum_path change.\n"
+                    "HF/MP2/CCSD will still pass; the active-space stage\n"
+                    "will not.\n"
+                    "  pip install 'pyscf>=2.12' --no-binary pyscf "
+                    "--force-reinstall --no-deps\n"
+                    "or, to stay on this pyscf:  pip install 'numpy<2.4'")
+        else:
+            rep.add(FAIL, "numpy/pyscf einsum", f"{versions}: {exc}")
+        return
+    except Exception as exc:
+        rep.add(FAIL, "numpy/pyscf einsum",
+                f"{versions}: {type(exc).__name__}: {exc}")
+        return
+
+    rep.add(PASS, "numpy/pyscf einsum", versions)
+
+
 def check_llvm_order(rep):
     """
     Import the torch and cudaq families together, in the order train.py
@@ -440,8 +491,8 @@ def run_checks(repo=None, verbose=True):
     rep = Report(verbose=verbose)
     for fn in (check_avx512, check_gpu, check_setuptools,
                check_cudaq_target, check_wandb, check_mpi,
-               check_imports, check_llvm_order, check_shims,
-               check_patch_shipped):
+               check_imports, check_einsum, check_llvm_order,
+               check_shims, check_patch_shipped):
         try:
             fn(rep)
         except Exception as exc:                      # never crash the doctor

@@ -273,6 +273,54 @@ uses the right one; this only bites when overriding by hand.
 | 12 | `quenais-gqe-setup`: "Patch not found" | `patches/` sat at the repo root while `package_data` looked under `quenais/` | patch moved to `quenais/patches/` |
 | 13 | Run hangs at logger construction | `R-CASCI` reference key triggers full FCI over the embedding space | drop the key; the runner warns above `n_emb > 14` |
 | 14 | `Option 'debug-counter' registered more than once!` + `Aborted (core dumped)` | torch/triton and cudaq each embed their own LLVM; whichever loads second aborts | import torch and pytorch_lightning **before** cudaq — see below |
+| 15 | `ValueError: not enough values to unpack (expected 4, got 3)` in the active-space stage | numpy 2.4.0 changed `einsum_path`'s contraction tuples; pyscf <2.12 unpacked the old shape | `pyscf>=2.12` (now a floor in setup.cfg and install.sh) |
+
+---
+
+## The numpy 2.4 / pyscf einsum break
+
+NumPy 2.4.0 changed `numpy.einsum_path`'s contraction tuples from five
+elements to three. PySCF's `lib.einsum` unpacked four of them
+unconditionally:
+
+```python
+inds, idx_rm, einsum_str, remaining = contraction[:4]
+```
+
+so on numpy ≥ 2.4 every **three-operand** contraction raised
+
+```
+ValueError: not enough values to unpack (expected 4, got 3)
+```
+
+PySCF handles both shapes from 2.12 onward:
+
+```python
+if len(contraction) == 3:   # numpy 2.4.0 changes the einsum_path APIs
+    inds, einsum_str = contraction[:2]
+else:                       # numpy 2.3.* and older returns 5-element tuple
+    inds, idx_rm, einsum_str, remaining = contraction[:4]
+```
+
+**Why this one was expensive to find.** Two-operand contractions take a
+different branch entirely, so HF, MP2 and CCSD all passed with correct
+energies. The break only appeared in `asf/preselection.py` →
+`pyscf/mp/dfump2_native.py` → `lib.einsum`, four stages into a pipeline
+run, inside a third-party library, with nothing in the message naming
+numpy. `quenais-selftest` reported it as `active-space stage` and printed
+only the exception message, no traceback.
+
+`quenais-doctor` now runs a three-operand `lib.einsum` directly, so the
+same skew is a one-second check instead.
+
+PySCF declares only `numpy!=1.16,!=1.17,>=1.13` — no upper bound — so pip
+cannot catch this. The constraint has to live in this package: `pyscf>=2.12`
+in `setup.cfg` and `install.sh`, rather than a numpy ceiling.
+
+Validated combination: **pyscf 2.14.0 + numpy 2.4.6**, golden values
+reproducing to 5e-15 Ha (HF) and 5.9e-11 Ha (ecore).
+
+`pyscf>=2.12` is also required independently by `ffsim`.
 
 ---
 

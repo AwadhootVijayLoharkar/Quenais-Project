@@ -309,13 +309,26 @@ if [ "$PYSCF_BUILD" = "auto" ]; then
     fi
 fi
 
+# >=2.12 is a hard floor, for two independent reasons:
+#
+#   * ffsim requires pyscf>=2.12.
+#   * NumPy 2.4.0 changed the structure of numpy.einsum_path's contraction
+#     tuples from 5 elements to 3. PySCF's lib.einsum unpacked 4 of them
+#     unconditionally, so on numpy>=2.4 every THREE-operand contraction
+#     died with "ValueError: not enough values to unpack (expected 4, got
+#     3)". Two-operand contractions take a different branch, so HF, MP2 and
+#     CCSD all passed and the failure only surfaced deep inside ASF's
+#     DFUMP2 natural-orbital step. PySCF handles both shapes from 2.12 on.
+#
+# PySCF itself declares only "numpy>=1.13" with no upper bound, so pip
+# cannot protect against this -- the floor has to be stated here.
 if [ "$PYSCF_BUILD" = "source" ]; then
-    echo "   building pyscf from source (this takes 10-20 minutes)"
+    echo "   building pyscf from source (allow 20-60 minutes)"
     # --no-deps so nothing else in the env is disturbed. Safe alongside
     # pyscf-dmrgscf / openfermionpyscf: neither pins pyscf tightly.
-    pip install "pyscf==2.11.0" --no-binary pyscf --force-reinstall --no-deps
+    pip install "pyscf>=2.12" --no-binary pyscf --force-reinstall --no-deps
 else
-    pip install "pyscf>=2.4"
+    pip install "pyscf>=2.12"
 fi
 python -c "from pyscf import gto, scf; m = gto.M(atom='H 0 0 0; H 0 0 0.74', basis='sto-3g', verbose=0); scf.RHF(m).run()" >/dev/null \
   || die "PySCF crashed on a trivial H2 SCF. If this was 'Illegal instruction',
