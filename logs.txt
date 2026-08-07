@@ -9,3 +9,30 @@ print(cudaq.sample(k, shots_count=100))
 export GQE_QSCI_REPO_PATH=$PWD/gqe-for-qsci
 mkdir -p ~/quenais-runs/lih
 quenais-run --molecule LiH --basis sto-3g --steps 0 1 2 --project-dir ~/quenais-runs/lih
+
+python - <<'PY'
+from quenais import Config
+from quenais.settings import GqeSettings
+from quenais.quantum import gqe_runner
+
+cfg = Config(
+    molecule="LiH", basis="sto-3g", quantum_solver="gqe",
+    project_dir="/home/loharkar/quenais-runs/lih",
+    gqe=GqeSettings(
+        repo_path="/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci",
+        max_iters=2,        # 2 epochs, not 120
+        num_samples=10,     # batch_size must equal num_samples
+        batch_size=10,
+        warmup_size=10,
+        buffer_size=10,
+        ngates=10,          # circuit depth; 40 is the real default
+        cudaq_target="nvidia",
+    ),
+).validate().make_dirs().load_geometry()
+
+gqe_runner.main(cfg, force=True)
+PY
+
+
+quenais-run --molecule LiH --basis sto-3g --solver gqe --steps 3 4 \
+            --project-dir ~/quenais-runs/lih --force
