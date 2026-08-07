@@ -219,10 +219,79 @@ step 11 "Installing gqe-for-qsci"
 # --no-deps on purpose: gqe-for-qsci pins qiskit==2.0.0, which would
 # downgrade the 2.4.x this pipeline needs for qiskit-fermions and
 # qiskit-ibm-runtime. Verified upstream never imports qiskit -- the pin is
-# dead. Its real deps are declared in quenais's [cudaq] extra instead, so
-# step 10 has already installed them.
+# dead.
 pip install --no-deps -e ./gqe-for-qsci
-ok "gqe-for-qsci (--no-deps; its qiskit==2.0.0 pin is unused upstream)"
+
+# But --no-deps means NONE of its dependency list gets installed either,
+# and the first version of this script leaned on quenais's [cudaq] extra,
+# which was a hand-copied approximation of that list. It drifted
+# immediately: `transformers` was missing, and the run died at model
+# construction with Hydra's "Error locating target
+# 'gqe_qsci.gqe.models.gpt2.GPT2Model'" -- a message naming neither
+# transformers nor any missing package.
+#
+# So read upstream's OWN dependency list. But do NOT install it verbatim:
+# gqe-for-qsci pins every single dependency with ==, and honouring those
+# would downgrade cudaq 0.15->0.12, torch 2.13->2.9, pyscf 2.14->2.11 and
+# qiskit 2.5->2.0, undoing decisions this installer makes deliberately.
+#
+# Policy: install ONLY what is missing, and for those use upstream's own
+# pin, since that is the version upstream actually tested against.
+# Anything already present is left alone.
+#
+# Consequence to expect: `pip check` will report gqe-for-qsci version
+# conflicts forever. That is intended, not a broken install -- see
+# docs/gqe_setup.md.
+GQE_REQS=$(mktemp)
+python - "$GQE_REQS" <<'PY' || die "could not read gqe-for-qsci/pyproject.toml"
+import importlib.util, pathlib, re, sys, tomllib
+
+#   qiskit  dead pin at ==2.0.0 (upstream never imports qiskit)
+#   numpy   conda-forge owns these; replacing a conda-built compiled
+#   scipy   package with a PyPI wheel invites ABI trouble
+#   pyscf   step 15 owns it -- that step decides wheel vs source build
+SKIP = {"qiskit", "numpy", "scipy", "pyscf"}
+
+IMPORT_NAMES = {
+    "pytorch-lightning": "pytorch_lightning", "hydra-core": "hydra",
+    "tequila-basic": "tequila", "scikit-learn": "sklearn", "pyyaml": "yaml",
+    "pillow": "PIL", "opt-einsum": "opt_einsum",
+}
+
+data = tomllib.loads(pathlib.Path("gqe-for-qsci/pyproject.toml").read_text())
+deps = data.get("project", {}).get("dependencies") or []
+if not deps:
+    print("upstream declares no [project].dependencies -- check whether its "
+          "packaging moved to poetry or setup.py", file=sys.stderr)
+    sys.exit(1)
+
+install = []
+for spec in deps:
+    name = re.split(r"[<>=!~\[; ]", spec.strip())[0].lower()
+    if name in SKIP:
+        print(f"   skip    : {spec}  (owned by another step)")
+        continue
+    mod = IMPORT_NAMES.get(name, name.replace("-", "_"))
+    try:
+        present = importlib.util.find_spec(mod) is not None
+    except (ImportError, ValueError):
+        present = False
+    if present:
+        print(f"   present : {name}  (keeping installed version, not {spec})")
+    else:
+        print(f"   MISSING : {spec}  -> installing at upstream's pin")
+        install.append(spec)
+
+pathlib.Path(sys.argv[1]).write_text("\n".join(install) + "\n")
+PY
+
+if [ -s "$GQE_REQS" ]; then
+    pip install -r "$GQE_REQS"
+else
+    echo "   nothing missing"
+fi
+rm -f "$GQE_REQS"
+ok "gqe-for-qsci deps reconciled (missing only; existing versions untouched)"
 
 # ─────────────────────────────────────────────────────────────────────────
 step 12 "Patching gqe-for-qsci"
@@ -372,6 +441,7 @@ checks = [
     ("tequila",                 "tequila"),
     ("wandb",                   "wandb"),
     ("mpi4py",                  "mpi4py"),
+    ("transformers",            "transformers"),
 ]
 bad = []
 for mod, label in checks:

@@ -28,7 +28,7 @@ QunaSys ApS.
 
 | Step | Stage | Output |
 |---|---|---|
-| 0 | Classical references (HF, MP2, CCSD, CCSD(T), CASSCF, NEVPT2) | `step0_classical.pkl` |
+| 0 | Classical references — `HF` and `MP2` by default; `CCSD`, `CCSD_T`, `CASSCF`, `NEVPT2` via `--classical-methods` | `step0_classical.pkl` |
 | 1 | Active-space selection (ASF, entanglement entropy) | `step1_asf.pkl` |
 | 2 | DMET embedding Hamiltonian (Schmidt decomposition) | `step2_hamiltonian.pkl` |
 | 3 | Quantum solver (Qiskit in-process, or GQE by subprocess) | `step3_results.pkl` / `gqe_train.log` |
@@ -107,17 +107,24 @@ quenais-selftest    # LiH end to end against known-good values
 `quenais-doctor` covers every failure this project has actually hit —
 AVX-512 versus the PySCF build, GPU compute capability versus the CUDA-Q
 target, whether mpi4py and CUDA-Q's plugin link the same `libmpi`, the
-`setuptools<82` / `pkg_resources` ceiling, `WANDB_MODE` in
-non-interactive contexts, and whether the submodule is present and
-correctly patched. Every one of those presents as something other than
+`setuptools<82` / `pkg_resources` ceiling, the numpy/pyscf `einsum` skew,
+whether torch and cudaq can coexist in one process, whether
+`gqe-for-qsci`'s declared dependencies are all present, and whether the
+submodule is patched. Every one of those presents as something other than
 what it is; the background on each is in
 [docs/gqe_setup.md](docs/gqe_setup.md).
 
 ```
 [  ok  ] CPU AVX-512                          absent, but PySCF was built from source
-[  ok  ] GPU                                  none detected -- CPU simulator path
-[  ok  ] setuptools                           81.2.0, pkg_resources importable
-[  ok  ] MPI ABI                              both link libmpi.so.40
+[  ok  ] GPU                                  NVIDIA A100-SXM4-40GB (cc 8.0)
+[  ok  ] setuptools                           81.0.0, pkg_resources importable
+[  ok  ] CUDAQ_DEFAULT_SIMULATOR              nvidia
+[  ok  ] WANDB_MODE                           disabled
+[  ok  ] MPI ABI                              both link libmpi.so.40.40.7
+[  ok  ] required packages                    all 13 importable
+[  ok  ] numpy/pyscf einsum                   pyscf 2.14.0 / numpy 2.4.6
+[  ok  ] torch/cudaq coexistence              torch -> pytorch_lightning -> gqe_qsci -> cudaq
+[  ok  ] gqe-for-qsci deps                    all 11 declared deps present
 [  ok  ] gqe-for-qsci checkout                patched at /home/…/gqe-for-qsci
 ```
 
@@ -180,9 +187,48 @@ quenais-run --molecule ScH --basis sto-3g \
 # with the GQE solver
 quenais-run --molecule LiH --basis sto-3g --solver gqe
 
+# a two-epoch GQE smoke test -- the real default is 120 iters, ngates 40
+quenais-run --molecule LiH --basis sto-3g --solver gqe \
+            --gqe-max-iters 2 --gqe-num-samples 10 --gqe-ngates 10
+
 # with a Qiskit solver
 quenais-run --molecule LiH --basis sto-3g --solver sqd --ansatz lucj
 ```
+
+### Classical reference methods
+
+Step 0 runs `HF` and `MP2` by default. The other four are opt-in:
+
+```bash
+quenais-run --molecule LiH --basis sto-3g --steps 0 \
+            --classical-methods HF MP2 CCSD CCSD_T CASSCF NEVPT2
+```
+
+`CCSD_T`, not `CCSD(T)` — parentheses would need shell quoting.
+
+**CASSCF and NEVPT2 need step 1 to have already run.** They reuse step 1's
+active space, but step 0 runs *before* step 1, so on a first pass they
+fall back to a guessed space and print `Step 1 not found -- CASSCF/NEVPT2
+will use a fallback active space`. For meaningful numbers, go around
+twice: `--steps 0 1 2` first, then `--steps 0 --force` with the methods
+you want. Both are labelled `optimizer-dependent` in
+`results_summary.csv` and do not reproduce to tight tolerance across
+machines, which is why they are not on by default.
+
+### Choosing the CUDA-Q backend
+
+`--cudaq-target` selects the **circuit simulator** only. `install.sh`
+picks it from the GPU's compute capability and persists it, so this is
+usually already right:
+
+```bash
+quenais-run --molecule LiH --solver gqe --cudaq-target qpp-cpu   # force CPU
+quenais-run --molecule LiH --solver gqe --cudaq-target nvidia    # needs cc >= 8.0
+```
+
+The transformer runs on the GPU through Lightning regardless of this
+setting, so a `qpp-cpu` run still logs `GPU available: True, used: True`.
+The line to read is the runner's own `backend :` field.
 
 From Python:
 
@@ -329,9 +375,14 @@ dominate:
 ```bash
 mamba activate ./quenais-env
 QUENAIS_PYSCF_BUILD=source bash install.sh   # or, by hand:
-pip install pyscf==2.11.0 --no-binary pyscf --force-reinstall --no-deps
+pip install "pyscf>=2.12" --no-binary pyscf --force-reinstall --no-deps
 quenais-selftest                             # confirm the numbers did not move
 ```
+
+`>=2.12` is a hard floor, not a preference: earlier releases break on
+numpy ≥ 2.4, and `ffsim` requires it independently. See
+[docs/gqe_setup.md](docs/gqe_setup.md#the-numpy-24--pyscf-einsum-break).
+Allow up to an hour for the source build.
 
 `environment.yml` already provides the toolchain. Re-run the self-test
 afterwards — not because a correct build would change anything, but
