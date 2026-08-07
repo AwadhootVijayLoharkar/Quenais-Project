@@ -1,35 +1,11 @@
-(base) [loharkar@makaria10:quenais-standalone]$ cd Quenais-Project/
-(base) [loharkar@makaria10:Quenais-Project]$ mamba activate ./quenais-env/
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria10:Quenais-Project]$ git pull
-remote: Enumerating objects: 15, done.
-remote: Counting objects: 100% (15/15), done.
-remote: Compressing objects: 100% (2/2), done.
-remote: Total 8 (delta 6), reused 8 (delta 6), pack-reused 0 (from 0)
-Unpacking objects: 100% (8/8), 3.79 KiB | 28.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   8b9925d..3f2d295  main       -> origin/main
-Updating 8b9925d..3f2d295
-Fast-forward
- docs/gqe_setup.md    | 48 ++++++++++++++++++++++++++++++++++++++++++++++++
- install.sh           | 19 ++++++++++++++++---
- quenais/env_check.py | 55 +++++++++++++++++++++++++++++++++++++++++++++++++++++--
- setup.cfg            | 12 +++++++++++-
- 4 files changed, 128 insertions(+), 6 deletions(-)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria10:Quenais-Project]$ quenais-doctor 
-quenais-doctor  --  python 3.11.15 on Linux-5.15.0-186-generic-x86_64-with-glibc2.41
+cd ~/quenais-standalone/Quenais-Project
+python -c "
+import torch, pytorch_lightning, cudaq
+print('target:', cudaq.get_target().name)
+k = cudaq.make_kernel(); q = k.qalloc(2); k.h(q[0]); k.cx(q[0], q[1])
+print(cudaq.sample(k, shots_count=100))
+"
 
-[  ok  ] CPU AVX-512                            absent, but PySCF was built from source
-[  ok  ] GPU                                    NVIDIA GeForce RTX 4070 Ti SUPER (cc 8.9)
-[  ok  ] setuptools                             81.0.0, pkg_resources importable
-[  ok  ] CUDAQ_DEFAULT_SIMULATOR                nvidia
-[  ok  ] WANDB_MODE                             disabled
-[  ok  ] MPI ABI                                both link libmpi.so.40.40.7
-[  ok  ] required packages                      all 13 importable
-[  ok  ] numpy/pyscf einsum                     pyscf 2.14.0 / numpy 2.4.6
-[  ok  ] torch/cudaq coexistence                torch -> pytorch_lightning -> gqe_qsci -> cudaq
-[  ok  ] GQE shims                              dmet_excitation_pool, dmet_molecule_adapter
-[  ok  ] shipped patch                          /home/loharkar/quenais-standalone/Quenais-Project/quenais/patches/gqe_dmet_source.patch
-[  ok  ] gqe-for-qsci checkout                  patched at /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
-
-12 ok, 0 warnings, 0 failures
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria10:Quenais-Project]$ 
+export GQE_QSCI_REPO_PATH=$PWD/gqe-for-qsci
+mkdir -p ~/quenais-runs/lih
+quenais-run --molecule LiH --basis sto-3g --steps 0 1 2 --project-dir ~/quenais-runs/lih
