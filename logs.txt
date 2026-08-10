@@ -1,36 +1,6 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_correlation_scan.py --threads 8 > scan_A.txt 2>&1
-python tools/run_correlation_scan.py --threads 8 > scan_B.txt 2>&1
-diff <(grep gap scan_A.txt) <(grep gap scan_B.txt) && echo "REPRODUCIBLE"
-2c2
-<   CIPSI   0.9447 mHa   oracle   0.9886 mHa   gap  -0.0439 mHa   N_chem=191
----
->   CIPSI   0.7466 mHa   oracle   0.7614 mHa   gap  -0.0148 mHa   N_chem=191
-4c4
-<   CIPSI   1.3919 mHa   oracle   1.4739 mHa   gap  -0.0820 mHa   N_chem=191
----
->   CIPSI   1.7456 mHa   oracle   1.9725 mHa   gap  -0.2269 mHa   N_chem=271
-6c6
-<   CIPSI   0.6145 mHa   oracle   0.5245 mHa   gap  +0.0900 mHa   N_chem=191
----
->   CIPSI   0.5087 mHa   oracle   0.4552 mHa   gap  +0.0535 mHa   N_chem=191
-8c8
-<   CIPSI   2.6345 mHa   oracle   2.3263 mHa   gap  +0.3082 mHa   N_chem=271
----
->   CIPSI   3.3930 mHa   oracle   2.7117 mHa   gap  +0.6813 mHa   N_chem=271
-10c10
-<   CIPSI   2.6213 mHa   oracle   1.5422 mHa   gap  +1.0791 mHa   N_chem=271
----
->   CIPSI   1.3694 mHa   oracle   0.8364 mHa   gap  +0.5330 mHa   N_chem=191
-12,16c12,16
-<   CIPSI   1.5915 mHa   oracle   0.9719 mHa   gap  +0.6196 mHa   N_chem=191
-<   root gap E1-E0: 0.244302 Ha  ok
-<   CIPSI   0.2906 mHa   oracle   0.2184 mHa   gap  +0.0723 mHa   N_chem=134
-<   root gap E1-E0: 0.246484 Ha  ok
-<   CIPSI   0.0475 mHa   oracle   0.0644 mHa   gap  -0.0169 mHa   N_chem=95
----
->   CIPSI   1.5856 mHa   oracle   0.9975 mHa   gap  +0.5881 mHa   N_chem=191
->   root gap E1-E0: 0.244495 Ha  ok
->   CIPSI   2.4948 mHa   oracle   0.3403 mHa   gap  +2.1545 mHa   N_chem=134
->   root gap E1-E0: 0.246810 Ha  ok
->   CIPSI   0.3839 mHa   oracle   0.0933 mHa   gap  +0.2906 mHa   N_chem=95
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+cp run_correlation_scan.py tools/
+cp det_analysis.py det_expansion.py quenais/quantum/
+
+python tools/run_correlation_scan.py --threads 1 > scan_A.txt 2>&1
+python tools/run_correlation_scan.py --threads 1 > scan_B.txt 2>&1
+diff <(grep -E "gap|fingerprints" scan_A.txt) <(grep -E "fingerprints|gap" scan_B.txt) && echo "REPRODUCIBLE"
