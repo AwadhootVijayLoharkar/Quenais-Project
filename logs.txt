@@ -1,5 +1,4 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_correlation_scan.py --threads 1 > scan_A.txt 2>&1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_correlation_scan.py --threads 1 > scan_B.txt 2>&1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ diff <(grep -E "gap|fingerprints" scan_A.txt) <(grep -E "fingerprints|gap" scan_B.txt) && echo "REPRODUCIBLE"
-REPRODUCIBLE
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+cp export_cas_hamiltonian.py tools/
+
+python tools/export_cas_hamiltonian.py --r 1.8 --project-dir runs/N2_r1.8
+python tools/export_cas_hamiltonian.py --r 2.1 --project-dir runs/N2_r2.1
