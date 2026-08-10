@@ -1,21 +1,19 @@
-[QuEnAIS] Pipeline complete.
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/expand_gqe_seed.py --r 1.8 --dets gqe_dets_r1.8.npz 
 
-  N2  r = 1.8000 A   ncas=8 nelec=(5, 5)  ndet=3136
+  N2  r = 1.8000 A   ndet=3136   budget=200
   exact CASCI = -107.483383267738 Ha
 
-  determinants in GQE's final set : 200
-  shared with the oracle's top 200 : 48  (24.0%)
-
-  weight captured, GQE's set    : 0.76870989
-  weight captured, oracle's set : 0.99975364
-
-  re-diagonalised in GQE's set    :   78.9371 mHa
-  re-diagonalised in oracle's set :    0.3968 mHa
+  oracle           200 dets      0.3968 mHa   weight 0.999754   overlap with oracle 200/200
+  CIPSI            200 dets      0.5186 mHa   weight 0.999546   overlap with oracle 185/200
+  GQE              200 dets     78.9371 mHa   weight 0.768710   overlap with oracle  48/200
+  GQE+expand       300 dets      3.3278 mHa   weight 0.997180   overlap with oracle 136/200
 
   VERDICT
-    GQE's determinants are genuinely POOR -- 78.9371 mHa
-    even with a correct diagonalisation, against 0.3968
-    for the best 200. The sampler is not finding the important
-    configurations here. That is the problem a learned proposal
-    distribution is meant to solve.
+    Expansion does NOT rescue it: 3.3278 mHa. GQE's seed
+    is far enough from the important configurations that local
+    expansion cannot reach them. A better proposal distribution
+    is the only route -- which is the neural sampler's case,
+    now measured rather than assumed.
+
+    vs CIPSI from scratch (0.5186 mHa): the quantum seed is NOT helping here.
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
