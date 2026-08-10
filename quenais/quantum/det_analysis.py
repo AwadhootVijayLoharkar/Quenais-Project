@@ -158,9 +158,16 @@ def weight_curve(flat_civec):
 
     order[k] is the full index of the k-th most important determinant;
     cumulative_weight[k] is the weight captured by the top k+1 of them.
+
+    TIES. Symmetry-equivalent determinants carry exactly equal weight, so the
+    ordering among them is not determined by the amplitudes. A stable sort on
+    the negated weights breaks those ties by determinant index, which is
+    arbitrary but REPRODUCIBLE -- the previous `argsort(w)[::-1]` reversed an
+    ascending sort, so tied groups came back in an order that depended on the
+    sort's internal path and changed between runs.
     """
     w = np.asarray(flat_civec) ** 2
-    order = np.argsort(w)[::-1]
+    order = np.argsort(-w, kind="stable")
     return order, np.cumsum(w[order])
 
 

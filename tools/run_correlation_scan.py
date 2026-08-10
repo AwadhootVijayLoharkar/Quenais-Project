@@ -131,8 +131,20 @@ def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
     from pyscf import ao2mo, gto, mcscf, scf
     from quenais.quantum.gqe_adapter import DMETEmbeddingMolecule
 
+    # symmetry=True is REQUIRED for reproducibility, not a nicety.
+    #
+    # Without it, RHF determines the degenerate pi_x / pi_y pair only up to an
+    # arbitrary rotation between them. Each run picks a different mixture, so
+    # the active-space integrals differ, so the CI vector differs, so the
+    # ranking of determinants differs -- while the total energy is invariant
+    # and matches to 1e-14 every time. That is exactly what the fingerprints
+    # caught: civec changed between runs at r=1.3 with cutoff_ratio = 1.000000.
+    #
+    # With symmetry on, PySCF classifies orbitals by irrep (D2h subgroup for
+    # D-infinity-h), so pi_x and pi_y land in different irreps and are each
+    # determined individually.
     mol = gto.M(atom=f"{atoms[0]} 0 0 0; {atoms[1]} 0 0 {r:.6f}",
-                basis=basis, verbose=0)
+                basis=basis, symmetry=True, verbose=0)
     mf = scf.RHF(mol)
     mf.conv_tol = 1e-11
     mf.max_cycle = 200
@@ -317,13 +329,24 @@ def measure(mol, e_casci_pyscf, e_rhf, root_gap, budget=BUDGET, tol=1e-9):
     n_eff = budget
 
     # Oracle: best possible at the budget.
-    sel_oracle = order[:n_eff]
+    # Extend the cut to whole tied groups. Symmetry-equivalent determinants
+    # carry identical weight; taking some of a group and not the rest breaks
+    # the symmetry of the trial space and raises the energy for a reason that
+    # has nothing to do with selection quality. Including complete groups
+    # costs a handful of extra determinants and removes an arbitrary choice.
+    w = flat ** 2
+    w_sorted = w[order]
+    cutoff_ratio = (float(w_sorted[n_eff] / w_sorted[n_eff - 1])
+                    if n_eff < w.size and w_sorted[n_eff - 1] > 0 else 0.0)
+    n_used = n_eff
+    while (n_used < w.size
+           and w_sorted[n_used] > 0
+           and abs(w_sorted[n_used] - w_sorted[n_eff - 1])
+               <= 1e-12 * max(w_sorted[n_eff - 1], 1e-300)):
+        n_used += 1
+
+    sel_oracle = order[:n_used]
     order_fp = int(np.sort(sel_oracle).sum())
-    # How tied is the cutoff? If the amplitudes at position N and N+1 are
-    # nearly equal, which determinant makes the cut is arbitrary and the
-    # oracle is not well defined at this budget.
-    w_sorted = np.sort(flat ** 2)[::-1]
-    cutoff_ratio = float(w_sorted[n_eff] / w_sorted[n_eff - 1]) if n_eff < flat.size else 0.0
     e_oracle = da.projected_energy(mol, sel_oracle, space=space)
 
     # CIPSI: classical selection at the same budget, no quantum input.
@@ -357,6 +380,7 @@ def measure(mol, e_casci_pyscf, e_rhf, root_gap, budget=BUDGET, tol=1e-9):
         "n_for_99pct": int(np.searchsorted(cum, 0.99) + 1),
         "n_chem": n_chem,
         "budget": n_eff,
+        "n_used": n_used,
         "err_oracle_mha": 1e3 * (e_oracle - e_exact),
         "err_cipsi_mha": 1e3 * (e_cipsi - e_exact),
         "cipsi_above_oracle_mha": 1e3 * (e_cipsi - e_oracle),
@@ -423,7 +447,9 @@ def main():
             print(f"    numbers from this geometry will not reproduce between "
                   f"runs -- excluded.")
         print(f"  fingerprints: civec={m['civec_fp']:.10e}  "
-              f"order={m['order_fp']}  cutoff_ratio={m['cutoff_ratio']:.6f}")
+              f"order={m['order_fp']}  cutoff_ratio={m['cutoff_ratio']:.6f}"
+              + (f"  (tied group -> using {m['n_used']} dets)"
+                 if m['n_used'] != m['budget'] else ""))
         print(f"  CIPSI {m['err_cipsi_mha']:8.4f} mHa   "
               f"oracle {m['err_oracle_mha']:8.4f} mHa   "
               f"gap {m['cipsi_above_oracle_mha']:+8.4f} mHa   "
