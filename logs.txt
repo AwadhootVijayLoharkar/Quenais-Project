@@ -1,24 +1,6 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ rm -rf .cache/pyscf_dmet
+cp run_correlation_scan.py tools/
+cp det_expansion.py quenais/quantum/
 
 python tools/run_correlation_scan.py --threads 8 > scan_A.txt 2>&1
 python tools/run_correlation_scan.py --threads 8 > scan_B.txt 2>&1
 diff <(grep gap scan_A.txt) <(grep gap scan_B.txt) && echo "REPRODUCIBLE"
-1,8c1,8
-<   CIPSI   0.2744 mHa   oracle   0.2723 mHa   gap  +0.0022 mHa   N_chem=134
-<   CIPSI   1.4543 mHa   oracle   1.5373 mHa   gap  -0.0830 mHa   N_chem=271
-<   CIPSI   2.0353 mHa   oracle   2.1602 mHa   gap  -0.1249 mHa   N_chem=271
-<   CIPSI   3.0017 mHa   oracle   2.8372 mHa   gap  +0.1646 mHa   N_chem=271
-<   CIPSI   1.3700 mHa   oracle   0.8372 mHa   gap  +0.5327 mHa   N_chem=191
-<   CIPSI   1.6517 mHa   oracle   1.0715 mHa   gap  +0.5802 mHa   N_chem=191
-<   CIPSI 123.1390 mHa   oracle   0.2540 mHa   gap +122.8850 mHa   N_chem=134
-<   CIPSI   0.0479 mHa   oracle   0.0371 mHa   gap  +0.0108 mHa   N_chem=67
----
->   CIPSI   0.1192 mHa   oracle   0.1233 mHa   gap  -0.0040 mHa   N_chem=134
->   CIPSI   0.8128 mHa   oracle   0.8165 mHa   gap  -0.0037 mHa   N_chem=191
->   CIPSI   2.1518 mHa   oracle   2.2884 mHa   gap  -0.1365 mHa   N_chem=271
->   CIPSI   1.9203 mHa   oracle   1.4135 mHa   gap  +0.5068 mHa   N_chem=191
->   CIPSI   2.3843 mHa   oracle   1.3885 mHa   gap  +0.9958 mHa   N_chem=271
->   CIPSI   1.4638 mHa   oracle   0.8925 mHa   gap  +0.5712 mHa   N_chem=191
->   CIPSI   0.2725 mHa   oracle   0.1194 mHa   gap  +0.1531 mHa   N_chem=134
->   CIPSI   0.3167 mHa   oracle   0.0887 mHa   gap  +0.2280 mHa   N_chem=95
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 

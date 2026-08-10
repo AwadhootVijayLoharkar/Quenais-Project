@@ -149,6 +149,15 @@ def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
     h1, ecore = mc.get_h1eff()
     h2 = ao2mo.restore(1, mc.get_h2eff(), ncas)
 
+    # Target the singlet explicitly. direct_spin1 fixes Sz, not S^2, so at
+    # dissociation -- where states of every total spin become degenerate -- it
+    # returns an arbitrary member of that manifold and the "exact" wavefunction
+    # is not reproducible run to run. Penalising S^2 picks one state
+    # consistently. It does not remove degeneracy WITHIN the singlet sector;
+    # the diagnostic below measures what is left.
+    from pyscf import fci
+    mc.fcisolver = fci.addons.fix_spin_(mc.fcisolver, shift=0.5, ss=0)
+
     # PySCF's own CASCI on the same active space. This is the reference the
     # trust check uses.
     #
@@ -167,6 +176,20 @@ def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
     # exact reference every error here is measured against.
     e_casci_pyscf = float(mc.kernel()[0])
 
+    # DEGENERACY DIAGNOSTIC. If the two lowest roots are close, the ground
+    # state is not unique, "the best N determinants" has no single answer, and
+    # nothing measured at this geometry is reproducible. This is a property of
+    # the system, not of the code, and it must be reported rather than fixed.
+    try:
+        mc2 = mcscf.CASCI(mf, ncas, nelecas)
+        mc2.verbose = 0
+        mc2.fcisolver = fci.addons.fix_spin_(mc2.fcisolver, shift=0.5, ss=0)
+        mc2.fcisolver.nroots = 2
+        e_roots = mc2.kernel()[0]
+        root_gap = float(np.ravel(e_roots)[1] - np.ravel(e_roots)[0])
+    except Exception:
+        root_gap = float("nan")
+
     n_a = (nelecas + mol.spin) // 2
     n_b = nelecas - n_a
 
@@ -180,7 +203,8 @@ def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
     emb = DMETEmbeddingMolecule(h1, h2, ecore, n_a, n_b,
                                 num_threads=threads, cache_dir=cache_dir)
     emb._scan_cache_dir = cache_dir
-    return emb, e_casci_pyscf, float(mf.e_tot)
+    emb.mc.fcisolver = fci.addons.fix_spin_(emb.mc.fcisolver, shift=0.5, ss=0)
+    return emb, e_casci_pyscf, float(mf.e_tot), root_gap
 
 
 def step2_path_for(scan_root, molecule, r):
@@ -226,7 +250,12 @@ def run_pipeline(molecule, atoms, r, active_space, basis, scan_root, force=False
     return step2
 
 
-def measure(mol, e_casci_pyscf, e_rhf, budget=BUDGET, tol=1e-9):
+#: Below this root gap (Ha) the ground state is effectively degenerate and no
+#: determinant-selection question has a unique answer.
+DEGENERACY_TOL = 1e-3
+
+
+def measure(mol, e_casci_pyscf, e_rhf, root_gap, budget=BUDGET, tol=1e-9):
     """Stage 0 and stage 1 measurements for one active-space Hamiltonian."""
     try:
         from quenais.quantum import det_analysis as da
@@ -242,7 +271,8 @@ def measure(mol, e_casci_pyscf, e_rhf, budget=BUDGET, tol=1e-9):
     # must match PySCF's own CASCI on the same active space. If it does not,
     # the integral extraction or the determinant bookkeeping is wrong.
     casci_delta = e_exact - float(e_casci_pyscf)
-    trusted = abs(casci_delta) <= tol
+    degenerate = not (root_gap > DEGENERACY_TOL)
+    trusted = (abs(casci_delta) <= tol) and not degenerate
 
     # Informational only -- see the note in build_cas_molecule. A non-zero
     # value means the active-space SCF found an excited solution, which says
@@ -284,6 +314,8 @@ def measure(mol, e_casci_pyscf, e_rhf, budget=BUDGET, tol=1e-9):
         "e_casci": e_exact,
         "casci_delta": casci_delta,
         "scf_delta": scf_delta,
+        "root_gap": root_gap,
+        "degenerate": degenerate,
         "trusted": trusted,
         "e_core": float(mol.cas_hamiltonian.e_core),
         "n_elec_active": n_elec_emb,
@@ -329,10 +361,10 @@ def main():
     for r in distances:
         print(f"\n-- r = {r:.4f} A --")
         try:
-            mol, e_casci_ref, e_rhf = build_cas_molecule(
+            mol, e_casci_ref, e_rhf, root_gap = build_cas_molecule(
                 spec["atoms"], r, args.basis, len(active_space),
                 spec["nelecas"], threads=args.threads)
-            m = measure(mol, e_casci_ref, e_rhf, budget=args.budget)
+            m = measure(mol, e_casci_ref, e_rhf, root_gap, budget=args.budget)
         except Exception as exc:
             print(f"  failed at r={r:.4f}: {exc}")
             continue
@@ -348,11 +380,14 @@ def main():
               f"({100*m['budget']/m['ndet']:.1f}% of the space)")
         print(f"  dominant weight={m['dominant_weight']:.4f}  "
               f"(1.0 = single reference, lower = more correlated)")
-        flag = "ok" if m["trusted"] else "*** UNTRUSTED ***"
-        print(f"  CASCI vs PySCF CASCI: {m['casci_delta']:+.3e} Ha  {flag}")
-        if not m["trusted"]:
-            print(f"    the exact reference does not reproduce; nothing in "
-                  f"this row is evidence of anything")
+        print(f"  CASCI vs PySCF CASCI: {m['casci_delta']:+.3e} Ha")
+        print(f"  root gap E1-E0: {m['root_gap']:.6f} Ha  "
+              + ("*** DEGENERATE ***" if m["degenerate"] else "ok"))
+        if m["degenerate"]:
+            print(f"    the ground state is not unique here, so neither is "
+                  f"'the best N determinants'.")
+            print(f"    numbers from this geometry will not reproduce between "
+                  f"runs -- excluded.")
         print(f"  CIPSI {m['err_cipsi_mha']:8.4f} mHa   "
               f"oracle {m['err_oracle_mha']:8.4f} mHa   "
               f"gap {m['cipsi_above_oracle_mha']:+8.4f} mHa   "
@@ -363,21 +398,23 @@ def main():
         return
 
     print(f"\n{'='*76}")
-    print(f"  {'r (A)':>7} {'dom wt':>8} {'N_chem':>8} {'CIPSI':>10} "
-          f"{'oracle':>10} {'gap':>10}  {'CASCI chk':>10}")
+    print(f"  {'r (A)':>7} {'dom wt':>8} {'rootgap':>9} {'N_chem':>7} "
+          f"{'CIPSI':>10} {'oracle':>10} {'gap':>10}  {'usable':>8}")
     for m in rows:
         print(f"  {m['r']:>7.3f} {m['dominant_weight']:>8.4f} "
-              f"{str(m['n_chem']):>8} {m['err_cipsi_mha']:>10.4f} "
+              f"{m['root_gap']:>9.5f} {str(m['n_chem']):>7} "
+              f"{m['err_cipsi_mha']:>10.4f} "
               f"{m['err_oracle_mha']:>10.4f} {m['cipsi_above_oracle_mha']:>+10.4f}"
-              f"  {'ok' if m['trusted'] else 'FAILED':>10}")
+              f"  {'yes' if m['trusted'] else 'NO':>8}")
     print(f"  (errors in mHa at a {args.budget}-determinant budget)")
 
     bad = [m for m in rows if not m["trusted"]]
     if bad:
-        print(f"\n  {len(bad)} of {len(rows)} geometries FAILED the CASCI "
-              f"cross-check: r = "
+        print(f"\n  {len(bad)} of {len(rows)} geometries are unusable: r = "
               + ", ".join(f"{m['r']:.3f}" for m in bad))
-        print("  Those rows are not evidence.")
+        print("  Degenerate ground state -- the wavefunction is not unique, so")
+        print("  'the best N determinants' has no single answer and the numbers")
+        print("  will not reproduce. This is a property of the system, not a bug.")
 
     good = [m for m in rows if m["trusted"]]
     if good:

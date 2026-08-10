@@ -155,11 +155,27 @@ def _grow(mol, seed, target_size, space, sigma, hdiag,
         full[sel] = c
         hpsi = sigma(full.reshape(space.na, space.nb)).reshape(-1)
 
-        # Epstein-Nesbet second-order estimate of what each candidate is worth.
+        # Epstein-Nesbet second-order estimate of what each candidate is worth:
+        #     |<D|H|psi>|^2 / (H_DD - E0)
+        #
+        # DEGENERACY. The denominator vanishes for candidates degenerate with
+        # the current energy, and perturbation theory is simply invalid there.
+        # An earlier version floored |denom| at 1e-8, which is exactly wrong:
+        # it turned "PT2 says nothing here" into "PT2 says this is worth 1e16",
+        # so the loop spent its whole budget on degenerate junk. On stretched
+        # N2 that produced a CIPSI energy 123 mHa above exact -- far worse than
+        # the single-determinant starting point.
+        #
+        # Bounding the denominator instead keeps such candidates attractive
+        # (they are strongly coupled, so they should be picked) without letting
+        # the estimate diverge. DENOM_FLOOR is in Hartree and deliberately
+        # coarse: it is a regulariser, not a physical parameter.
+        DENOM_FLOOR = 1e-3
         denom = hdiag - e_elec
-        # Candidates degenerate with the current energy would divide by ~0 and
-        # dominate spuriously. Floor the denominator rather than dropping them.
-        denom = np.where(np.abs(denom) < 1e-8, 1e-8, denom)
+        # Candidates below the current energy get maximum priority: they lower
+        # it outright. Those are also exactly the ones a small denominator
+        # would have mis-scored.
+        denom = np.where(denom < DENOM_FLOOR, DENOM_FLOOR, denom)
         score = (hpsi ** 2) / denom
         score[in_set] = -np.inf
 
