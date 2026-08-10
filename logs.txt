@@ -6,3 +6,13 @@ import os
                      weights=np.asarray(weights[idx]),
                      norb=int(self.norb),
                      nelec=np.asarray(self.nelec, dtype=int))
+
+cp compare_gqe_determinants.py tools/
+
+export QUENAIS_DUMP_DETS=$PWD/gqe_dets_r1.8.npz
+python tools/export_cas_hamiltonian.py --r 1.8 --project-dir runs/N2_r1.8_dump
+quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
+            --project-dir runs/N2_r1.8_dump --gqe-qsci-max-dim 200
+unset QUENAIS_DUMP_DETS
+
+python tools/compare_gqe_determinants.py --r 1.8 --dets gqe_dets_r1.8.npz
