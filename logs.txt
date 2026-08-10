@@ -1,7 +1,982 @@
-for r in 1.0977 1.3 1.5 1.8 2.1 2.4 2.8 3.2; do
-  quenais-run --molecule N2 --basis sto-3g \
-    --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 \
-    --project-dir scans/N2/N2_r$(printf %.4f $r) \
-    --no-scan --no-quantum-scan --force-active-space 5 6 7 8 &
+
 done
 wait
+Basis     : sto-3g
+  Charge    : 0   Spin (2S): 0
+  Methods   : ['HF', 'MP2']
+
+============================================================
+[Step 0] Classical Methods -- N2
+============================================================
+  Basis     : sto-3g
+  Charge    : 0   Spin (2S): 0
+  Methods   : ['HF', 'MP2']
+  Electrons : 14   AOs: 10
+  Electrons : 14   AOs: 10
+  Electrons : 14   AOs: 10  Electrons : 14   AOs: 10
+
+  Electrons : 14   AOs: 10  Electrons : 14   AOs: 10  Electrons : 14   AOs: 10  Electrons : 14   AOs: 10
+
+
+
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+
+-- HF --
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+
+-- HF --
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+
+-- HF --
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+
+-- HF --
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+
+
+-- HF --
+-- HF --
+
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+
+-- HF --
+
+-- HF --
+  [HF] done in 0.5s
+  RHF energy: -107.01732691 Ha (converged: True)
+  [HF] done in 0.5s
+  RHF energy: -107.49589331 Ha (converged: True)
+  [HF] done in 0.5s
+  RHF energy: -107.43387069 Ha (converged: True)
+  [HF] done in 0.5s
+  RHF energy: -107.27244850 Ha (converged: True)
+  [HF] done in 0.5s
+  RHF energy: -106.80841148 Ha (converged: True)
+  [HF] done in 0.5s
+  RHF energy: -106.52411517 Ha (converged: True)
+  [HF] done in 0.5s
+  RHF energy: -106.44620093 Ha (converged: True)
+  [HF] done in 0.5s
+  RHF energy: -106.65660805 Ha (converged: True)
+
+-- MP2 --
+
+-- MP2 --
+
+-- MP2 --
+
+-- MP2 --
+-- MP2 --
+
+
+-- MP2 --
+
+-- MP2 --
+
+-- MP2 --
+  [MP2] done in 0.0s
+  E_corr: -1.03750629 Ha   MP2 energy: -107.84591777 Ha
+  [MP2] done in 0.0s
+  E_corr: -2.18306600 Ha   MP2 energy: -108.70718117 Ha
+  [MP2] done in 0.0s
+  E_corr: -0.24517489 Ha   MP2 energy: -107.67904558 Ha
+  [MP2] done in 0.0s  [MP2] done in 0.0s
+
+  E_corr: -0.37639106 Ha   MP2 energy: -107.64883956 Ha
+  E_corr: -0.65830975 Ha   MP2 energy: -107.67563666 Ha
+  [MP2] done in 0.0s
+  E_corr: -1.49467034 Ha   MP2 energy: -108.15127839 Ha
+  [MP2] done in 0.0s
+  E_corr: -0.15409048 Ha   MP2 energy: -107.64998379 Ha
+  [MP2] done in 0.0s
+  E_corr: -2.90452589 Ha   MP2 energy: -109.35072682 Ha
+
+========================================================================
+[Step 0] Results -- N2 / sto-3g
+========================================================================
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
+  ----------------------------------------------------------------------
+  HF             -106.65660805     +0.000000       +0.00  deterministic       
+  MP2            -108.15127839     -1.494670     -937.92  deterministic       
+
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 6.0s
+========================================================================
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.4000/results/step0_classical.pkl
+
+============================================================
+  Step 1: Active space
+============================================================
+
+========================================================================
+========================================================================
+
+[Step 0] Results -- N2 / sto-3g[Step 0] Results -- N2 / sto-3g
+
+================================================================================================================================================
+
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
+
+  ----------------------------------------------------------------------  ----------------------------------------------------------------------
+
+  HF             -107.27244850     +0.000000       +0.00  deterministic         HF             -107.49589331     +0.000000       +0.00  deterministic       
+
+  MP2            -107.64883956     -0.376391     -236.19  deterministic       
+  MP2            -107.64998379     -0.154090      -96.69  deterministic       
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+
+
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.  Total time: 6.0s
+
+========================================================================  Total time: 6.0s
+
+========================================================================
+
+========================================================================
+========================================================================
+
+[Step 0] Results -- N2 / sto-3g[Step 0] Results -- N2 / sto-3g
+
+================================================================================================================================================
+
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility       ----------------------------------------------------------------------
+
+  ----------------------------------------------------------------------
+  HF             -107.01732691     +0.000000       +0.00  deterministic         HF             -106.80841148     +0.000000       +0.00  deterministic       
+
+
+========================================================================  MP2            -107.67563666     -0.658310     -413.10  deterministic       
+  MP2            -107.84591777     -1.037506     -651.05  deterministic       
+
+[Step 0] Results -- N2 / sto-3g
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+
+
+========================================================================  Total time: 6.0s  Total time: 6.0s
+
+
+========================================================================
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     ========================================================================
+
+
+  ----------------------------------------------------------------------
+  HF             -106.52411517     +0.000000       +0.00  deterministic       
+  MP2            -108.70718117     -2.183066    -1369.89  deterministic       
+
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 6.0s
+========================================================================
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.5000/results/step0_classical.pkl
+
+============================================================
+  Step 1: Active space
+============================================================
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.8000/results/step0_classical.pkl
+
+============================================================
+  Step 1: Active space
+============================================================
+
+========================================================================
+[Step 0] Results -- N2 / sto-3g
+========================================================================
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
+  ----------------------------------------------------------------------
+  HF             -107.43387069     +0.000000       +0.00  deterministic       
+  MP2            -107.67904558     -0.245175     -153.85  deterministic       
+
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 6.0s
+========================================================================
+
+========================================================================
+[Step 0] Results -- N2 / sto-3g
+========================================================================
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
+  ----------------------------------------------------------------------
+  HF             -106.44620093     +0.000000       +0.00  deterministic       
+  MP2            -109.35072682     -2.904526    -1822.62  deterministic       
+
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 6.0s
+========================================================================
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r3.2000/results/step0_classical.pkl
+
+============================================================
+  Step 1: Active space
+============================================================
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.3000/results/step0_classical.pkl
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.8000/results/step0_classical.pkl
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.0977/results/step0_classical.pkl
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.1000/results/step0_classical.pkl
+
+============================================================
+  Step 1: Active space
+============================================================
+
+============================================================
+  Step 1: Active space
+
+============================================================
+========================================================================================================================
+
+
+  Step 1: Active space  Step 1: Active space
+
+========================================================================================================================
+
+
+============================================================
+[Step 1] Active Space Finder -- N2
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- N2
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- N2
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- N2
+============================================================
+============================================================
+
+[Step 1] Active Space Finder -- N2
+============================================================
+
+============================================================[Step 1] Active Space Finder -- N2
+
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- N2
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- N2
+============================================================
+  Atoms     : 2 ['N', 'N']  Basis: sto-3g
+  Electrons : 14  AOs: 10
+
+-- Phase A: UHF + Classification --
+  Atoms     : 2 ['N', 'N']  Basis: sto-3g
+  Atoms     : 2 ['N', 'N']  Basis: sto-3g
+  Electrons : 14  AOs: 10
+  Electrons : 14  AOs: 10
+  Atoms     : 2 ['N', 'N']  Basis: sto-3g
+  Electrons : 14  AOs: 10
+
+-- Phase A: UHF + Classification --
+  Atoms     : 2 ['N', 'N']  Basis: sto-3g
+  Electrons : 14  AOs: 10
+-- Phase A: UHF + Classification --
+
+
+-- Phase A: UHF + Classification --
+  Atoms     : 2 ['N', 'N']  Basis: sto-3g
+  Electrons : 14  AOs: 10
+
+-- Phase A: UHF + Classification --
+
+-- Phase A: UHF + Classification --
+  Atoms     : 2 ['N', 'N']  Basis: sto-3g
+  Electrons : 14  AOs: 10
+
+-- Phase A: UHF + Classification --
+  Atoms     : 2 ['N', 'N']  Basis: sto-3g
+  Electrons : 14  AOs: 10
+
+-- Phase A: UHF + Classification --
+  UHF energy = -107.27244850 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=14.0233 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -0.376391 Ha
+  cfg.asf.force_active_space is set -- skipping ASF/DMRG entirely and using orbitals [5, 6, 7, 8] directly (indexed in the UHF alpha-MO basis).
+  Total electrons: 14  Core MOs: 5  Raw active: 4
+  Final active electrons: 4
+
+-- Phase D: Loewdin Population --
+  UHF energy = -106.44620093 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=4.4827 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -2.904526 Ha
+  cfg.asf.force_active_space is set -- skipping ASF/DMRG entirely and using orbitals [5, 6, 7, 8] directly (indexed in the UHF alpha-MO basis).
+  Total electrons: 14  Core MOs: 5  Raw active: 4
+  Final active electrons: 4
+
+-- Phase D: Loewdin Population --
+  UHF energy = -107.43387069 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=17.8550 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  UHF energy = -107.49589331 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=22.3316 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -0.245175 Ha
+  cfg.asf.force_active_space is set -- skipping ASF/DMRG entirely and using orbitals [5, 6, 7, 8] directly (indexed in the UHF alpha-MO basis).
+  Total electrons: 14  Core MOs: 5  Raw active: 4
+  Final active electrons: 4
+
+-- Phase D: Loewdin Population --
+  MP2 used: True  E_corr: -0.154090 Ha
+  cfg.asf.force_active_space is set -- skipping ASF/DMRG entirely and using orbitals [5, 6, 7, 8] directly (indexed in the UHF alpha-MO basis).
+  UHF energy = -106.65660805 Ha (converged: True)
+  Total electrons: 14  Core MOs: 5  Raw active: 4
+  Final active electrons: 4
+
+-- Phase D: Loewdin Population --
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=6.4365 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  UHF energy = -106.52411517 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=5.2366 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -1.494670 Ha
+  cfg.asf.force_active_space is set -- skipping ASF/DMRG entirely and using orbitals [5, 6, 7, 8] directly (indexed in the UHF alpha-MO basis).
+  Total electrons: 14  Core MOs: 5  Raw active: 4
+  Final active electrons: 4
+
+-- Phase D: Loewdin Population --
+  MP2 used: True  E_corr: -2.183066 Ha
+  cfg.asf.force_active_space is set -- skipping ASF/DMRG entirely and using orbitals [5, 6, 7, 8] directly (indexed in the UHF alpha-MO basis).
+  Total electrons: 14  Core MOs: 5  Raw active: 4
+  Final active electrons: 4
+
+-- Phase D: Loewdin Population --
+  UHF energy = -106.80841148 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=7.8894 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -1.037506 Ha
+  cfg.asf.force_active_space is set -- skipping ASF/DMRG entirely and using orbitals [5, 6, 7, 8] directly (indexed in the UHF alpha-MO basis).
+  Total electrons: 14  Core MOs: 5  Raw active: 4
+  Final active electrons: 4
+
+-- Phase D: Loewdin Population --
+  UHF energy = -107.01732691 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=10.2104 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -0.658310 Ha
+  cfg.asf.force_active_space is set -- skipping ASF/DMRG entirely and using orbitals [5, 6, 7, 8] directly (indexed in the UHF alpha-MO basis).
+  Total electrons: 14  Core MOs: 5  Raw active: 4
+  Final active electrons: 4
+
+-- Phase D: Loewdin Population --
+
+     MO    Atom  Symbol    Weight
+  ---------------------------------
+      5       1       N    0.5000
+      6       1       N    0.5000
+      7       0       N    0.5000
+      8       0       N    0.5000
+
+     MO    Atom  Symbol    Weight
+  ---------------------------------
+
+============================================================
+
+     MO    Atom  Symbol    Weight
+     MO    Atom  Symbol    Weight      5       1       N    0.5000[Step 1] Summary -- N2
+     MO    Atom  Symbol    Weight
+
+
+
+
+  ---------------------------------  ---------------------------------
+
+      6       1       N    0.5000
+     MO    Atom  Symbol    Weight  Tier: 1  Active space: (4e, 4orb)  Orbitals: [5, 6, 7, 8]  ---------------------------------
+
+
+
+      5       0       N    0.5000      7       0       N    0.5000  ---------------------------------      5       0       N    0.5000  Selection: forced (cfg.asf.force_active_space)
+
+
+
+
+      8       0       N    0.5000      5       0       N    0.5000      6       0       N    0.5000      5       1       N    0.5000
+
+  Correlation strength: 0.6007      6       0       N    0.5000
+
+
+      6       1       N    0.5000
+
+     MO    Atom  Symbol    Weight============================================================      6       0       N    0.5000
+      7       1       N    0.5000      7       1       N    0.5000
+     MO    Atom  Symbol    Weight
+============================================================
+
+
+      7       0       N    0.5000
+
+
+
+  ---------------------------------
+      7       1       N    0.5000      8       1       N    0.5000      8       1       N    0.5000
+
+[Step 1] Summary -- N2  ---------------------------------
+      8       0       N    0.5000
+
+
+      8       1       N    0.5000
+  Tier: 1  Active space: (4e, 4orb)  Orbitals: [5, 6, 7, 8]
+
+  Selection: forced (cfg.asf.force_active_space)
+      5       1       N    0.5000  Correlation strength: 0.0000
+      5       0       N    0.5000
+============================================================
+      6       1       N    0.5000
+============================================================
+============================================================
+
+============================================================
+
+      6       1       N    0.5000      7       0       N    0.5000
+
+
+============================================================[Step 1] Summary -- N2
+
+[Step 1] Summary -- N2[Step 1] Summary -- N2
+
+      7       1       N    0.5000
+
+      8       0       N    0.5000[Step 1] Summary -- N2
+
+  Tier: 1  Active space: (4e, 4orb)  Orbitals: [5, 6, 7, 8]  Tier: 1  Active space: (4e, 4orb)  Orbitals: [5, 6, 7, 8]  Tier: 1  Active space: (4e, 4orb)  Orbitals: [5, 6, 7, 8]
+
+      8       1       N    0.5000
+
+  Tier: 1  Active space: (4e, 4orb)  Orbitals: [5, 6, 7, 8]  Selection: forced (cfg.asf.force_active_space)
+  Selection: forced (cfg.asf.force_active_space)  Selection: forced (cfg.asf.force_active_space)
+
+
+
+  Correlation strength: 0.0000  Selection: forced (cfg.asf.force_active_space)  Correlation strength: 0.1300  Correlation strength: 0.0000
+
+
+
+============================================================
+========================================================================================================================  Correlation strength: 0.7899============================================================
+
+
+
+
+
+============================================================[Step 1] Summary -- N2============================================================
+
+
+[Step 1] Summary -- N2
+  Tier: 1  Active space: (4e, 4orb)  Orbitals: [5, 6, 7, 8]
+  Tier: 1  Active space: (4e, 4orb)  Orbitals: [5, 6, 7, 8]  Selection: forced (cfg.asf.force_active_space)
+
+  Selection: forced (cfg.asf.force_active_space)  Correlation strength: 0.2531
+
+  Correlation strength: 0.0515============================================================
+
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.8000/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.5000/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.4000/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r3.2000/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.1000/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.8000/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.3000/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.0977/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+============================================================
+[Step 2] DMET Embedding -- N2
+============================================================
+  Active space (step 1): (4e, 4orb) MOs=[5, 6, 7, 8]
+  reference=casci   mu_correction=True
+
+============================================================
+[Step 2] DMET Embedding -- N2
+============================================================
+  Active space (step 1): (4e, 4orb) MOs=[5, 6, 7, 8]
+  reference=casci   mu_correction=True
+
+============================================================
+[Step 2] DMET Embedding -- N2
+============================================================
+  Active space (step 1): (4e, 4orb) MOs=[5, 6, 7, 8]
+  reference=casci   mu_correction=True
+
+============================================================
+[Step 2] DMET Embedding -- N2
+============================================================
+
+============================================================  Active space (step 1): (4e, 4orb) MOs=[5, 6, 7, 8]
+
+[Step 2] DMET Embedding -- N2
+  reference=casci   mu_correction=True============================================================
+
+
+============================================================
+  Active space (step 1): (4e, 4orb) MOs=[5, 6, 7, 8][Step 2] DMET Embedding -- N2
+
+============================================================
+  reference=casci   mu_correction=True
+  Active space (step 1): (4e, 4orb) MOs=[5, 6, 7, 8]
+  reference=casci   mu_correction=True
+
+============================================================
+[Step 2] DMET Embedding -- N2
+============================================================
+  Active space (step 1): (4e, 4orb) MOs=[5, 6, 7, 8]
+  reference=casci   mu_correction=True
+
+============================================================
+[Step 2] DMET Embedding -- N2
+============================================================
+  Active space (step 1): (4e, 4orb) MOs=[5, 6, 7, 8]
+  reference=casci   mu_correction=True
+
+-- Phase A: Restore UHF from step 1 --
+
+-- Phase A: Restore UHF from step 1 --
+
+-- Phase A: Restore UHF from step 1 --
+  UHF energy = -106.52411517 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+  UHF energy = -107.27244850 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+  UHF energy = -107.43387069 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+
+-- Phase A: Restore UHF from step 1 --
+
+-- Phase A: Restore UHF from step 1 --
+
+-- Phase A: Restore UHF from step 1 --
+  UHF energy = -106.65660805 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+  UHF energy = -107.01732691 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+  UHF energy = -106.44620093 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+
+-- Phase A: Restore UHF from step 1 --
+  UHF energy = -106.80841148 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+
+-- Phase A: Restore UHF from step 1 --
+  UHF energy = -107.49589331 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+  [diag] MP2 density active<->non-active coupling: max|.|=5.28e-13
+  [diag] MP2 density active<->non-active coupling: max|.|=1.01e-12
+  {'method': 'casci', 'e_cas': -3.844862951282897, 'n_active': 4, 'nel_active': 4}
+  [diag] reference density electron count: 13.986330  (mol.nelectron = 14)
+
+-- Phase C: Schmidt Decomposition --
+  [diag] MP2 density active<->non-active coupling: max|.|=2.03e-15
+  [diag] MP2 density active<->non-active coupling: max|.|=3.63e-03
+  {'method': 'casci', 'e_cas': -5.560680131839066, 'n_active': 4, 'nel_active': 4}
+  [diag] reference density electron count: 13.945586  (mol.nelectron = 14)
+
+-- Phase C: Schmidt Decomposition --
+  [diag] MP2 density active<->non-active coupling: max|.|=1.07e-12
+  {'method': 'casci', 'e_cas': -3.7714234104867783, 'n_active': 4, 'nel_active': 4}
+  [diag] reference density electron count: 13.985926  (mol.nelectron = 14)
+
+-- Phase C: Schmidt Decomposition --
+  [diag] MP2 density active<->non-active coupling: max|.|=5.44e-15
+  [diag] MP2 density active<->non-active coupling: max|.|=8.56e-15
+  [diag] MP2 density active<->non-active coupling: max|.|=9.28e-15
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/dmet_lib.py:234: RuntimeWarning: The reference density has essentially no active/non-active coupling (max|.|=5.3e-13), so the Schmidt decomposition has nothing to extract and the bath will be empty. This is expected when the active orbitals are already near-eigenvectors of the reference density (N2/STO-3G is the known case). Only a concern if you expected a bath for this system.
+  warnings.warn(
+  {'method': 'casci', 'e_cas': -3.9559841195246097, 'n_active': 4, 'nel_active': 4}
+  [diag] reference density electron count: 13.986677  (mol.nelectron = 14)
+
+-- Phase C: Schmidt Decomposition --
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/dmet_lib.py:234: RuntimeWarning: The reference density has essentially no active/non-active coupling (max|.|=5.4e-15), so the Schmidt decomposition has nothing to extract and the bath will be empty. This is expected when the active orbitals are already near-eigenvectors of the reference density (N2/STO-3G is the known case). Only a concern if you expected a bath for this system.
+  warnings.warn(
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/dmet_lib.py:234: RuntimeWarning: The reference density has essentially no active/non-active coupling (max|.|=8.6e-15), so the Schmidt decomposition has nothing to extract and the bath will be empty. This is expected when the active orbitals are already near-eigenvectors of the reference density (N2/STO-3G is the known case). Only a concern if you expected a bath for this system.
+  warnings.warn(
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/dmet_lib.py:234: RuntimeWarning: The reference density has essentially no active/non-active coupling (max|.|=9.3e-15), so the Schmidt decomposition has nothing to extract and the bath will be empty. This is expected when the active orbitals are already near-eigenvectors of the reference density (N2/STO-3G is the known case). Only a concern if you expected a bath for this system.
+  warnings.warn(
+  {'method': 'casci', 'e_cas': -4.111243417437969, 'n_active': 4, 'nel_active': 4}
+  {'method': 'casci', 'e_cas': -4.701944340685205, 'n_active': 4, 'nel_active': 4}
+  {'method': 'casci', 'e_cas': -4.331281403944345, 'n_active': 4, 'nel_active': 4}
+  [diag] reference density electron count: 13.986902  (mol.nelectron = 14)
+  [diag] reference density electron count: 13.988017  (mol.nelectron = 14)
+-- Phase C: Schmidt Decomposition --
+
+
+-- Phase C: Schmidt Decomposition --
+  [diag] reference density electron count: 13.987254  (mol.nelectron = 14)
+
+-- Phase C: Schmidt Decomposition --
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/dmet_lib.py:234: RuntimeWarning: The reference density has essentially no active/non-active coupling (max|.|=2.0e-15), so the Schmidt decomposition has nothing to extract and the bath will be empty. This is expected when the active orbitals are already near-eigenvectors of the reference density (N2/STO-3G is the known case). Only a concern if you expected a bath for this system.
+  warnings.warn(
+  {'method': 'casci', 'e_cas': -5.108720721658977, 'n_active': 4, 'nel_active': 4}
+  [diag] reference density electron count: 13.988896  (mol.nelectron = 14)
+
+-- Phase C: Schmidt Decomposition --
+  [diag] Schmidt singular values (all 4): [0. 0. 0. 0.]
+  No bath orbital cleared the tolerance -- the embedding is the active space alone. This is valid, not a failure.
+  Impurity: 4  Bath: 0  Embedding: 4 -> 8 qubits
+  [diag] Schmidt singular values (all 4): [0. 0. 0. 0.]  sv^2 coverage: 0.0000
+  [diag] Schmidt singular values (all 4): [0. 0. 0. 0.]
+  [diag] Schmidt singular values (all 4): [0. 0. 0. 0.]  [diag] Schmidt singular values (all 4): [0. 0. 0. 0.]
+  [diag] C_emb orthonormality error: 2.44e-15
+
+  No bath orbital cleared the tolerance -- the embedding is the active space alone. This is valid, not a failure.
+
+  No bath orbital cleared the tolerance -- the embedding is the active space alone. This is valid, not a failure.  No bath orbital cleared the tolerance -- the embedding is the active space alone. This is valid, not a failure.
+
+  No bath orbital cleared the tolerance -- the embedding is the active space alone. This is valid, not a failure.
+  Impurity: 4  Bath: 0  Embedding: 4 -> 8 qubits
+  sv^2 coverage: 0.0000
+  [diag] C_emb orthonormality error: 2.66e-15  [diag] Schmidt singular values (all 4): [0. 0. 0. 0.]  Impurity: 4  Bath: 0  Embedding: 4 -> 8 qubits
+  [diag] Schmidt singular values (all 4): [0.007274 0.       0.       0.      ]
+
+
+  Impurity: 4  Bath: 0  Embedding: 4 -> 8 qubits  Impurity: 4  Bath: 0  Embedding: 4 -> 8 qubits  sv^2 coverage: 0.0000  [diag] embedding electron count from the reference density: alpha=2.000000 -> 2, beta=2.000000 -> 2  (the active-space count would give 2, 2)
+
+
+
+  sv^2 coverage: 0.0000  sv^2 coverage: 0.0000
+-- Phase D: Core Mean-Field Potential --  [diag] C_emb orthonormality error: 3.55e-15  No bath orbital cleared the tolerance -- the embedding is the active space alone. This is valid, not a failure.
+
+
+
+
+  [diag] Schmidt singular values (all 4): [0. 0. 0. 0.]  [diag] C_emb orthonormality error: 2.33e-15  [diag] C_emb orthonormality error: 7.89e-15
+
+  [diag] embedding electron count from the reference density: alpha=2.000000 -> 2, beta=2.000000 -> 2  (the active-space count would give 2, 2)
+
+
+-- Phase D: Core Mean-Field Potential --
+  No bath orbital cleared the tolerance -- the embedding is the active space alone. This is valid, not a failure.
+  Impurity: 4  Bath: 0  Embedding: 4 -> 8 qubits  [diag] embedding electron count from the reference density: alpha=2.000000 -> 2, beta=2.000000 -> 2  (the active-space count would give 2, 2)
+  [diag] max |Q_imp.T @ Q_bath| over the 1 kept bath orbital(s): 3.16e-13  (should be ~1e-10)  Impurity: 4  Bath: 0  Embedding: 4 -> 8 qubits
+
+
+  sv^2 coverage: 0.0000
+-- Phase D: Core Mean-Field Potential --
+  sv^2 coverage: 0.0000
+
+  [diag] C_emb orthonormality error: 3.33e-15  [diag] C_emb orthonormality error: 5.23e-14
+
+  [diag] embedding electron count from the reference density: alpha=2.000000 -> 2, beta=2.000000 -> 2  (the active-space count would give 2, 2)  [diag] embedding electron count from the reference density: alpha=2.000000 -> 2, beta=2.000000 -> 2  (the active-space count would give 2, 2)
+
+
+-- Phase D: Core Mean-Field Potential --
+-- Phase D: Core Mean-Field Potential --
+
+  Impurity: 4  Bath: 1  Embedding: 5 -> 10 qubits
+  sv^2 coverage: 1.0000
+  [diag] C_emb orthonormality error: 3.16e-13
+  [diag] embedding electron count from the reference density: alpha=2.000000 -> 2, beta=2.000000 -> 2  (the active-space count would give 2, 2)
+
+-- Phase D: Core Mean-Field Potential --
+  [diag] embedding electron count from the reference density: alpha=2.000000 -> 2, beta=2.000000 -> 2  (the active-space count would give 2, 2)
+
+-- Phase D: Core Mean-Field Potential --
+  [diag] embedding electron count from the reference density: alpha=2.996080 -> 3, beta=2.996080 -> 3  (the active-space count would give 2, 2)
+  [diag] core density electron count: 9.986677  (expect mol.nelectron - embedding electrons = 14 - 4 = 10)
+-- Phase D: Core Mean-Field Potential --
+
+  [diag] core density electron count: 9.988896  (expect mol.nelectron - embedding electrons = 14 - 4 = 10)
+  [diag] core density electron count: 9.986902  (expect mol.nelectron - embedding electrons = 14 - 4 = 10)
+  [diag] core density electron count: 9.985926  (expect mol.nelectron - embedding electrons = 14 - 4 = 10)
+  [diag] core density electron count: 9.988017  (expect mol.nelectron - embedding electrons = 14 - 4 = 10)  [diag] core density electron count: 9.986330  (expect mol.nelectron - embedding electrons = 14 - 4 = 10)
+
+  [diag] core density electron count: 9.987254  (expect mol.nelectron - embedding electrons = 14 - 4 = 10)
+  [diag] core density electron count: 7.953427  (expect mol.nelectron - embedding electrons = 14 - 6 = 8)
+
+-- Phase E: Integral Transformation --
+
+-- Phase E: Integral Transformation --
+
+-- Phase E: Integral Transformation --
+
+-- Phase E: Integral Transformation --
+
+-- Phase E: Integral Transformation --
+
+-- Phase E: Integral Transformation --
+
+-- Phase E: Integral Transformation --
+
+-- Phase E: Integral Transformation --
+  [diag] h2e symmetry error: 5.55e-17
+  ecore = -103.35757449 Ha
+
+-- Phase F: Chemical Potential Correction --
+  [diag] h2e symmetry error: 2.78e-17
+  [diag] h2e symmetry error: 3.47e-18
+  ecore = -103.16087613 Ha
+
+-- Phase F: Chemical Potential Correction --
+  ecore = -103.24145543 Ha
+
+-- Phase F: Chemical Potential Correction --
+  mu = -1.413891 Ha   ecore -> -109.01313965 Ha
+
+  h1e (4, 4)  h2e (4, 4, 4, 4)  Time: 0.0s
+  [diag] h2e symmetry error: 3.47e-18
+  ecore = -102.47565236 Ha
+
+-- Phase F: Chemical Potential Correction --
+  mu = -1.607545 Ha   ecore -> -109.59105703 Ha
+  mu = -1.530833 Ha   ecore -> -109.36478637 Ha
+  h1e (4, 4)  h2e (4, 4, 4, 4)  Time: 0.0s
+
+
+  h1e (4, 4)  h2e (4, 4, 4, 4)  Time: 0.0s
+  mu = -2.023128 Ha   ecore -> -110.56816308 Ha
+
+  h1e (4, 4)  h2e (4, 4, 4, 4)  Time: 0.0s
+  [diag] h2e symmetry error: 2.78e-17
+  ecore = -103.31404809 Ha
+
+-- Phase F: Chemical Potential Correction --
+  mu = -1.459924 Ha   ecore -> -109.15374474 Ha
+
+  h1e (4, 4)  h2e (4, 4, 4, 4)  Time: 0.0s
+  [diag] h2e symmetry error: 2.78e-17
+  ecore = -102.78952511 Ha
+
+-- Phase F: Chemical Potential Correction --
+  mu = -1.874004 Ha   ecore -> -110.28554085 Ha
+
+  h1e (4, 4)  h2e (4, 4, 4, 4)  Time: 0.0s
+  [diag] h2e symmetry error: 3.47e-18
+  ecore = -103.03564531 Ha  [diag] h2e symmetry error: 2.78e-17
+
+
+-- Phase F: Chemical Potential Correction --
+  ecore = -93.90081966 Ha
+
+-- Phase F: Chemical Potential Correction --
+  mu = -1.715221 Ha   ecore -> -109.89652791 Ha
+
+  h1e (4, 4)  h2e (4, 4, 4, 4)  Time: 0.0s
+  mu = -3.149810 Ha   ecore -> -112.79968030 Ha
+
+  h1e (5, 5)  h2e (5, 5, 5, 5)  Time: 0.0s
+
+-- Verification: independent embedded SCF --
+
+-- Verification: independent embedded SCF --
+
+-- Verification: independent embedded SCF --
+
+-- Verification: independent embedded SCF --
+
+-- Verification: independent embedded SCF --
+
+-- Verification: independent embedded SCF --
+
+-- Verification: independent embedded SCF --
+  Embedded SCF (independent check) = -107.4338706900 Ha
+  Full-molecule UHF                = -107.4338706900 Ha
+  delta = +0.000e+00 Ha  (tol 2e-07)  OK
+  Embedded SCF (independent check) = -107.2724485012 Ha
+  Full-molecule UHF                = -107.2724485012 Ha
+  delta = -1.421e-14 Ha  (tol 2e-07)  OK
+  Embedded SCF (independent check) = -106.6566080485 Ha
+  Full-molecule UHF                = -106.6566080485 Ha
+  delta = +1.421e-14 Ha  (tol 2e-07)  OK
+  Embedded SCF (independent check) = -107.0173269073 Ha
+  Full-molecule UHF                = -107.0173269073 Ha
+  delta = +0.000e+00 Ha  (tol 2e-07)  OK
+  Embedded SCF (independent check) = -107.4958933078 Ha
+  Full-molecule UHF                = -107.4958933078 Ha
+  delta = -1.421e-14 Ha  (tol 2e-07)  OK
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.3000/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- N2
+  Embedding : 4 imp + 0 bath = 4 orbitals (8 qubits)
+  Electrons : 2 alpha + 2 beta
+  ecore     : -110.56816308 Ha    mu: -2.023128 Ha
+============================================================
+
+[QuEnAIS] Pipeline complete.
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.5000/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- N2
+  Embedding : 4 imp + 0 bath = 4 orbitals (8 qubits)
+  Electrons : 2 alpha + 2 beta
+  ecore     : -110.28554085 Ha    mu: -1.874004 Ha
+============================================================
+
+[QuEnAIS] Pipeline complete.
+  Embedded SCF (independent check) = -106.8084114758 Ha
+  Full-molecule UHF                = -106.8084114758 Ha
+  delta = +0.000e+00 Ha  (tol 2e-07)  OK
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.4000/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- N2
+  Embedding : 4 imp + 0 bath = 4 orbitals (8 qubits)
+  Electrons : 2 alpha + 2 beta
+  ecore     : -109.36478637 Ha    mu: -1.530833 Ha
+============================================================
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.8000/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- N2
+  Embedding : 4 imp + 0 bath = 4 orbitals (8 qubits)
+  Electrons : 2 alpha + 2 beta
+  ecore     : -109.89652791 Ha    mu: -1.715221 Ha
+============================================================
+
+[QuEnAIS] Pipeline complete.
+
+[QuEnAIS] Pipeline complete.
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r1.0977/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- N2
+  Embedding : 4 imp + 1 bath = 5 orbitals (10 qubits)
+  Electrons : 3 alpha + 3 beta
+  ecore     : -112.79968030 Ha    mu: -3.149810 Ha
+============================================================
+
+[QuEnAIS] Pipeline complete.
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.1000/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- N2
+  Embedding : 4 imp + 0 bath = 4 orbitals (8 qubits)
+  Electrons : 2 alpha + 2 beta
+  ecore     : -109.59105703 Ha    mu: -1.607545 Ha
+============================================================
+
+[QuEnAIS] Pipeline complete.
+
+-- Verification: independent embedded SCF --
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/hamiltonian.py:367: RuntimeWarning: The embedded SCF check could not run: The embedding-space SCF did not converge. Check h1e_emb/h2e_emb for numerical problems before trusting anything downstream.
+  warnings.warn(f"The embedded SCF check could not run: {exc}",
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r2.8000/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- N2
+  Embedding : 4 imp + 0 bath = 4 orbitals (8 qubits)
+  Electrons : 2 alpha + 2 beta
+  ecore     : -109.15374474 Ha    mu: -1.459924 Ha
+============================================================
+
+[QuEnAIS] Pipeline complete.
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/hamiltonian.py:367: RuntimeWarning: The embedded SCF check could not run: The embedding-space SCF did not converge. Check h1e_emb/h2e_emb for numerical problems before trusting anything downstream.
+  warnings.warn(f"The embedded SCF check could not run: {exc}",
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/tools/scans/N2/N2_r3.2000/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- N2
+  Embedding : 4 imp + 0 bath = 4 orbitals (8 qubits)
+  Electrons : 2 alpha + 2 beta
+  ecore     : -109.01313965 Ha    mu: -1.413891 Ha
+============================================================
+
+[QuEnAIS] Pipeline complete.
+[1]   Done                    quenais-run --molecule N2 --basis sto-3g --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 --project-dir scans/N2/N2_r$(printf %.4f $r) --no-scan --no-quantum-scan --force-active-space 5 6 7 8
+[3]   Done                    quenais-run --molecule N2 --basis sto-3g --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 --project-dir scans/N2/N2_r$(printf %.4f $r) --no-scan --no-quantum-scan --force-active-space 5 6 7 8
+[6]   Done                    quenais-run --molecule N2 --basis sto-3g --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 --project-dir scans/N2/N2_r$(printf %.4f $r) --no-scan --no-quantum-scan --force-active-space 5 6 7 8
+[2]   Done                    quenais-run --molecule N2 --basis sto-3g --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 --project-dir scans/N2/N2_r$(printf %.4f $r) --no-scan --no-quantum-scan --force-active-space 5 6 7 8
+[4]   Done                    quenais-run --molecule N2 --basis sto-3g --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 --project-dir scans/N2/N2_r$(printf %.4f $r) --no-scan --no-quantum-scan --force-active-space 5 6 7 8
+[5]   Done                    quenais-run --molecule N2 --basis sto-3g --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 --project-dir scans/N2/N2_r$(printf %.4f $r) --no-scan --no-quantum-scan --force-active-space 5 6 7 8
+[7]-  Done                    quenais-run --molecule N2 --basis sto-3g --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 --project-dir scans/N2/N2_r$(printf %.4f $r) --no-scan --no-quantum-scan --force-active-space 5 6 7 8
+[8]+  Done                    quenais-run --molecule N2 --basis sto-3g --geometry "N 0 0 0; N 0 0 $r" --steps 0 1 2 --project-dir scans/N2/N2_r$(printf %.4f $r) --no-scan --no-quantum-scan --force-active-space 5 6 7 8
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:tools]$ 
