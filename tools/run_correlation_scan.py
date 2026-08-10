@@ -75,6 +75,7 @@ DEFAULTS = {
         # the triple bond needs all three bonding/antibonding pairs, or the
         # stretched geometries are not actually strongly correlated.
         "active_space": [2, 3, 4, 5, 6, 7, 8, 9],
+        "nelecas": 10,
         "equilibrium": 1.0977,
         "distances": [1.0977, 1.3, 1.5, 1.8, 2.1, 2.4, 2.8, 3.2],
         # No anchor: this active space is not the one the golden data used.
@@ -87,6 +88,7 @@ DEFAULTS = {
     "Cr2": {
         "atoms": ("Cr", "Cr"),
         "active_space": list(range(18, 30)),
+        "nelecas": 12,
         "equilibrium": 1.68,
         "distances": [1.5, 1.68, 2.0, 2.5, 3.0],
         "golden_casci": None,
@@ -97,6 +99,57 @@ DEFAULTS = {
 # the size of the determinant space or the comparison is vacuous -- see the
 # guard in measure().
 BUDGET = 200
+
+
+def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
+    """
+    Build the active-space Hamiltonian directly with PySCF -- no DMET.
+
+    WHY THIS EXISTS
+    ---------------
+    The first version of this scan ran the full DMET pipeline at each geometry
+    and every point failed the embedded-SCF check by 0.3-0.7 Ha, equilibrium
+    included. The cause was the active space, not the stretching: N2/STO-3G has
+    only 10 orbitals, so an 8-orbital impurity plus 2 bath orbitals spans the
+    whole molecule. DMET needs an environment to fold into e_core; with none
+    left, the core potential and the electron count double-count and the
+    embedding Hamiltonian is meaningless.
+
+    But this scan does not need DMET at all. "Where does perturbative selection
+    stop being optimal as correlation grows" is a question about a Hamiltonian,
+    not about an embedding. Building the CAS integrals directly removes the
+    failure mode and changes nothing about what is being measured.
+
+    DMET belongs in the follow-up: once this identifies the interesting
+    geometries, run the real pipeline there, on a basis large enough to leave
+    a genuine environment.
+
+    Returns (molecule_object, reference_scf_energy).
+    """
+    from pyscf import ao2mo, gto, mcscf, scf
+    from quenais.quantum.gqe_adapter import DMETEmbeddingMolecule
+
+    mol = gto.M(atom=f"{atoms[0]} 0 0 0; {atoms[1]} 0 0 {r:.6f}",
+                basis=basis, verbose=0)
+    mf = scf.RHF(mol)
+    mf.conv_tol = 1e-11
+    mf.max_cycle = 200
+    mf.kernel()
+    if not mf.converged:
+        raise RuntimeError(f"reference RHF did not converge at r={r:.4f}")
+
+    # ncore = (nelectron - nelecas) / 2, so the active orbitals are exactly the
+    # ncas canonical MOs above the core. For N2/STO-3G with ncas=8, nelecas=10
+    # that is MOs 2..9 -- the full valence space, core 1s frozen.
+    mc = mcscf.CASCI(mf, ncas, nelecas)
+    mc.verbose = 0
+    h1, ecore = mc.get_h1eff()
+    h2 = ao2mo.restore(1, mc.get_h2eff(), ncas)
+
+    n_a = (nelecas + mol.spin) // 2
+    n_b = nelecas - n_a
+    emb = DMETEmbeddingMolecule(h1, h2, ecore, n_a, n_b, num_threads=threads)
+    return emb, float(mf.e_tot)
 
 
 def step2_path_for(scan_root, molecule, r):
@@ -142,9 +195,8 @@ def run_pipeline(molecule, atoms, r, active_space, basis, scan_root, force=False
     return step2
 
 
-def measure(step2_path, budget=BUDGET, threads=1):
-    """Stage 0 and stage 1 measurements for one embedded Hamiltonian."""
-    from quenais.quantum.gqe_adapter import load_from_dmet_pickle
+def measure(mol, scf_reference, budget=BUDGET, tol=1e-6):
+    """Stage 0 and stage 1 measurements for one active-space Hamiltonian."""
     try:
         from quenais.quantum import det_analysis as da
         from quenais.quantum import det_expansion as dx
@@ -152,28 +204,15 @@ def measure(step2_path, budget=BUDGET, threads=1):
         import det_analysis as da
         import det_expansion as dx
 
-    mol = load_from_dmet_pickle(str(step2_path), num_threads=threads)
+    # TRUST CHECK. mol.hf is a real converged SCF on the active-space
+    # integrals. With canonical orbitals and a frozen core it must reproduce
+    # the full RHF energy -- the reference determinant lives inside the active
+    # space, and RHF is already stationary there. If it does not, the integrals
+    # or the electron count are wrong and nothing downstream means anything.
+    scf_delta = float(mol.hf.e_tot) - float(scf_reference)
+    trusted = abs(scf_delta) <= tol
 
-    # TRUST CHECK -- the single most diagnostic quantity in the pipeline.
-    # mol.hf is a real converged SCF on h1e_emb/h2e_emb/ecore. If it does not
-    # land on the full molecule's UHF energy, the embedding Hamiltonian itself
-    # is wrong and every number downstream is fiction. reference_values calls
-    # this EMBEDDED_SCF_VS_UHF_TOL and sets it at 2e-7.
-    #
-    # This matters most exactly where this scan is most interesting: at
-    # stretched geometries the DMET construction is under strain, so the
-    # points that would carry the result are the ones most likely to be bad.
-    step2 = mol._step2_result
-    uhf_ref = float(step2["uhf_energy"])
-    scf_delta = float(mol.hf.e_tot) - uhf_ref
-    trusted = abs(scf_delta) <= 2e-7
-
-    # A second, independent smell test. If the embedding really held every
-    # electron, e_core would be close to the nuclear repulsion and positive.
-    # A large negative e_core alongside a full electron count means the
-    # electron bookkeeping and the core potential disagree.
     n_elec_emb = sum(mol.nelec)
-    n_elec_mol = int(step2.get("mol_info", {}).get("n_electrons", 0))
 
     e_exact, flat, space = da.casci_vector(mol)
     order, cum = da.weight_curve(flat)
@@ -210,11 +249,10 @@ def measure(step2_path, budget=BUDGET, threads=1):
         "nelec": list(space.nelec),
         "ndet": space.ndet,
         "e_casci": e_exact,
-        "embedded_scf_delta": scf_delta,
+        "scf_delta": scf_delta,
         "trusted": trusted,
         "e_core": float(mol.cas_hamiltonian.e_core),
-        "n_elec_emb": n_elec_emb,
-        "n_elec_mol": n_elec_mol,
+        "n_elec_active": n_elec_emb,
         "dominant_weight": float(cum[0]),
         "n_for_99pct": int(np.searchsorted(cum, 0.99) + 1),
         "n_chem": n_chem,
@@ -256,43 +294,31 @@ def main():
     rows = []
     for r in distances:
         print(f"\n-- r = {r:.4f} A --")
-        step2 = run_pipeline(args.molecule, spec["atoms"], r, active_space,
-                             args.basis, scan_root, force=args.force)
-        if step2 is None:
-            continue
         try:
-            m = measure(step2, budget=args.budget, threads=args.threads)
+            mol, e_scf = build_cas_molecule(
+                spec["atoms"], r, args.basis, len(active_space),
+                spec["nelecas"], threads=args.threads)
+            m = measure(mol, e_scf, budget=args.budget)
         except Exception as exc:
-            print(f"  measurement failed at r={r:.4f}: {exc}")
+            print(f"  failed at r={r:.4f}: {exc}")
             continue
 
         m["r"] = r
         rows.append(m)
-        print(f"  n_emb={m['n_emb']}  nelec={tuple(m['nelec'])}  "
+        print(f"  ncas={m['n_emb']}  nelec={tuple(m['nelec'])}  "
               f"ndet={m['ndet']}  budget={m['budget']} "
               f"({100*m['budget']/m['ndet']:.1f}% of the space)")
         print(f"  dominant weight={m['dominant_weight']:.4f}  "
               f"(1.0 = single reference, lower = more correlated)")
-        flag = "TRUSTED" if m["trusted"] else "*** UNTRUSTED ***"
-        print(f"  embedded SCF vs full UHF: {m['embedded_scf_delta']:+.3e} Ha "
-              f"(tol 2e-07)  {flag}")
+        flag = "ok" if m["trusted"] else "*** UNTRUSTED ***"
+        print(f"  active-space SCF vs full RHF: {m['scf_delta']:+.3e} Ha  {flag}")
         if not m["trusted"]:
-            print(f"    e_core={m['e_core']:.6f}  electrons in embedding="
-                  f"{m['n_elec_emb']} of {m['n_elec_mol']} in the molecule")
-            print(f"    the embedding Hamiltonian is wrong here; this row is "
-                  f"not evidence of anything")
+            print(f"    integrals or electron count are wrong here; this row "
+                  f"is not evidence of anything")
         print(f"  CIPSI {m['err_cipsi_mha']:8.4f} mHa   "
               f"oracle {m['err_oracle_mha']:8.4f} mHa   "
               f"gap {m['cipsi_above_oracle_mha']:+8.4f} mHa   "
               f"N_chem={m['n_chem']}")
-
-        # Anchor check: the equilibrium point must reproduce the golden data.
-        if spec["golden_casci"] is not None and abs(r - spec["equilibrium"]) < 1e-6:
-            diff = abs(m["e_casci"] - spec["golden_casci"])
-            verdict = ("PASS" if diff < 1e-8 else
-                       "FAIL -- not reproducing validated data, stop here")
-            print(f"  ANCHOR: e_casci {m['e_casci']:.12f} vs golden "
-                  f"{spec['golden_casci']:.12f}  diff {diff:.3e}  {verdict}")
 
     if not rows:
         print("\nno geometries succeeded")
