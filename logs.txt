@@ -1,16 +1,15 @@
-python -c "import pyscf; print(pyscf.__version__)"
-python -c "
-from quenais.quantum.gqe_adapter import load_from_dmet_pickle
-m = load_from_dmet_pickle('tests/regression/golden/LiH/step2_hamiltonian.pkl')
-print(m.compute_casci())
-"
-
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python -c "import pyscf; print(pyscf.__version__)"
-python -c "
-from quenais.quantum.gqe_adapter import load_from_dmet_pickle
-m = load_from_dmet_pickle('tests/regression/golden/LiH/step2_hamiltonian.pkl')
-print(m.compute_casci())
-"
-2.14.0
--7.881246151999262
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_stage0.py --threads 24
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_stage0.py", line 153, in <module>
+    main()
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_stage0.py", line 141, in main
+    out[s] = run_system(s, threads=args.threads)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_stage0.py", line 51, in run_system
+    import det_analysis as da          # quenais.quantum.det_analysis once installed
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'det_analysis'
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ cd quenais/quantum/
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:quantum]$ ls
+det_analysis.py  gqe_adapter.py  gqe_pools.py  gqe_runner.py  gqe_setup.py  _gqe_shims  __init__.py  __pycache__  solver.py
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:quantum]$
