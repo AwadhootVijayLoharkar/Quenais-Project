@@ -1,0 +1,245 @@
+#!/usr/bin/env python
+"""
+Correlation scan -- find where classical selection starts to lose.
+
+Goes in: tools/run_correlation_scan.py
+
+THE EXPERIMENT
+--------------
+Stretch a bond. Correlation rises smoothly: near equilibrium one configuration
+dominates and classical selected-CI is unbeatable; near dissociation the
+wavefunction spreads over many near-degenerate configurations and classical
+selection has nothing to anchor on.
+
+At each bond length, with the active space held FIXED, measure:
+
+    dominant weight  -- |c|^2 of the largest determinant. The correlation dial.
+                        ~0.9 = single reference.  <0.5 = strongly correlated.
+    N_chem           -- determinants needed for chemical accuracy
+    CIPSI error      -- classical selection at a fixed budget
+    oracle error     -- best possible at that budget
+
+The bond length where CIPSI's error starts climbing away from the oracle is the
+crossover: the point past which selection quality stops being solved by a
+perturbative criterion. That is where a quantum sampler has something to prove,
+and it is a number nobody has published.
+
+Everything here is classical and cheap. Do NOT run the quantum solvers across
+the whole scan -- run them at the two or three geometries this identifies.
+
+WHY THE ACTIVE SPACE IS FORCED
+------------------------------
+ASF would choose a different active space at each bond length, so the series
+would compare different embeddings rather than different correlation strengths.
+Forcing it keeps geometry as the only variable. The default reproduces the
+validated N2 golden data at equilibrium, which is the built-in check that the
+scan is wired up correctly.
+
+USAGE
+-----
+    python tools/run_correlation_scan.py
+    python tools/run_correlation_scan.py --distances 1.0977 1.4 1.8 2.2 2.6 3.0
+    python tools/run_correlation_scan.py --molecule N2 --active-space 4 5 6 7 8 9
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import numpy as np
+
+REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+
+# N2 in STO-3G. The default active space is the one the golden data used, so
+# the r = 1.0977 point must reproduce DMET_CASCI = -107.598406106545040.
+DEFAULTS = {
+    "N2": {
+        "atoms": ("N", "N"),
+        "active_space": [5, 6, 7, 8],
+        "equilibrium": 1.0977,
+        "distances": [1.0977, 1.3, 1.5, 1.8, 2.1, 2.4, 2.8, 3.2],
+        "golden_casci": -107.598406106545040,
+    },
+    # Strongly correlated at every geometry -- the real target once the N2
+    # scan has established the method. Needs a forced space; ASF under-selects
+    # for d-block. (12e,12o) is C(12,6)^2 = 853,776 determinants: still exact.
+    "Cr2": {
+        "atoms": ("Cr", "Cr"),
+        "active_space": list(range(18, 30)),
+        "equilibrium": 1.68,
+        "distances": [1.5, 1.68, 2.0, 2.5, 3.0],
+        "golden_casci": None,
+    },
+}
+
+# Fixed budget for the CIPSI comparison, in determinants.
+BUDGET = 500
+
+
+def run_pipeline(molecule, atoms, r, active_space, basis, scan_root, force=False):
+    """Run steps 0-2 for one geometry. Returns the step 2 pickle path."""
+    proj = scan_root / f"{molecule}_r{r:.4f}"
+    step2 = proj / "step2_hamiltonian.pkl"
+    if step2.exists() and not force:
+        print(f"  [cache] {step2.name} exists for r={r:.4f}")
+        return step2
+
+    geom = f"{atoms[0]} 0 0 0; {atoms[1]} 0 0 {r:.6f}"
+    cmd = [
+        "quenais-run",
+        "--molecule", molecule,
+        "--basis", basis,
+        "--geometry", geom,
+        "--steps", "0", "1", "2",
+        "--project-dir", str(proj),
+        "--no-scan", "--no-quantum-scan",
+        "--force-active-space", *[str(i) for i in active_space],
+    ]
+    if force:
+        cmd.append("--force")
+
+    print(f"  running pipeline at r={r:.4f} ...")
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != 0:
+        print(f"  FAILED at r={r:.4f}:\n{res.stdout[-1500:]}\n{res.stderr[-1500:]}")
+        return None
+    if not step2.exists():
+        print(f"  pipeline finished but {step2} is missing")
+        return None
+    return step2
+
+
+def measure(step2_path, budget=BUDGET, threads=1):
+    """Stage 0 and stage 1 measurements for one embedded Hamiltonian."""
+    from quenais.quantum.gqe_adapter import load_from_dmet_pickle
+    try:
+        from quenais.quantum import det_analysis as da
+        from quenais.quantum import det_expansion as dx
+    except ImportError:
+        import det_analysis as da
+        import det_expansion as dx
+
+    mol = load_from_dmet_pickle(str(step2_path), num_threads=threads)
+    e_exact, flat, space = da.casci_vector(mol)
+    order, cum = da.weight_curve(flat)
+
+    n_eff = min(budget, space.ndet)
+
+    # Oracle: best possible at the budget.
+    e_oracle = da.projected_energy(mol, order[:n_eff], space=space)
+
+    # CIPSI: classical selection at the same budget, no quantum input.
+    sel, history = dx.cipsi_from_scratch(mol, n_eff, space=space, verbose=False)
+    e_cipsi = history[-1]["energy"]
+
+    # N_chem on a coarse grid -- cheap, and only the magnitude matters here.
+    grid = sorted({int(round(x)) for x in np.logspace(0, np.log10(space.ndet), 24)})
+    n_chem = None
+    for n in grid:
+        if abs(da.projected_energy(mol, order[:n], space=space) - e_exact) <= 1.6e-3:
+            n_chem = n
+            break
+
+    return {
+        "n_emb": space.norb,
+        "nelec": list(space.nelec),
+        "ndet": space.ndet,
+        "e_casci": e_exact,
+        "dominant_weight": float(cum[0]),
+        "n_for_99pct": int(np.searchsorted(cum, 0.99) + 1),
+        "n_chem": n_chem,
+        "budget": n_eff,
+        "err_oracle_mha": 1e3 * (e_oracle - e_exact),
+        "err_cipsi_mha": 1e3 * (e_cipsi - e_exact),
+        "cipsi_above_oracle_mha": 1e3 * (e_cipsi - e_oracle),
+    }
+
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--molecule", default="N2", choices=list(DEFAULTS))
+    p.add_argument("--basis", default="sto-3g")
+    p.add_argument("--distances", type=float, nargs="+", default=None)
+    p.add_argument("--active-space", type=int, nargs="+", default=None)
+    p.add_argument("--budget", type=int, default=BUDGET)
+    p.add_argument("--threads", type=int, default=1)
+    p.add_argument("--force", action="store_true")
+    args = p.parse_args()
+
+    spec = DEFAULTS[args.molecule]
+    distances = args.distances or spec["distances"]
+    active_space = args.active_space or spec["active_space"]
+    scan_root = REPO / "scans" / args.molecule
+    scan_root.mkdir(parents=True, exist_ok=True)
+
+    print(f"{'='*76}")
+    print(f"correlation scan: {args.molecule}/{args.basis}")
+    print(f"active space (forced, fixed across the scan): {active_space}")
+    print(f"budget for the CIPSI/oracle comparison: {args.budget} determinants")
+    print(f"{'='*76}")
+
+    rows = []
+    for r in distances:
+        print(f"\n-- r = {r:.4f} A --")
+        step2 = run_pipeline(args.molecule, spec["atoms"], r, active_space,
+                             args.basis, scan_root, force=args.force)
+        if step2 is None:
+            continue
+        try:
+            m = measure(step2, budget=args.budget, threads=args.threads)
+        except Exception as exc:
+            print(f"  measurement failed at r={r:.4f}: {exc}")
+            continue
+
+        m["r"] = r
+        rows.append(m)
+        print(f"  n_emb={m['n_emb']}  ndet={m['ndet']}  "
+              f"dominant weight={m['dominant_weight']:.4f}")
+        print(f"  CIPSI {m['err_cipsi_mha']:8.4f} mHa   "
+              f"oracle {m['err_oracle_mha']:8.4f} mHa   "
+              f"gap {m['cipsi_above_oracle_mha']:+8.4f} mHa   "
+              f"N_chem={m['n_chem']}")
+
+        # Anchor check: the equilibrium point must reproduce the golden data.
+        if spec["golden_casci"] is not None and abs(r - spec["equilibrium"]) < 1e-6:
+            diff = abs(m["e_casci"] - spec["golden_casci"])
+            verdict = ("PASS" if diff < 1e-8 else
+                       "FAIL -- not reproducing validated data, stop here")
+            print(f"  ANCHOR: e_casci {m['e_casci']:.12f} vs golden "
+                  f"{spec['golden_casci']:.12f}  diff {diff:.3e}  {verdict}")
+
+    if not rows:
+        print("\nno geometries succeeded")
+        return
+
+    print(f"\n{'='*76}")
+    print(f"  {'r (A)':>7} {'dom wt':>8} {'N_chem':>8} {'CIPSI':>10} "
+          f"{'oracle':>10} {'gap':>10}")
+    for m in rows:
+        print(f"  {m['r']:>7.3f} {m['dominant_weight']:>8.4f} "
+              f"{str(m['n_chem']):>8} {m['err_cipsi_mha']:>10.4f} "
+              f"{m['err_oracle_mha']:>10.4f} {m['cipsi_above_oracle_mha']:>+10.4f}")
+    print(f"  (errors in mHa at a {args.budget}-determinant budget)")
+    print("\n  Read the 'gap' column: while it stays near zero, classical "
+          "selection is\n  effectively optimal and no sampler can help. Where "
+          "it starts to grow is\n  the crossover -- run the quantum solvers "
+          "THERE, not across the whole scan.")
+
+    out = scan_root / f"correlation_scan_{args.molecule}.csv"
+    with open(out, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+        w.writeheader()
+        w.writerows(rows)
+    with open(scan_root / f"correlation_scan_{args.molecule}.json", "w") as fh:
+        json.dump(rows, fh, indent=2)
+    print(f"\n  wrote {out}")
+
+
+if __name__ == "__main__":
+    main()
