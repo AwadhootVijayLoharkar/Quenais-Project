@@ -1,0 +1,71 @@
+============================================================================
+correlation scan: N2/sto-3g
+active space (forced, fixed across the scan): [2, 3, 4, 5, 6, 7, 8, 9]
+budget for the CIPSI/oracle comparison: 200 determinants
+============================================================================
+
+-- r = 1.0977 A --
+  ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
+  dominant weight=0.9173  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: -1.421e-14 Ha  ok
+  CIPSI   0.1192 mHa   oracle   0.1233 mHa   gap  -0.0040 mHa   N_chem=134
+
+-- r = 1.3000 A --
+  ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
+  dominant weight=0.8523  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: +0.000e+00 Ha  ok
+  CIPSI   0.8128 mHa   oracle   0.8165 mHa   gap  -0.0037 mHa   N_chem=191
+
+-- r = 1.5000 A --
+  ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
+  dominant weight=0.7373  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: -1.421e-14 Ha  ok
+  CIPSI   2.1518 mHa   oracle   2.2884 mHa   gap  -0.1365 mHa   N_chem=271
+
+-- r = 1.8000 A --
+  ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
+  dominant weight=0.4257  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: +0.000e+00 Ha  ok
+  CIPSI   1.9203 mHa   oracle   1.4135 mHa   gap  +0.5068 mHa   N_chem=191
+
+-- r = 2.1000 A --
+  ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
+  dominant weight=0.1916  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: +0.000e+00 Ha  ok
+  CIPSI   2.3843 mHa   oracle   1.3885 mHa   gap  +0.9958 mHa   N_chem=271
+
+-- r = 2.4000 A --
+  ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
+  dominant weight=0.1112  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: -1.421e-14 Ha  ok
+  CIPSI   1.4638 mHa   oracle   0.8925 mHa   gap  +0.5712 mHa   N_chem=191
+
+-- r = 2.8000 A --
+  ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
+  dominant weight=0.0777  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: -2.949e-10 Ha  ok
+  CIPSI   0.2725 mHa   oracle   0.1194 mHa   gap  +0.1531 mHa   N_chem=134
+
+-- r = 3.2000 A --
+  ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
+  dominant weight=0.0346  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: +0.000e+00 Ha  ok
+  CIPSI   0.3167 mHa   oracle   0.0887 mHa   gap  +0.2280 mHa   N_chem=95
+
+============================================================================
+    r (A)   dom wt   N_chem      CIPSI     oracle        gap   CASCI chk
+    1.098   0.9173      134     0.1192     0.1233    -0.0040          ok
+    1.300   0.8523      191     0.8128     0.8165    -0.0037          ok
+    1.500   0.7373      271     2.1518     2.2884    -0.1365          ok
+    1.800   0.4257      191     1.9203     1.4135    +0.5068          ok
+    2.100   0.1916      271     2.3843     1.3885    +0.9958          ok
+    2.400   0.1112      191     1.4638     0.8925    +0.5712          ok
+    2.800   0.0777      134     0.2725     0.1194    +0.1531          ok
+    3.200   0.0346       95     0.3167     0.0887    +0.2280          ok
+  (errors in mHa at a 200-determinant budget)
+
+  Read the 'gap' column over the TRUSTED rows only: while it stays near
+  zero, classical selection is effectively optimal and no sampler can help.
+  Where it starts to grow is the crossover -- run the quantum solvers THERE.
+
+  wrote /home/loharkar/quenais-standalone/Quenais-Project/scans/N2/correlation_scan_N2.csv
