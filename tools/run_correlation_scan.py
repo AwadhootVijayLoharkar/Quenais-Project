@@ -61,10 +61,25 @@ sys.path.insert(0, str(REPO))
 DEFAULTS = {
     "N2": {
         "atoms": ("N", "N"),
-        "active_space": [5, 6, 7, 8],
+        # FULL VALENCE (10e,8o): MOs 2..9, 0-indexed, = 2sg 2su 1pu(x2) 3sg
+        # 1pg(x2) 3su. C(8,5)^2 = 3136 determinants.
+        #
+        # NOT the golden [5,6,7,8]. That space is (4e,4o) -> 36 determinants
+        # in total, which is smaller than any sensible selection budget: both
+        # CIPSI and the oracle would be handed the entire space at every
+        # geometry and report zero difference. It is the right space for
+        # reproducing the golden regression numbers and the wrong one for
+        # measuring selection quality.
+        #
+        # It also has to be the full valence space for the physics: breaking
+        # the triple bond needs all three bonding/antibonding pairs, or the
+        # stretched geometries are not actually strongly correlated.
+        "active_space": [2, 3, 4, 5, 6, 7, 8, 9],
         "equilibrium": 1.0977,
         "distances": [1.0977, 1.3, 1.5, 1.8, 2.1, 2.4, 2.8, 3.2],
-        "golden_casci": -107.598406106545040,
+        # No anchor: this active space is not the one the golden data used.
+        # The (4e,4o) golden number is reproduced by run_stage0.py instead.
+        "golden_casci": None,
     },
     # Strongly correlated at every geometry -- the real target once the N2
     # scan has established the method. Needs a forced space; ASF under-selects
@@ -78,16 +93,28 @@ DEFAULTS = {
     },
 }
 
-# Fixed budget for the CIPSI comparison, in determinants.
-BUDGET = 500
+# Fixed budget for the CIPSI comparison, in determinants. Must be well below
+# the size of the determinant space or the comparison is vacuous -- see the
+# guard in measure().
+BUDGET = 200
+
+
+def step2_path_for(scan_root, molecule, r):
+    """
+    Where the pipeline actually writes the step 2 pickle.
+
+    quenais-run puts stage outputs under <project-dir>/results/, so the path
+    is NOT <project-dir>/step2_hamiltonian.pkl.
+    """
+    return scan_root / f"{molecule}_r{r:.4f}" / "results" / "step2_hamiltonian.pkl"
 
 
 def run_pipeline(molecule, atoms, r, active_space, basis, scan_root, force=False):
     """Run steps 0-2 for one geometry. Returns the step 2 pickle path."""
     proj = scan_root / f"{molecule}_r{r:.4f}"
-    step2 = proj / "step2_hamiltonian.pkl"
+    step2 = step2_path_for(scan_root, molecule, r)
     if step2.exists() and not force:
-        print(f"  [cache] {step2.name} exists for r={r:.4f}")
+        print(f"  [cache] step2 exists for r={r:.4f}")
         return step2
 
     geom = f"{atoms[0]} 0 0 0; {atoms[1]} 0 0 {r:.6f}"
@@ -129,7 +156,17 @@ def measure(step2_path, budget=BUDGET, threads=1):
     e_exact, flat, space = da.casci_vector(mol)
     order, cum = da.weight_curve(flat)
 
-    n_eff = min(budget, space.ndet)
+    # A budget at or near the size of the space makes the comparison vacuous:
+    # both CIPSI and the oracle get handed (almost) everything and both come
+    # out exact. This is the failure mode of using the (4e,4o) N2 space, whose
+    # 36 determinants are smaller than any reasonable budget.
+    if budget >= 0.5 * space.ndet:
+        raise ValueError(
+            f"budget {budget} is >= half the determinant space ({space.ndet}). "
+            f"Every method would look identical. Use a larger active space or "
+            f"a smaller budget -- aim for a budget around 5-10% of the space."
+        )
+    n_eff = budget
 
     # Oracle: best possible at the budget.
     e_oracle = da.projected_energy(mol, order[:n_eff], space=space)
@@ -169,13 +206,18 @@ def main():
     p.add_argument("--active-space", type=int, nargs="+", default=None)
     p.add_argument("--budget", type=int, default=BUDGET)
     p.add_argument("--threads", type=int, default=1)
+    p.add_argument("--scan-root", default="scans",
+                   help="where the per-geometry project dirs live; must match "
+                        "the --project-dir used when running the pipeline")
     p.add_argument("--force", action="store_true")
     args = p.parse_args()
 
     spec = DEFAULTS[args.molecule]
     distances = args.distances or spec["distances"]
     active_space = args.active_space or spec["active_space"]
-    scan_root = REPO / "scans" / args.molecule
+    # Relative to the working directory, so it matches wherever the pipeline
+    # loop was launched from. quenais-run resolves --project-dir against cwd.
+    scan_root = Path(args.scan_root).resolve() / args.molecule
     scan_root.mkdir(parents=True, exist_ok=True)
 
     print(f"{'='*76}")
@@ -199,8 +241,11 @@ def main():
 
         m["r"] = r
         rows.append(m)
-        print(f"  n_emb={m['n_emb']}  ndet={m['ndet']}  "
-              f"dominant weight={m['dominant_weight']:.4f}")
+        print(f"  n_emb={m['n_emb']}  nelec={tuple(m['nelec'])}  "
+              f"ndet={m['ndet']}  budget={m['budget']} "
+              f"({100*m['budget']/m['ndet']:.1f}% of the space)")
+        print(f"  dominant weight={m['dominant_weight']:.4f}  "
+              f"(1.0 = single reference, lower = more correlated)")
         print(f"  CIPSI {m['err_cipsi_mha']:8.4f} mHa   "
               f"oracle {m['err_oracle_mha']:8.4f} mHa   "
               f"gap {m['cipsi_above_oracle_mha']:+8.4f} mHa   "
