@@ -4,3 +4,13 @@ from quenais.quantum.gqe_adapter import load_from_dmet_pickle
 m = load_from_dmet_pickle('tests/regression/golden/LiH/step2_hamiltonian.pkl')
 print(m.compute_casci())
 "
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python -c "import pyscf; print(pyscf.__version__)"
+python -c "
+from quenais.quantum.gqe_adapter import load_from_dmet_pickle
+m = load_from_dmet_pickle('tests/regression/golden/LiH/step2_hamiltonian.pkl')
+print(m.compute_casci())
+"
+2.14.0
+-7.881246151999262
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
