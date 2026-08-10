@@ -47,8 +47,10 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -167,7 +169,17 @@ def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
 
     n_a = (nelecas + mol.spin) // 2
     n_b = nelecas - n_a
-    emb = DMETEmbeddingMolecule(h1, h2, ecore, n_a, n_b, num_threads=threads)
+
+    # Isolated cache per call. DMETEmbeddingMolecule defaults to
+    # ./.cache/pyscf_dmet relative to the working directory, shared across
+    # every geometry and every invocation, keyed on integral hashes. That is
+    # one more piece of state between two runs that should be identical, and
+    # this project has been bitten by fixed-path caches more than once. The
+    # CASCI here costs milliseconds, so there is nothing to gain by keeping it.
+    cache_dir = tempfile.mkdtemp(prefix="corrscan_")
+    emb = DMETEmbeddingMolecule(h1, h2, ecore, n_a, n_b,
+                                num_threads=threads, cache_dir=cache_dir)
+    emb._scan_cache_dir = cache_dir
     return emb, e_casci_pyscf, float(mf.e_tot)
 
 
@@ -324,6 +336,10 @@ def main():
         except Exception as exc:
             print(f"  failed at r={r:.4f}: {exc}")
             continue
+        finally:
+            tmp = getattr(mol, "_scan_cache_dir", None) if "mol" in dir() else None
+            if tmp:
+                shutil.rmtree(tmp, ignore_errors=True)
 
         m["r"] = r
         rows.append(m)
