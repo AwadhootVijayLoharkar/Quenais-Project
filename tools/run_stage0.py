@@ -48,7 +48,13 @@ def load_reference(system):
 
 def run_system(system, threads=1, verbose=True):
     from quenais.quantum.gqe_adapter import load_from_dmet_pickle
-    import det_analysis as da          # quenais.quantum.det_analysis once installed
+
+    # Installed in the package; fall back to a loose copy beside this script
+    # so the driver also runs from a scratch directory.
+    try:
+        from quenais.quantum import det_analysis as da
+    except ImportError:
+        import det_analysis as da
 
     pickle_path = GOLDEN / system / "step2_hamiltonian.pkl"
     if not pickle_path.exists():
