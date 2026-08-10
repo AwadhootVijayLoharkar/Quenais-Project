@@ -10,3 +10,6 @@ quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
 
 quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
             --project-dir runs/N2_r2.1 --gqe-qsci-max-dim 200
+
+
+  
