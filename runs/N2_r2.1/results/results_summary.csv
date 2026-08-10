@@ -1,0 +1,14 @@
+molecule,N2
+basis,sto-3g
+
+-- Step 2: DMET --
+n_imp,8
+n_bath,0
+n_emb,8
+n_alpha,5
+n_beta,5
+sv2_coverage,0.0
+ecore_Ha,-82.15777229387523
+mu_Ha,0.0
+reference_density_method,casci-direct
+
