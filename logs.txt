@@ -1,8 +1,6 @@
-quenais-run --molecule LiH --basis sto-3g --solver gqe --steps 3 4 \
-            --project-dir ~/quenais-standalone/Quenais-Project/Results/LiH --force
-
-quenais-run --molecule ScH --basis sto-3g --solver gqe --steps 0 1 2 3 4 \
-            --force-active-space 9 10 11 12 13 14 \
-            --project-dir ~/quenais-standalone/Quenais-Project/Results/ScH --force
-quenais-run --molecule LiH --basis sto-3g --solver gqe --steps 4 \
-            --project-dir ~/quenais-standalone/Quenais-Project/Results/LiH
+python -c "import pyscf; print(pyscf.__version__)"
+python -c "
+from quenais.quantum.gqe_adapter import load_from_dmet_pickle
+m = load_from_dmet_pickle('tests/regression/golden/LiH/step2_hamiltonian.pkl')
+print(m.compute_casci())
+"
