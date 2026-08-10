@@ -143,13 +143,32 @@ def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
     # that is MOs 2..9 -- the full valence space, core 1s frozen.
     mc = mcscf.CASCI(mf, ncas, nelecas)
     mc.verbose = 0
+    mc.fcisolver.verbose = 0
     h1, ecore = mc.get_h1eff()
     h2 = ao2mo.restore(1, mc.get_h2eff(), ncas)
+
+    # PySCF's own CASCI on the same active space. This is the reference the
+    # trust check uses.
+    #
+    # NOTE ON THE CHECK THAT WAS HERE BEFORE. The first version compared the
+    # active-space SCF (mol.hf.e_tot) against the full RHF energy. That check
+    # fires spuriously: the active-space SCF starts from a core-Hamiltonian
+    # guess, and where h1eff's ordering disagrees with the Fock ordering it
+    # converges to an excited SCF solution instead of the ground state. On
+    # N2/STO-3G that happens below ~2 A and produces deltas up to 0.73 Ha on
+    # perfectly good integrals.
+    #
+    # It is also the wrong thing to test. compute_casci() passes h1/h2/e_core
+    # straight to the FCI solver and never touches mol.hf, so the SCF solution
+    # has no bearing on any number this scan reports. What must be validated is
+    # that the extracted Hamiltonian reproduces PySCF's CASCI -- which is the
+    # exact reference every error here is measured against.
+    e_casci_pyscf = float(mc.kernel()[0])
 
     n_a = (nelecas + mol.spin) // 2
     n_b = nelecas - n_a
     emb = DMETEmbeddingMolecule(h1, h2, ecore, n_a, n_b, num_threads=threads)
-    return emb, float(mf.e_tot)
+    return emb, e_casci_pyscf, float(mf.e_tot)
 
 
 def step2_path_for(scan_root, molecule, r):
@@ -195,7 +214,7 @@ def run_pipeline(molecule, atoms, r, active_space, basis, scan_root, force=False
     return step2
 
 
-def measure(mol, scf_reference, budget=BUDGET, tol=1e-6):
+def measure(mol, e_casci_pyscf, e_rhf, budget=BUDGET, tol=1e-9):
     """Stage 0 and stage 1 measurements for one active-space Hamiltonian."""
     try:
         from quenais.quantum import det_analysis as da
@@ -204,17 +223,19 @@ def measure(mol, scf_reference, budget=BUDGET, tol=1e-6):
         import det_analysis as da
         import det_expansion as dx
 
-    # TRUST CHECK. mol.hf is a real converged SCF on the active-space
-    # integrals. With canonical orbitals and a frozen core it must reproduce
-    # the full RHF energy -- the reference determinant lives inside the active
-    # space, and RHF is already stationary there. If it does not, the integrals
-    # or the electron count are wrong and nothing downstream means anything.
-    scf_delta = float(mol.hf.e_tot) - float(scf_reference)
-    trusted = abs(scf_delta) <= tol
-
     n_elec_emb = sum(mol.nelec)
-
     e_exact, flat, space = da.casci_vector(mol)
+
+    # TRUST CHECK. The exact reference every error below is measured against
+    # must match PySCF's own CASCI on the same active space. If it does not,
+    # the integral extraction or the determinant bookkeeping is wrong.
+    casci_delta = e_exact - float(e_casci_pyscf)
+    trusted = abs(casci_delta) <= tol
+
+    # Informational only -- see the note in build_cas_molecule. A non-zero
+    # value means the active-space SCF found an excited solution, which says
+    # nothing about the validity of the integrals.
+    scf_delta = float(mol.hf.e_tot) - float(e_rhf)
     order, cum = da.weight_curve(flat)
 
     # A budget at or near the size of the space makes the comparison vacuous:
@@ -249,6 +270,7 @@ def measure(mol, scf_reference, budget=BUDGET, tol=1e-6):
         "nelec": list(space.nelec),
         "ndet": space.ndet,
         "e_casci": e_exact,
+        "casci_delta": casci_delta,
         "scf_delta": scf_delta,
         "trusted": trusted,
         "e_core": float(mol.cas_hamiltonian.e_core),
@@ -295,10 +317,10 @@ def main():
     for r in distances:
         print(f"\n-- r = {r:.4f} A --")
         try:
-            mol, e_scf = build_cas_molecule(
+            mol, e_casci_ref, e_rhf = build_cas_molecule(
                 spec["atoms"], r, args.basis, len(active_space),
                 spec["nelecas"], threads=args.threads)
-            m = measure(mol, e_scf, budget=args.budget)
+            m = measure(mol, e_casci_ref, e_rhf, budget=args.budget)
         except Exception as exc:
             print(f"  failed at r={r:.4f}: {exc}")
             continue
@@ -311,10 +333,10 @@ def main():
         print(f"  dominant weight={m['dominant_weight']:.4f}  "
               f"(1.0 = single reference, lower = more correlated)")
         flag = "ok" if m["trusted"] else "*** UNTRUSTED ***"
-        print(f"  active-space SCF vs full RHF: {m['scf_delta']:+.3e} Ha  {flag}")
+        print(f"  CASCI vs PySCF CASCI: {m['casci_delta']:+.3e} Ha  {flag}")
         if not m["trusted"]:
-            print(f"    integrals or electron count are wrong here; this row "
-                  f"is not evidence of anything")
+            print(f"    the exact reference does not reproduce; nothing in "
+                  f"this row is evidence of anything")
         print(f"  CIPSI {m['err_cipsi_mha']:8.4f} mHa   "
               f"oracle {m['err_oracle_mha']:8.4f} mHa   "
               f"gap {m['cipsi_above_oracle_mha']:+8.4f} mHa   "
@@ -326,7 +348,7 @@ def main():
 
     print(f"\n{'='*76}")
     print(f"  {'r (A)':>7} {'dom wt':>8} {'N_chem':>8} {'CIPSI':>10} "
-          f"{'oracle':>10} {'gap':>10}  {'SCF check':>10}")
+          f"{'oracle':>10} {'gap':>10}  {'CASCI chk':>10}")
     for m in rows:
         print(f"  {m['r']:>7.3f} {m['dominant_weight']:>8.4f} "
               f"{str(m['n_chem']):>8} {m['err_cipsi_mha']:>10.4f} "
@@ -336,12 +358,10 @@ def main():
 
     bad = [m for m in rows if not m["trusted"]]
     if bad:
-        print(f"\n  {len(bad)} of {len(rows)} geometries FAILED the embedded-SCF "
-              f"check: r = "
+        print(f"\n  {len(bad)} of {len(rows)} geometries FAILED the CASCI "
+              f"cross-check: r = "
               + ", ".join(f"{m['r']:.3f}" for m in bad))
-        print("  Those rows are not evidence. Fix the embedding at those "
-              "geometries, or\n  restrict the conclusion to the geometries "
-              "that passed.")
+        print("  Those rows are not evidence.")
 
     good = [m for m in rows if m["trusted"]]
     if good:
