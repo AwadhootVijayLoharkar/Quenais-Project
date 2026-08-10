@@ -7,61 +7,69 @@ budget for the CIPSI/oracle comparison: 200 determinants
 -- r = 1.0977 A --
   ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
   dominant weight=0.9173  (1.0 = single reference, lower = more correlated)
-  CASCI vs PySCF CASCI: -1.421e-14 Ha  ok
-  CIPSI   0.1192 mHa   oracle   0.1233 mHa   gap  -0.0040 mHa   N_chem=134
+  CASCI vs PySCF CASCI: -1.421e-14 Ha
+  root gap E1-E0: 0.348569 Ha  ok
+  CIPSI   0.7466 mHa   oracle   0.7614 mHa   gap  -0.0148 mHa   N_chem=191
 
 -- r = 1.3000 A --
   ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
   dominant weight=0.8523  (1.0 = single reference, lower = more correlated)
-  CASCI vs PySCF CASCI: +0.000e+00 Ha  ok
-  CIPSI   0.8128 mHa   oracle   0.8165 mHa   gap  -0.0037 mHa   N_chem=191
+  CASCI vs PySCF CASCI: +0.000e+00 Ha
+  root gap E1-E0: 0.294583 Ha  ok
+  CIPSI   1.7456 mHa   oracle   1.9725 mHa   gap  -0.2269 mHa   N_chem=271
 
 -- r = 1.5000 A --
   ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
   dominant weight=0.7373  (1.0 = single reference, lower = more correlated)
-  CASCI vs PySCF CASCI: -1.421e-14 Ha  ok
-  CIPSI   2.1518 mHa   oracle   2.2884 mHa   gap  -0.1365 mHa   N_chem=271
+  CASCI vs PySCF CASCI: -1.421e-14 Ha
+  root gap E1-E0: 0.269452 Ha  ok
+  CIPSI   0.5087 mHa   oracle   0.4552 mHa   gap  +0.0535 mHa   N_chem=191
 
 -- r = 1.8000 A --
   ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
-  dominant weight=0.4257  (1.0 = single reference, lower = more correlated)
-  CASCI vs PySCF CASCI: +0.000e+00 Ha  ok
-  CIPSI   1.9203 mHa   oracle   1.4135 mHa   gap  +0.5068 mHa   N_chem=191
+  dominant weight=0.4258  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: -7.105e-14 Ha
+  root gap E1-E0: 0.185419 Ha  ok
+  CIPSI   3.3930 mHa   oracle   2.7117 mHa   gap  +0.6813 mHa   N_chem=271
 
 -- r = 2.1000 A --
   ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
   dominant weight=0.1916  (1.0 = single reference, lower = more correlated)
-  CASCI vs PySCF CASCI: +0.000e+00 Ha  ok
-  CIPSI   2.3843 mHa   oracle   1.3885 mHa   gap  +0.9958 mHa   N_chem=271
+  CASCI vs PySCF CASCI: +0.000e+00 Ha
+  root gap E1-E0: 0.206656 Ha  ok
+  CIPSI   1.3694 mHa   oracle   0.8364 mHa   gap  +0.5330 mHa   N_chem=191
 
 -- r = 2.4000 A --
   ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
   dominant weight=0.1112  (1.0 = single reference, lower = more correlated)
-  CASCI vs PySCF CASCI: -1.421e-14 Ha  ok
-  CIPSI   1.4638 mHa   oracle   0.8925 mHa   gap  +0.5712 mHa   N_chem=191
+  CASCI vs PySCF CASCI: +0.000e+00 Ha
+  root gap E1-E0: 0.232436 Ha  ok
+  CIPSI   1.5856 mHa   oracle   0.9975 mHa   gap  +0.5881 mHa   N_chem=191
 
 -- r = 2.8000 A --
   ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
-  dominant weight=0.0777  (1.0 = single reference, lower = more correlated)
-  CASCI vs PySCF CASCI: -2.949e-10 Ha  ok
-  CIPSI   0.2725 mHa   oracle   0.1194 mHa   gap  +0.1531 mHa   N_chem=134
+  dominant weight=0.0782  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: -8.527e-14 Ha
+  root gap E1-E0: 0.244495 Ha  ok
+  CIPSI   2.4948 mHa   oracle   0.3403 mHa   gap  +2.1545 mHa   N_chem=134
 
 -- r = 3.2000 A --
   ncas=8  nelec=(5, 5)  ndet=3136  budget=200 (6.4% of the space)
-  dominant weight=0.0346  (1.0 = single reference, lower = more correlated)
-  CASCI vs PySCF CASCI: +0.000e+00 Ha  ok
-  CIPSI   0.3167 mHa   oracle   0.0887 mHa   gap  +0.2280 mHa   N_chem=95
+  dominant weight=0.0677  (1.0 = single reference, lower = more correlated)
+  CASCI vs PySCF CASCI: -2.842e-14 Ha
+  root gap E1-E0: 0.246810 Ha  ok
+  CIPSI   0.3839 mHa   oracle   0.0933 mHa   gap  +0.2906 mHa   N_chem=95
 
 ============================================================================
-    r (A)   dom wt   N_chem      CIPSI     oracle        gap   CASCI chk
-    1.098   0.9173      134     0.1192     0.1233    -0.0040          ok
-    1.300   0.8523      191     0.8128     0.8165    -0.0037          ok
-    1.500   0.7373      271     2.1518     2.2884    -0.1365          ok
-    1.800   0.4257      191     1.9203     1.4135    +0.5068          ok
-    2.100   0.1916      271     2.3843     1.3885    +0.9958          ok
-    2.400   0.1112      191     1.4638     0.8925    +0.5712          ok
-    2.800   0.0777      134     0.2725     0.1194    +0.1531          ok
-    3.200   0.0346       95     0.3167     0.0887    +0.2280          ok
+    r (A)   dom wt   rootgap  N_chem      CIPSI     oracle        gap    usable
+    1.098   0.9173   0.34857     191     0.7466     0.7614    -0.0148       yes
+    1.300   0.8523   0.29458     271     1.7456     1.9725    -0.2269       yes
+    1.500   0.7373   0.26945     191     0.5087     0.4552    +0.0535       yes
+    1.800   0.4258   0.18542     271     3.3930     2.7117    +0.6813       yes
+    2.100   0.1916   0.20666     191     1.3694     0.8364    +0.5330       yes
+    2.400   0.1112   0.23244     191     1.5856     0.9975    +0.5881       yes
+    2.800   0.0782   0.24450     134     2.4948     0.3403    +2.1545       yes
+    3.200   0.0677   0.24681      95     0.3839     0.0933    +0.2906       yes
   (errors in mHa at a 200-determinant budget)
 
   Read the 'gap' column over the TRUSTED rows only: while it stays near
