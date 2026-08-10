@@ -1,15 +1,105 @@
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_stage0.py --threads 24
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_stage0.py", line 153, in <module>
-    main()
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_stage0.py", line 141, in main
-    out[s] = run_system(s, threads=args.threads)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_stage0.py", line 51, in run_system
-    import det_analysis as da          # quenais.quantum.det_analysis once installed
-    ^^^^^^^^^^^^^^^^^^^^^^^^^
-ModuleNotFoundError: No module named 'det_analysis'
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ cd quenais/quantum/
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:quantum]$ ls
-det_analysis.py  gqe_adapter.py  gqe_pools.py  gqe_runner.py  gqe_setup.py  _gqe_shims  __init__.py  __pycache__  solver.py
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:quantum]$
+
+========================================================================
+LiH
+========================================================================
+
+-- gates --
+  DeterminantSpace(norb=4, nelec=(2, 2), na=6, nb=6, ndet=36)
+  gate 1  full space      : -7.881246151999  vs ref -7.881246151999   diff 1.776e-15  PASS
+  gate 2  HF determinant  : -1.482423876481  vs mf.e_tot -7.862026962567   diff 6.380e+00
+  gate 3  HF is dominant  : top index 21 FAIL
+
+-- Experiment A: weight capture --
+  weight >= 0.9       needs        1 determinants ( 2.778% of 36)
+  weight >= 0.99      needs        2 determinants ( 5.556% of 36)
+  weight >= 0.999     needs        4 determinants (11.111% of 36)
+  weight >= 0.9999    needs        8 determinants (22.222% of 36)
+  weight >= 0.99999   needs       13 determinants (36.111% of 36)
+
+-- Experiment B: oracle bound --
+  N=       1  (  2.78%)  weight=0.97575057  err=  19.2192 mHa  relax=  0.0000 mHa  [0.0s]
+  N=       2  (  5.56%)  weight=0.99715829  err=   0.5378 mHa  relax=  0.0371 mHa  [0.0s]
+  N=       3  (  8.33%)  weight=0.99827970  err=   0.4492 mHa  relax=  0.0725 mHa  [0.0s]
+  N=       5  ( 13.89%)  weight=0.99959718  err=   0.2930 mHa  relax=  0.0664 mHa  [0.0s]
+  N=       8  ( 22.22%)  weight=0.99993338  err=   0.1587 mHa  relax=  0.0011 mHa  [0.0s]
+  N=      13  ( 36.11%)  weight=0.99999183  err=   0.0301 mHa  relax=  0.0002 mHa  [0.0s]
+  N=      21  ( 58.33%)  weight=0.99999830  err=   0.0054 mHa  relax=  0.0000 mHa  [0.0s]
+  N=      32  ( 88.89%)  weight=0.99999999  err=   0.0001 mHa  relax=  0.0000 mHa  [0.0s]
+  N=      34  ( 94.44%)  weight=1.00000000  err=   0.0000 mHa  relax=  0.0000 mHa  [0.0s]
+  N=      36  (100.00%)  weight=1.00000000  err=   0.0000 mHa  relax= -0.0000 mHa  [0.0s]
+
+  N_chem (<= 1.6 mHa) = 2 determinants (5.5556% of the space)
+
+  wrote /home/loharkar/quenais-standalone/Quenais-Project/tests/regression/golden/LiH/stage0_LiH_curve.csv
+  wrote /home/loharkar/quenais-standalone/Quenais-Project/tests/regression/golden/LiH/stage0_LiH_summary.json
+
+========================================================================
+ScH
+========================================================================
+
+-- gates --
+  DeterminantSpace(norb=11, nelec=(4, 4), na=330, nb=330, ndet=108900)
+  gate 1  full space      : -752.699524181488  vs ref -752.699524181161   diff 3.266e-10  PASS
+  gate 2  HF determinant  : -742.401348452990  vs mf.e_tot -752.638702535756   diff 1.024e+01
+  gate 3  HF is dominant  : top index 88046 FAIL
+
+-- Experiment A: weight capture --
+  weight >= 0.9       needs        2 determinants ( 0.002% of 108900)
+  weight >= 0.99      needs       20 determinants ( 0.018% of 108900)
+  weight >= 0.999     needs      104 determinants ( 0.096% of 108900)
+  weight >= 0.9999    needs      373 determinants ( 0.343% of 108900)
+  weight >= 0.99999   needs     1023 determinants ( 0.939% of 108900)
+
+-- Experiment B: oracle bound --
+  N=       1  (  0.00%)  weight=0.89527920  err=  60.8228 mHa  relax=  0.0000 mHa  [0.0s]
+  N=       2  (  0.00%)  weight=0.92674048  err=  44.7964 mHa  relax=  0.4417 mHa  [0.0s]
+  N=       3  (  0.00%)  weight=0.95820177  err=  31.9798 mHa  relax=  0.1574 mHa  [0.0s]
+  N=       5  (  0.00%)  weight=0.97239892  err=  21.5181 mHa  relax=  0.0194 mHa  [0.0s]
+  N=       8  (  0.01%)  weight=0.97743859  err=  18.2061 mHa  relax=  0.0693 mHa  [0.1s]
+  N=      13  (  0.01%)  weight=0.98329156  err=  15.3803 mHa  relax=  0.0920 mHa  [0.1s]
+  N=      21  (  0.02%)  weight=0.99121601  err=   8.5413 mHa  relax=  0.0772 mHa  [0.2s]
+  N=      34  (  0.03%)  weight=0.99593439  err=   5.7087 mHa  relax=  0.0525 mHa  [0.3s]
+  N=      46  (  0.04%)  weight=0.99739099  err=   4.0352 mHa  relax=  0.0453 mHa  [0.3s]
+  N=      55  (  0.05%)  weight=0.99777470  err=   3.2846 mHa  relax=  0.0487 mHa  [0.4s]
+  N=      87  (  0.08%)  weight=0.99870542  err=   2.1452 mHa  relax=  0.0192 mHa  [0.7s]
+  N=      89  (  0.08%)  weight=0.99874639  err=   2.0728 mHa  relax=  0.0177 mHa  [1.0s]
+  N=     144  (  0.13%)  weight=0.99942366  err=   1.1606 mHa  relax=  0.0177 mHa  [1.1s]
+  N=     233  (  0.21%)  weight=0.99974415  err=   0.5654 mHa  relax=  0.0097 mHa  [0.6s]
+  N=     377  (  0.35%)  weight=0.99990289  err=   0.2637 mHa  relax=  0.0024 mHa  [0.6s]
+  N=     423  (  0.39%)  weight=0.99992513  err=   0.2036 mHa  relax=  0.0020 mHa  [0.5s]
+  N=     610  (  0.56%)  weight=0.99996579  err=   0.1037 mHa  relax=  0.0009 mHa  [0.6s]
+  N=     987  (  0.91%)  weight=0.99998919  err=   0.0387 mHa  relax=  0.0002 mHa  [0.7s]
+  N=    1000  (  0.92%)  weight=0.99998950  err=   0.0374 mHa  relax=  0.0002 mHa  [0.6s]
+  N=    1413  (  1.30%)  weight=0.99999543  err=   0.0178 mHa  relax=  0.0001 mHa  [0.6s]
+  N=    1995  (  1.83%)  weight=0.99999821  err=   0.0077 mHa  relax=  0.0000 mHa  [0.7s]
+  N=    2430  (  2.23%)  weight=0.99999896  err=   0.0046 mHa  relax=  0.0000 mHa  [0.7s]
+  N=    2439  (  2.24%)  weight=0.99999897  err=   0.0045 mHa  relax=  0.0000 mHa  [0.7s]
+  N=    2818  (  2.59%)  weight=0.99999932  err=   0.0031 mHa  relax=  0.0000 mHa  [0.8s]
+  N=    3981  (  3.66%)  weight=0.99999976  err=   0.0012 mHa  relax=  0.0000 mHa  [0.7s]
+  N=    5623  (  5.16%)  weight=0.99999992  err=   0.0004 mHa  relax=  0.0000 mHa  [0.8s]
+  N=    7943  (  7.29%)  weight=0.99999998  err=   0.0001 mHa  relax=  0.0000 mHa  [0.9s]
+  N=   11220  ( 10.30%)  weight=1.00000000  err=   0.0000 mHa  relax=  0.0000 mHa  [1.0s]
+  N=   15849  ( 14.55%)  weight=1.00000000  err=   0.0000 mHa  relax=  0.0000 mHa  [1.0s]
+  N=   22387  ( 20.56%)  weight=1.00000000  err=   0.0000 mHa  relax=  0.0000 mHa  [1.0s]
+  N=   31623  ( 29.04%)  weight=1.00000000  err=  -0.0000 mHa  relax=  0.0000 mHa  [1.2s]
+  N=   44668  ( 41.02%)  weight=1.00000000  err=  -0.0000 mHa  relax=  0.0000 mHa  [1.3s]
+  N=   63096  ( 57.94%)  weight=1.00000000  err=  -0.0000 mHa  relax=  0.0000 mHa  [1.8s]
+  N=   89125  ( 81.84%)  weight=1.00000000  err=  -0.0000 mHa  relax=  0.0000 mHa  [2.1s]
+  N=  108900  (100.00%)  weight=1.00000000  err=  -0.0000 mHa  relax=  0.0000 mHa  [2.3s]
+
+  N_chem (<= 1.6 mHa) = 144 determinants (0.1322% of the space)
+  oracle at N=2439    = 0.0045 mHa
+  GQE best observed   = 20.9000 mHa (spread 20.9-30.7, STOCHASTIC)
+  headroom            = 20.8955 mHa
+
+  wrote /home/loharkar/quenais-standalone/Quenais-Project/tests/regression/golden/ScH/stage0_ScH_curve.csv
+  wrote /home/loharkar/quenais-standalone/Quenais-Project/tests/regression/golden/ScH/stage0_ScH_summary.json
+
+========================================================================
+SCALING POINTS SO FAR
+========================================================================
+  system    n_emb         ndet     N_chem     fraction
+  LiH           4           36          2      5.5556%
+  ScH          11       108900        144      0.1322%
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
