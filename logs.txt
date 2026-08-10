@@ -1,6 +1,11 @@
-cp run_correlation_scan.py tools/
-cp det_analysis.py det_expansion.py quenais/quantum/
-
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 python tools/run_correlation_scan.py --threads 1 > scan_A.txt 2>&1
 python tools/run_correlation_scan.py --threads 1 > scan_B.txt 2>&1
 diff <(grep -E "gap|fingerprints" scan_A.txt) <(grep -E "fingerprints|gap" scan_B.txt) && echo "REPRODUCIBLE"
+2,3c2,3
+<   fingerprints: civec=2.1857986335e+03  order=221331  cutoff_ratio=0.917658
+<   CIPSI   0.9687 mHa   oracle   0.9959 mHa   gap  -0.0272 mHa   N_chem=191
+---
+>   fingerprints: civec=1.9239383977e+03  order=227068  cutoff_ratio=1.000000
+>   CIPSI   0.4519 mHa   oracle   0.4775 mHa   gap  -0.0256 mHa   N_chem=134
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
