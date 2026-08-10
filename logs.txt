@@ -1,27 +1,12 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/export_cas_hamiltonian.py --r 1.8 --project-dir runs/N2_r1.8
-python tools/export_cas_hamiltonian.py --r 2.1 --project-dir runs/N2_r2.1
-  molecule    : N2/sto-3g  r = 1.8000 A
-  active space: (10e,8o)  nelec = (5, 5)
-  determinants: 3136
-  RHF         : -107.017326907299 Ha
-  exact CASCI : -107.483383267737 Ha   <- the target
-  ecore       : -81.108203142957 Ha
+python -c "
+import csv
+for row in csv.DictReader(open('scans/N2/correlation_scan_N2.csv')):
+    if float(row['r']) in (1.8, 2.1):
+        print(row['r'], row['e_casci'])
+"
 
-  wrote runs/N2_r1.8/results/step2_hamiltonian.pkl
+quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
+            --project-dir runs/N2_r1.8 --gqe-qsci-max-dim 200
 
-  next:
-    quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
-                --project-dir runs/N2_r1.8
-  molecule    : N2/sto-3g  r = 2.1000 A
-  active space: (10e,8o)  nelec = (5, 5)
-  determinants: 3136
-  RHF         : -106.808411475801 Ha
-  exact CASCI : -107.448603907418 Ha   <- the target
-  ecore       : -82.157772293875 Ha
-
-  wrote runs/N2_r2.1/results/step2_hamiltonian.pkl
-
-  next:
-    quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
-                --project-dir runs/N2_r2.1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$
+quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
+            --project-dir runs/N2_r2.1 --gqe-qsci-max-dim 200
