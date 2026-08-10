@@ -223,8 +223,15 @@ def projected_energy(mol, det_indices, space=None, sigma=None, tol=1e-10):
         H = 0.5 * (H + H.T)
         return float(np.linalg.eigvalsh(H)[0]) + e_core
 
+    # v0 is mandatory, not optional. ARPACK seeds from a RANDOM vector when v0
+    # is omitted, so two identical runs converge along different Krylov paths
+    # and return eigenvalues that differ in the last few digits -- and
+    # eigenvectors that differ enough to reorder near-equal amplitudes. That
+    # is invisible in a single run and shows up as an irreproducible curve.
     op = LinearOperator((n, n), matvec=matvec, dtype=np.float64)
-    vals = eigsh(op, k=1, which="SA", tol=tol, return_eigenvectors=False)
+    v0 = np.full(n, 1.0 / np.sqrt(n))
+    vals = eigsh(op, k=1, which="SA", tol=tol, v0=v0,
+                 return_eigenvectors=False)
     return float(vals[0]) + e_core
 
 
@@ -338,36 +345,62 @@ def n_for_accuracy(rows, threshold=CHEMICAL_ACCURACY_HA):
 
 def run_gates(mol, reference_casci, tol=1e-9, verbose=True):
     """
-    1. Full determinant space must reproduce the DETERMINISTIC reference exactly.
-    2. The HF determinant alone must reproduce the embedding SCF energy.
-    3. The CI vector's largest amplitude must sit at the HF determinant.
+    1. Full determinant space reproduces the DETERMINISTIC reference.
+    2. CI vector is normalised.
+    3. For a closed-shell system the dominant determinant is spin-symmetric,
+       i.e. its alpha and beta strings are the same (addr_a == addr_b).
 
     Gate 1 is the one that matters: if P H P over the whole space does not give
     back the validated number, the indexing is wrong and every curve is fiction.
+
+    WHAT IS DELIBERATELY *NOT* CHECKED, AND WHY
+    -------------------------------------------
+    An earlier version of this function asserted that determinant index 0 is the
+    HF determinant, and that its diagonal element equals mol.hf.e_tot. Both are
+    false here, and they fail loudly on correct data.
+
+    compute_casci() diagonalises in the RAW EMBEDDING BASIS -- it passes
+    cas_hamiltonian.h1/.h2 straight to the FCI solver, not integrals transformed
+    into the SCF MO basis. The embedding basis is a Schmidt decomposition of
+    impurity plus bath: a rotated combination of orbitals, not an energy-ordered
+    subset (see the gqe_adapter module docstring). So:
+
+      * index 0 means "the four lowest-numbered EMBEDDING orbitals occupied",
+        which has no reason to be the lowest-energy determinant;
+      * mol.hf.e_tot is the SCF energy in the rotated MO basis and does not
+        equal any single diagonal element in the embedding basis.
+
+    On ScH the dominant determinant is index 88046 = (266, 266) and on LiH it is
+    21 = (3, 3). Both are spin-symmetric, which is the invariant that IS
+    meaningful, and is what gate 3 now tests.
     """
-    e_exact, flat, space = casci_vector(mol)
+    e_exact, flat, space = casci_vector(mol)   # raises if not normalised
     sigma = _sigma_operator(mol, space)
     results = {}
 
     e_full = projected_energy(mol, np.arange(space.ndet), space=space, sigma=sigma)
     results["full_space"] = (e_full, reference_casci, abs(e_full - reference_casci))
 
-    e_hf = projected_energy(mol, [space.hf_index()], space=space, sigma=sigma)
-    results["hf_determinant"] = (e_hf, float(mol.hf.e_tot), abs(e_hf - mol.hf.e_tot))
-
     order, _ = weight_curve(flat)
-    results["hf_is_dominant"] = (int(order[0]), space.hf_index(),
-                                 0.0 if order[0] == space.hf_index() else 1.0)
+    top = int(order[0])
+    ia, ib = space.split(top)
+    closed_shell = space.nelec[0] == space.nelec[1]
+    spin_ok = (int(ia) == int(ib)) if closed_shell else True
+    results["dominant_determinant"] = (top, int(ia), int(ib), spin_ok)
 
     if verbose:
         print(f"  {space}")
-        print(f"  gate 1  full space      : {e_full:.12f}  vs ref "
-              f"{reference_casci:.12f}   diff {results['full_space'][2]:.3e}  "
-              f"{'PASS' if results['full_space'][2] < tol else 'FAIL'}")
-        print(f"  gate 2  HF determinant  : {e_hf:.12f}  vs mf.e_tot "
-              f"{mol.hf.e_tot:.12f}   diff {results['hf_determinant'][2]:.3e}")
-        print(f"  gate 3  HF is dominant  : top index {order[0]} "
-              f"{'PASS' if order[0] == space.hf_index() else 'FAIL'}")
+        g1 = results["full_space"][2]
+        print(f"  gate 1  full space          : {e_full:.12f}  vs ref "
+              f"{reference_casci:.12f}   diff {g1:.3e}  "
+              f"{'PASS' if g1 < tol else 'FAIL'}")
+        print(f"  gate 2  CI vector normalised: PASS")
+        print(f"  gate 3  dominant determinant: index {top} = "
+              f"(addr_a={ia}, addr_b={ib})  "
+              + (f"spin-symmetric {'PASS' if spin_ok else 'FAIL'}"
+                 if closed_shell else "open shell, not checked"))
+        print(f"          (index 0 is NOT the HF determinant here -- the "
+              f"embedding basis is not energy-ordered)")
 
     if results["full_space"][2] >= tol:
         raise RuntimeError(
@@ -375,5 +408,11 @@ def run_gates(mol, reference_casci, tol=1e-9, verbose=True):
             f"not match the DETERMINISTIC reference {reference_casci:.12f} "
             f"(diff {results['full_space'][2]:.3e} > {tol:.0e}). The "
             f"determinant indexing is wrong. Do not read any other output."
+        )
+    if closed_shell and not spin_ok:
+        raise RuntimeError(
+            f"GATE 3 FAILED. Dominant determinant {top} = ({ia}, {ib}) is not "
+            f"spin-symmetric on a closed-shell system. The alpha/beta split of "
+            f"the full index is wrong."
         )
     return results

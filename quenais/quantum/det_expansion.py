@@ -108,8 +108,13 @@ def _diagonalise_subspace(sel, space, sigma, tol=1e-10):
         vals, vecs = np.linalg.eigh(H)
         return float(vals[0]), vecs[:, 0]
 
+    # Fixed v0 -- ARPACK seeds randomly otherwise, which makes the whole
+    # selection trajectory irreproducible: a slightly different eigenvector
+    # changes the PT2 scores, which changes the next batch of determinants,
+    # which compounds over iterations.
     op = LinearOperator((n, n), matvec=matvec, dtype=np.float64)
-    vals, vecs = eigsh(op, k=1, which="SA", tol=tol)
+    v0 = np.full(n, 1.0 / np.sqrt(n))
+    vals, vecs = eigsh(op, k=1, which="SA", tol=tol, v0=v0)
     return float(vals[0]), vecs[:, 0]
 
 

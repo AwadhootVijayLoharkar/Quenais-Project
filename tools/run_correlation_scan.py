@@ -158,6 +158,15 @@ def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
     from pyscf import fci
     mc.fcisolver = fci.addons.fix_spin_(mc.fcisolver, shift=0.5, ss=0)
 
+    # Converge the VECTOR, not just the energy. PySCF's defaults stop when the
+    # energy stops moving, which leaves the small amplitudes loose. Selecting
+    # determinant number 200 out of 3136 depends entirely on those amplitudes,
+    # so a loosely converged tail gives a different ranking every run while the
+    # energy agrees to 1e-14.
+    mc.fcisolver.conv_tol = 1e-14
+    mc.fcisolver.max_cycle = 500
+    mc.fcisolver.max_space = 30
+
     # PySCF's own CASCI on the same active space. This is the reference the
     # trust check uses.
     #
@@ -204,6 +213,9 @@ def build_cas_molecule(atoms, r, basis, ncas, nelecas, threads=1):
                                 num_threads=threads, cache_dir=cache_dir)
     emb._scan_cache_dir = cache_dir
     emb.mc.fcisolver = fci.addons.fix_spin_(emb.mc.fcisolver, shift=0.5, ss=0)
+    emb.mc.fcisolver.conv_tol = 1e-14
+    emb.mc.fcisolver.max_cycle = 500
+    emb.mc.fcisolver.max_space = 30
     return emb, e_casci_pyscf, float(mf.e_tot), root_gap
 
 
@@ -267,6 +279,18 @@ def measure(mol, e_casci_pyscf, e_rhf, root_gap, budget=BUDGET, tol=1e-9):
     n_elec_emb = sum(mol.nelec)
     e_exact, flat, space = da.casci_vector(mol)
 
+    # FINGERPRINTS. If a re-run disagrees, these say WHERE it diverged instead
+    # of leaving it to guesswork:
+    #   civec_fp differs  -> the exact CI vector itself is not reproducible
+    #                        (solver convergence or a degenerate state)
+    #   civec_fp same, order_fp differs
+    #                     -> the vector is fine but amplitudes near the cutoff
+    #                        are tied, so the ranking is arbitrary
+    #   both same, energies differ
+    #                     -> the instability is downstream, in the subspace
+    #                        diagonalisation
+    civec_fp = float(np.abs(flat) @ np.arange(flat.size, dtype=float))
+
     # TRUST CHECK. The exact reference every error below is measured against
     # must match PySCF's own CASCI on the same active space. If it does not,
     # the integral extraction or the determinant bookkeeping is wrong.
@@ -293,7 +317,14 @@ def measure(mol, e_casci_pyscf, e_rhf, root_gap, budget=BUDGET, tol=1e-9):
     n_eff = budget
 
     # Oracle: best possible at the budget.
-    e_oracle = da.projected_energy(mol, order[:n_eff], space=space)
+    sel_oracle = order[:n_eff]
+    order_fp = int(np.sort(sel_oracle).sum())
+    # How tied is the cutoff? If the amplitudes at position N and N+1 are
+    # nearly equal, which determinant makes the cut is arbitrary and the
+    # oracle is not well defined at this budget.
+    w_sorted = np.sort(flat ** 2)[::-1]
+    cutoff_ratio = float(w_sorted[n_eff] / w_sorted[n_eff - 1]) if n_eff < flat.size else 0.0
+    e_oracle = da.projected_energy(mol, sel_oracle, space=space)
 
     # CIPSI: classical selection at the same budget, no quantum input.
     sel, history = dx.cipsi_from_scratch(mol, n_eff, space=space, verbose=False)
@@ -317,6 +348,9 @@ def measure(mol, e_casci_pyscf, e_rhf, root_gap, budget=BUDGET, tol=1e-9):
         "root_gap": root_gap,
         "degenerate": degenerate,
         "trusted": trusted,
+        "civec_fp": civec_fp,
+        "order_fp": order_fp,
+        "cutoff_ratio": cutoff_ratio,
         "e_core": float(mol.cas_hamiltonian.e_core),
         "n_elec_active": n_elec_emb,
         "dominant_weight": float(cum[0]),
@@ -388,6 +422,8 @@ def main():
                   f"'the best N determinants'.")
             print(f"    numbers from this geometry will not reproduce between "
                   f"runs -- excluded.")
+        print(f"  fingerprints: civec={m['civec_fp']:.10e}  "
+              f"order={m['order_fp']}  cutoff_ratio={m['cutoff_ratio']:.6f}")
         print(f"  CIPSI {m['err_cipsi_mha']:8.4f} mHa   "
               f"oracle {m['err_oracle_mha']:8.4f} mHa   "
               f"gap {m['cipsi_above_oracle_mha']:+8.4f} mHa   "
