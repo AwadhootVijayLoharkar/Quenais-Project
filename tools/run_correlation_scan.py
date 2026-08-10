@@ -153,6 +153,28 @@ def measure(step2_path, budget=BUDGET, threads=1):
         import det_expansion as dx
 
     mol = load_from_dmet_pickle(str(step2_path), num_threads=threads)
+
+    # TRUST CHECK -- the single most diagnostic quantity in the pipeline.
+    # mol.hf is a real converged SCF on h1e_emb/h2e_emb/ecore. If it does not
+    # land on the full molecule's UHF energy, the embedding Hamiltonian itself
+    # is wrong and every number downstream is fiction. reference_values calls
+    # this EMBEDDED_SCF_VS_UHF_TOL and sets it at 2e-7.
+    #
+    # This matters most exactly where this scan is most interesting: at
+    # stretched geometries the DMET construction is under strain, so the
+    # points that would carry the result are the ones most likely to be bad.
+    step2 = mol._step2_result
+    uhf_ref = float(step2["uhf_energy"])
+    scf_delta = float(mol.hf.e_tot) - uhf_ref
+    trusted = abs(scf_delta) <= 2e-7
+
+    # A second, independent smell test. If the embedding really held every
+    # electron, e_core would be close to the nuclear repulsion and positive.
+    # A large negative e_core alongside a full electron count means the
+    # electron bookkeeping and the core potential disagree.
+    n_elec_emb = sum(mol.nelec)
+    n_elec_mol = int(step2.get("mol_info", {}).get("n_electrons", 0))
+
     e_exact, flat, space = da.casci_vector(mol)
     order, cum = da.weight_curve(flat)
 
@@ -188,6 +210,11 @@ def measure(step2_path, budget=BUDGET, threads=1):
         "nelec": list(space.nelec),
         "ndet": space.ndet,
         "e_casci": e_exact,
+        "embedded_scf_delta": scf_delta,
+        "trusted": trusted,
+        "e_core": float(mol.cas_hamiltonian.e_core),
+        "n_elec_emb": n_elec_emb,
+        "n_elec_mol": n_elec_mol,
         "dominant_weight": float(cum[0]),
         "n_for_99pct": int(np.searchsorted(cum, 0.99) + 1),
         "n_chem": n_chem,
@@ -246,6 +273,14 @@ def main():
               f"({100*m['budget']/m['ndet']:.1f}% of the space)")
         print(f"  dominant weight={m['dominant_weight']:.4f}  "
               f"(1.0 = single reference, lower = more correlated)")
+        flag = "TRUSTED" if m["trusted"] else "*** UNTRUSTED ***"
+        print(f"  embedded SCF vs full UHF: {m['embedded_scf_delta']:+.3e} Ha "
+              f"(tol 2e-07)  {flag}")
+        if not m["trusted"]:
+            print(f"    e_core={m['e_core']:.6f}  electrons in embedding="
+                  f"{m['n_elec_emb']} of {m['n_elec_mol']} in the molecule")
+            print(f"    the embedding Hamiltonian is wrong here; this row is "
+                  f"not evidence of anything")
         print(f"  CIPSI {m['err_cipsi_mha']:8.4f} mHa   "
               f"oracle {m['err_oracle_mha']:8.4f} mHa   "
               f"gap {m['cipsi_above_oracle_mha']:+8.4f} mHa   "
@@ -265,16 +300,29 @@ def main():
 
     print(f"\n{'='*76}")
     print(f"  {'r (A)':>7} {'dom wt':>8} {'N_chem':>8} {'CIPSI':>10} "
-          f"{'oracle':>10} {'gap':>10}")
+          f"{'oracle':>10} {'gap':>10}  {'SCF check':>10}")
     for m in rows:
         print(f"  {m['r']:>7.3f} {m['dominant_weight']:>8.4f} "
               f"{str(m['n_chem']):>8} {m['err_cipsi_mha']:>10.4f} "
-              f"{m['err_oracle_mha']:>10.4f} {m['cipsi_above_oracle_mha']:>+10.4f}")
+              f"{m['err_oracle_mha']:>10.4f} {m['cipsi_above_oracle_mha']:>+10.4f}"
+              f"  {'ok' if m['trusted'] else 'FAILED':>10}")
     print(f"  (errors in mHa at a {args.budget}-determinant budget)")
-    print("\n  Read the 'gap' column: while it stays near zero, classical "
-          "selection is\n  effectively optimal and no sampler can help. Where "
-          "it starts to grow is\n  the crossover -- run the quantum solvers "
-          "THERE, not across the whole scan.")
+
+    bad = [m for m in rows if not m["trusted"]]
+    if bad:
+        print(f"\n  {len(bad)} of {len(rows)} geometries FAILED the embedded-SCF "
+              f"check: r = "
+              + ", ".join(f"{m['r']:.3f}" for m in bad))
+        print("  Those rows are not evidence. Fix the embedding at those "
+              "geometries, or\n  restrict the conclusion to the geometries "
+              "that passed.")
+
+    good = [m for m in rows if m["trusted"]]
+    if good:
+        print("\n  Read the 'gap' column over the TRUSTED rows only: while it "
+              "stays near\n  zero, classical selection is effectively optimal "
+              "and no sampler can help.\n  Where it starts to grow is the "
+              "crossover -- run the quantum solvers THERE.")
 
     out = scan_root / f"correlation_scan_{args.molecule}.csv"
     with open(out, "w", newline="") as fh:
