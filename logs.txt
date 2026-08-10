@@ -1,15 +1,7 @@
-python -c "
-import csv
-for row in csv.DictReader(open('scans/N2/correlation_scan_N2.csv')):
-    if float(row['r']) in (1.8, 2.1):
-        print(row['r'], row['e_casci'])
-"
-
-quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
-            --project-dir runs/N2_r1.8 --gqe-qsci-max-dim 200
-
-quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
-            --project-dir runs/N2_r2.1 --gqe-qsci-max-dim 200
-
-
-  
+for r in 1.8 2.1; do
+  for i in 2 3; do
+    python tools/export_cas_hamiltonian.py --r $r --project-dir runs/N2_r${r}_rep$i
+    quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
+      --project-dir runs/N2_r${r}_rep$i --gqe-qsci-max-dim 200
+  done
+done
