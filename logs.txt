@@ -1,4 +1,4 @@
-python -c "
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python -c "
 import sys; sys.path.insert(0,'tools')
 from run_correlation_scan import build_cas_molecule
 import numpy as np
@@ -8,3 +8,6 @@ for r in (1.8, 2.1):
     t1, t2 = mol.ccsd_amplitude['t1'], mol.ccsd_amplitude['t2']
     print(f'r={r}  CCSD={e:.6f}  max|t1|={np.abs(t1).max():.3f}  max|t2|={np.abs(t2).max():.3f}')
 "
+r=1.8  CCSD=-107.122170  max|t1|=0.027  max|t2|=0.653
+r=2.1  CCSD=-107.584350  max|t1|=0.047  max|t2|=0.836
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$
