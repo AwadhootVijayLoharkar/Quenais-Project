@@ -1,7 +1,8 @@
-for r in 1.8 2.1; do
-  for i in 2 3; do
-    python tools/export_cas_hamiltonian.py --r $r --project-dir runs/N2_r${r}_rep$i
-    quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
-      --project-dir runs/N2_r${r}_rep$i --gqe-qsci-max-dim 200
-  done
-done
+import os
+        _dump = os.environ.get("QUENAIS_DUMP_DETS")
+        if _dump:
+            np.savez(_dump,
+                     strs=np.asarray([[int(d[0]), int(d[1])] for d in dets], dtype=np.uint64),
+                     weights=np.asarray(weights[idx]),
+                     norb=int(self.norb),
+                     nelec=np.asarray(self.nelec, dtype=int))
