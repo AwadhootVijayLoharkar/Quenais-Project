@@ -1,33 +1,17 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/inspect_gqe_determinanats.py --r 1.8 --dets gqe_dets_r1.8.npz 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/test_symmetry_completion.py --r 1.8 --dets gqe_dets_r1.8.npz 
 
-  N2  r = 1.8000 A   ndet=3136   selected=200
-  reference determinant = index 0 (weight 0.425737)
+  N2  r = 1.8000 A   ncas=8   ndet=3136
+  symmetry-equivalent orbital pairs: none
+  determinants missing their alpha/beta partner: 26 of 200
 
-  excitation rank   GQE   oracle   available   weight in rank (exact)
-                0      1        1           1     0.42573730
-                1      4        2          30     0.00085402
-                2     36       51         285     0.44826701
-                3     50       50         920     0.00144919
-                4     80       73        1200     0.11320348
-                5     19       18         600     0.00038391
-                6     10        5         100     0.01010509
+  set                      dets       weight   error (mHa)
+  GQE as sampled            200   0.76870989       78.9371
+  GQE + spin closure        226   0.76870989       78.9371
+  oracle, same count        200   0.99975364        0.3968
+  oracle, matched size      226   0.99988734        0.1964
 
-  weight captured: GQE 0.76870989   oracle 0.99975364
-
-  GQE missed 152 of the oracle's 200. The ten heaviest:
-     index       weight   rank
-       338   0.04171977      2
-       118   0.04171977      2
-        63   0.01713774      2
-       393   0.01713773      2
-       189   0.00716485      2
-      1179   0.00716485      2
-      1240   0.00716484      2
-       470   0.00716484      2
-       415   0.00600550      2
-      1295   0.00600550      2
-
-  total weight missed: 0.23110041
-
-  rank spread: GQE 0-6   oracle 0-6
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]
+  VERDICT
+    NOT THE CAUSE. 78.9371 -> 78.9371 mHa. The missing
+    determinants are not merely symmetry partners; look
+    elsewhere.
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
