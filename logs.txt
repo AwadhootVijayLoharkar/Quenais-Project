@@ -1,17 +1,5 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/test_symmetry_completion.py --r 1.8 --dets gqe_dets_r1.8.npz 
-
-  N2  r = 1.8000 A   ncas=8   ndet=3136
-  symmetry-equivalent orbital pairs: none
-  determinants missing their alpha/beta partner: 26 of 200
-
-  set                      dets       weight   error (mHa)
-  GQE as sampled            200   0.76870989       78.9371
-  GQE + spin closure        226   0.76870989       78.9371
-  oracle, same count        200   0.99975364        0.3968
-  oracle, matched size      226   0.99988734        0.1964
-
-  VERDICT
-    NOT THE CAUSE. 78.9371 -> 78.9371 mHa. The missing
-    determinants are not merely symmetry partners; look
-    elsewhere.
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+for s in 11 22 33; do
+  python tools/export_cas_hamiltonian.py --r 1.8 --project-dir runs/N2_r1.8_s$s
+  quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
+    --project-dir runs/N2_r1.8_s$s --gqe-qsci-max-dim 200 --gqe-seed $s
+done

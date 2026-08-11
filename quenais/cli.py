@@ -136,6 +136,11 @@ def build_parser():
                      help="QSCI subspace cap (default 10000). The upstream "
                           "default of 2000 became the binding constraint "
                           "on ScH.")
+    gqe.add_argument("--gqe-seed", type=int, default=None,
+                     help="trainer seed. The external repo's "
+                          "configs/trainer/default.yaml pins seed=32, so runs "
+                          "are otherwise bit-identical and repeats are not "
+                          "independent samples.")
 
     parser.add_argument("--steps", nargs="+", type=int, default=[0, 1, 2, 3, 4],
                         help="0=classical 1=active-space 2=embedding "
@@ -173,6 +178,8 @@ def build_gqe_settings(args):
         kwargs["operator_pool_spec"] = args.gqe_pool
     if args.gqe_qsci_max_dim is not None:
         kwargs["qsci_max_dim"] = args.gqe_qsci_max_dim
+    if args.gqe_seed is not None:
+        kwargs["seed"] = args.gqe_seed
     return GqeSettings(**kwargs)
 
 
