@@ -1,8 +1,33 @@
-grep -i "pool" runs/N2_r1.8_pool2/results/gqe_train.log | head -5
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/inspect_gqe_determinanats.py --r 1.8 --dets gqe_dets_r1.8.npz 
 
-python -c "
-import csv
-r=list(csv.DictReader(open('runs/N2_r1.8_pool2/results/gqe_epoch_log.csv')))[-1]
-print('err vs exact:', 1e3*float(r['Global-refined(best_so_far)/energy - R-CASCI']), 'mHa')
-print('subspace_dim:', r['Global-refined(best_so_far)/subspace_dim'])
-"
+  N2  r = 1.8000 A   ndet=3136   selected=200
+  reference determinant = index 0 (weight 0.425737)
+
+  excitation rank   GQE   oracle   available   weight in rank (exact)
+                0      1        1           1     0.42573730
+                1      4        2          30     0.00085402
+                2     36       51         285     0.44826701
+                3     50       50         920     0.00144919
+                4     80       73        1200     0.11320348
+                5     19       18         600     0.00038391
+                6     10        5         100     0.01010509
+
+  weight captured: GQE 0.76870989   oracle 0.99975364
+
+  GQE missed 152 of the oracle's 200. The ten heaviest:
+     index       weight   rank
+       338   0.04171977      2
+       118   0.04171977      2
+        63   0.01713774      2
+       393   0.01713773      2
+       189   0.00716485      2
+      1179   0.00716485      2
+      1240   0.00716484      2
+       470   0.00716484      2
+       415   0.00600550      2
+      1295   0.00600550      2
+
+  total weight missed: 0.23110041
+
+  rank spread: GQE 0-6   oracle 0-6
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]
