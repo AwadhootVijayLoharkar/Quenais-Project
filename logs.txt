@@ -1,12 +1,8 @@
-0_classical.pkl not found
-  [skip] step 1 (ASF): /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/step1_asf.pkl not found
-  Parsed 120 epochs from /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/gqe_train.log
-  [skip] fig2: step 2 pickle has no 'sv_all' -- re-run the embedding stage to save the full spectrum.
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/plots/fig3_gqe_energy_convergence.png
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/plots/fig4_gqe_circuit_resources.png
-  [skip] fig5: no energies available from any stage yet
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/results_summary.csv
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/gqe_epoch_log.csv  (120 epochs, 20 columns)
+grep -i "pool" runs/N2_r1.8_pool2/results/gqe_train.log | head -5
 
-[QuEnAIS] Pipeline complete.
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$
+python -c "
+import csv
+r=list(csv.DictReader(open('runs/N2_r1.8_pool2/results/gqe_epoch_log.csv')))[-1]
+print('err vs exact:', 1e3*float(r['Global-refined(best_so_far)/energy - R-CASCI']), 'mHa')
+print('subspace_dim:', r['Global-refined(best_so_far)/subspace_dim'])
+"
