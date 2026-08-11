@@ -1,4 +1,12 @@
-python tools/export_cas_hamiltonian.py --r 1.8 --project-dir runs/N2_r1.8_pool2
-quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
-            --project-dir runs/N2_r1.8_pool2 --gqe-qsci-max-dim 200 \
-            --gqe-pool dmet_pauli_evolution
+0_classical.pkl not found
+  [skip] step 1 (ASF): /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/step1_asf.pkl not found
+  Parsed 120 epochs from /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/gqe_train.log
+  [skip] fig2: step 2 pickle has no 'sv_all' -- re-run the embedding stage to save the full spectrum.
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/plots/fig3_gqe_energy_convergence.png
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/plots/fig4_gqe_circuit_resources.png
+  [skip] fig5: no energies available from any stage yet
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/results_summary.csv
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/N2_r1.8_pool2/results/gqe_epoch_log.csv  (120 epochs, 20 columns)
+
+[QuEnAIS] Pipeline complete.
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$
