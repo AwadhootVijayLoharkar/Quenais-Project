@@ -95,9 +95,15 @@ def main():
     p.add_argument("--basis", default="sto-3g")
     p.add_argument("--ncas", type=int, default=8)
     p.add_argument("--nelecas", type=int, default=10)
+    # Dense through the bonding region so the minimum and curvature are
+    # resolved (equilibrium is near 1.1 A), coarser once the curve flattens.
+    # Below ~0.8 A the repulsive wall rises steeply and contributes nothing
+    # but scale, so the grid starts there rather than at 0.4 A.
     p.add_argument("--distances", type=float, nargs="+",
-                   default=[0.9, 1.0, 1.0977, 1.2, 1.3, 1.4, 1.5, 1.65, 1.8,
-                            1.95, 2.1, 2.25, 2.4, 2.6, 2.8, 3.0, 3.2, 3.6, 4.0])
+                   default=[0.80, 0.85, 0.90, 0.95, 1.00, 1.05, 1.0977, 1.15,
+                            1.20, 1.25, 1.30, 1.35, 1.40, 1.45, 1.50, 1.60,
+                            1.70, 1.80, 1.90, 2.00, 2.10, 2.25, 2.40, 2.60,
+                            2.80, 3.00, 3.20, 3.60, 4.00, 4.50, 5.00])
     p.add_argument("--out", default=".")
     args = p.parse_args()
 
@@ -130,12 +136,29 @@ def main():
         w.writeheader()
         w.writerows(rows)
 
-    # Dissociation energy from the computed curve.
+    # Dissociation energy: asymptote minus minimum.
+    #
+    # NOT max minus min. The largest energy on the curve is the repulsive wall
+    # at short bond length, which has nothing to do with breaking the bond;
+    # using it inflates D_e substantially (241 vs 150 kcal/mol on the first
+    # run of this script).
     e = np.array([x["CASCI"] for x in rows])
     rr = np.array([x["r"] for x in rows])
-    de = (e.max() - e.min()) * HARTREE_TO_KCAL
-    print(f"\n  minimum at r = {rr[e.argmin()]:.3f} A")
-    print(f"  D_e (CASCI, curve endpoints) = {de:.1f} kcal/mol")
+    i_min = int(e.argmin())
+    e_asym = float(e[-1])
+    de = (e_asym - e[i_min]) * HARTREE_TO_KCAL
+
+    # The asymptote is only meaningful if the curve has actually flattened.
+    tail_slope = abs(e[-1] - e[-2]) * HARTREE_TO_KCAL
+    print(f"\n  minimum at r = {rr[i_min]:.3f} A, E = {e[i_min]:.6f} Ha")
+    print(f"  asymptote at r = {rr[-1]:.3f} A, E = {e_asym:.6f} Ha")
+    print(f"  D_e (CASCI) = {de:.1f} kcal/mol")
+    if tail_slope > 0.5:
+        print(f"  WARNING: curve still changing by {tail_slope:.2f} kcal/mol "
+              f"between the last two points -- extend the grid before quoting "
+              f"D_e.")
+    print(f"  (experimental N2 D_e is ~228 kcal/mol; a minimal basis with a "
+          f"valence active space is expected to underestimate it)")
     print(f"  wrote {csv_path}")
 
     try:
