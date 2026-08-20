@@ -165,10 +165,17 @@ getting the stack to run.
 |---|---|---|
 | [`01_quickstart.ipynb`](notebooks/01_quickstart.ipynb) | LiH end to end, compared against the validated value | PySCF |
 | [`02_dmet_internals.ipynb`](notebooks/02_dmet_internals.ipynb) | the Schmidt spectrum, why N₂ correctly gets no bath, reading the diagnostics | nothing — runs off the golden pickles |
-| [`03_gqe_solver.ipynb`](notebooks/03_gqe_solver.ipynb) | configuring and running the CUDA-Q solver | `quenais[cudaq]` + patched submodule |
+| [`03_gqe_solver.ipynb`](notebooks/03_gqe_solver.ipynb) | configuring and running the CUDA-Q solver, reading the epoch log, and the `--gqe-seed` trap | `quenais[cudaq]` + patched submodule |
+| [`04_full_workflow.ipynb`](notebooks/04_full_workflow.ipynb) | your own molecule end to end: geometry in, active-space diagnosis, what to record | PySCF |
+| [`05_determinant_selection.ipynb`](notebooks/05_determinant_selection.ipynb) | the oracle bound, CIPSI, bond breaking, and whether your system can discriminate selection methods at all | nothing — runs off the stored stage0/stage1 results |
 
-Start with 01. If you want the physics rather than the API, 02 runs in
-seconds with no optional dependencies at all.
+Start with 01. If you want the physics rather than the API, 02 and 05 both run
+in seconds with no optional dependencies at all.
+
+**05 is the one to read before trusting a solver comparison.** It measures
+whether a system can show a difference between selection methods *before* you
+spend GPU time comparing them — the answer for ScH turned out to be no, which
+reframes every solver benchmark run on it.
 
 ## Usage
 
@@ -336,6 +343,39 @@ labels each one `deterministic`, `optimizer-dependent` or `stochastic` —
 see [docs/limitations.md](docs/limitations.md) before comparing results
 across machines.
 
+## Determinant-selection tools
+
+`quenais/quantum/det_analysis.py` and `det_expansion.py`, and the scripts in
+`tools/`, answer a question the pipeline itself doesn't: given a fixed
+embedding Hamiltonian, how good is a *particular* determinant selection
+compared to the best possible one, and to a classical baseline? This is part
+of the validation story, not just benchmarking — it is how
+[docs/limitations.md](docs/limitations.md)'s ScH and N₂-threshold findings
+were obtained, and it is what should be run on any new system *before*
+spending GQE training time on it.
+
+| tool | what it computes |
+|---|---|
+| `det_analysis.py` | the oracle bound — best energy obtainable from any N determinants, by exact amplitude ranking; ships its own self-validating gates (`run_gates`) that refuse to report a number unless the full determinant space first reproduces the pipeline's own `DMET_CASCI` reference |
+| `det_expansion.py` | CIPSI, a classical selected-CI baseline, on the same embedded Hamiltonians the quantum solvers read — so quantum and classical are compared on identical integrals |
+| `tools/run_stage0.py` | weight-capture curves and the oracle bound, for a system in `tests/regression/golden/` |
+| `tools/run_stage1.py` | CIPSI at matched subspace sizes |
+| `tools/run_correlation_scan.py` | oracle + CIPSI across a bond-length scan at fixed active space, to locate the correlation strength (top-configuration weight) below which selection method starts to matter |
+| `tools/run_dissociation.py` | full dissociation curve, all classical methods vs exact |
+| `tools/export_cas_hamiltonian.py` | writes a CAS Hamiltonian built directly with PySCF as a step-2 pickle, so `load_from_dmet_pickle` and the quantum solvers can read it without going through DMET |
+| `tools/compare_gqe_determinants.py`, `inspect_gqe_determinants.py`, `expand_gqe_seed.py`, `test_symmetry_completion.py` | diagnostics for a dumped GQE determinant set (`QUENAIS_DUMP_DETS`) against the oracle's — excitation-rank breakdown, whether classical expansion rescues it, whether closing spatial/spin symmetry orbits rescues it |
+
+An independent, from-scratch LiH FCI implementation (plain numpy, no shared
+code with this package) agrees with `quenais`'s own LiH energy to 15 decimal
+places and is the root of trust these tools are validated against — see
+`CHANGELOG_SESSION.md`.
+
+**Before quoting a number from these tools**, confirm the achieved subspace
+size and, for anything involving GQE, that `--gqe-seed` was passed and
+varied across repeats — the trainer's own config pins a fixed seed, so
+without it "repeat" runs are bit-identical rather than independent samples.
+See [docs/reproducibility.md](docs/reproducibility.md).
+
 ## Performance
 
 **None of this changes the numbers.** The reference values above have been
@@ -406,7 +446,14 @@ Read [docs/limitations.md](docs/limitations.md) before trusting a result
 from a system other than LiH or N₂. In short: ASF under-selects for
 transition metals (use `--force-active-space`), CASSCF and NEVPT2 are not
 reproducible to tight tolerance, only closed-shell systems are validated,
-and GQE's accuracy on larger systems is bounded by sampling capacity.
+GQE's accuracy on larger systems is bounded by sampling capacity, and ScH
+specifically cannot discriminate determinant-selection methods (w₁ = 0.895).
+
+Five separate reproducibility failure modes have each produced smooth,
+plausible, wrong results in this project's history — three of them
+invisible in the energy alone. Read
+[docs/reproducibility.md](docs/reproducibility.md) before trusting a curve
+that has only been run once.
 
 ## Tests
 
@@ -440,6 +487,8 @@ quenais/
 external/pyci/           submodule: theochem/pyci, built from source
 gqe-for-qsci/            submodule: the external GQE trainer, patched
 tests/regression/golden/ validated reference pickles
+tools/                   determinant-selection studies and GQE diagnostics
+                         -- see "Determinant-selection tools" above
 ```
 
 `patches/` lives *inside* the package rather than at the repo root because
