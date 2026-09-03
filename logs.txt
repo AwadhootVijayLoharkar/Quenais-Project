@@ -1,27 +1,154 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ python tools/run_dissociation.py --out Results/
-       r            HF          CCSD         CASCI      w1   max|t2|
-   0.900   -107.187190   -107.291374   -107.292712  0.9544     0.093
-   1.000   -107.419532   -107.546723   -107.548967  0.9381     0.113
-   1.098   -107.495893   -107.648941   -107.652533  0.9173     0.136
-   1.200   -107.487784   -107.671439   -107.677085  0.8889     0.164
-   1.300   -107.433871   -107.650828   -107.659153  0.8523     0.197
-   1.400   -107.357815   -107.611644   -107.622992  0.8034     0.239
-   1.500   -107.272449   -107.567859   -107.581483  0.7373     0.293
-   1.650   -107.141532   -107.514845   -107.524353  0.5967     0.411
-   1.800   -107.017327   -107.502989   -107.483383  0.4257     0.581
-   1.950   -106.905544   -107.541070   -107.459912  0.2822     0.749
-   2.100   -106.808411   -107.584370   -107.448604  0.1916     0.850
-   2.250   -106.725874   -107.087965   -107.443597  0.1403     0.182  <- CCSD not converged
-   2.400   -106.656608   -107.232098   -107.441296  0.1112     0.769  <- CCSD not converged
-   2.600   -106.581955   -106.824367   -107.439780  0.0897     0.538  <- CCSD not converged
-   2.800   -106.524115   -106.942084   -107.438957  0.0782     0.385  <- CCSD not converged
-   3.000   -106.479843   -107.093617   -107.438489  0.0716     0.800  <- CCSD not converged
-   3.200   -106.446201   -107.316516   -107.438243  0.0677     0.797  <- CCSD not converged
-   3.600   -106.400690   -106.720327   -107.438069  0.0642     0.353  <- CCSD not converged
-   4.000   -106.372044   -106.538250   -107.438034  0.0630     0.655  <- CCSD not converged
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-run --molecule ScF --basis  sto-3g --project-dir runs/ScF_avas --active-space-method avas --avas-ao-labels "Sc 3d" "Sc 4s" --clas
+sical-methods HF MP2 CCSD CCSD_T --steps 0 1 2
 
-  minimum at r = 1.200 A
-  D_e (CASCI, curve endpoints) = 241.2 kcal/mol
-  wrote Results/dissociation_N2.csv
-  wrote Results/dissociation_N2.pdf
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ 
+============================================================
+  Step 0: Classical
+============================================================
+
+============================================================
+[Step 0] Classical Methods -- ScF
+============================================================
+  Basis     : sto-3g
+  Charge    : 0   Spin (2S): 0
+  Methods   : ['HF', 'MP2', 'CCSD', 'CCSD_T']
+  Electrons : 30   AOs: 23
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+
+-- HF --
+  [HF] done in 0.4s
+  RHF energy: -850.24699538 Ha (converged: True)
+
+-- MP2 --
+  [MP2] done in 0.0s
+  E_corr: -0.08628919 Ha   MP2 energy: -850.33328457 Ha
+
+-- CCSD --
+  [CCSD] done in 0.2s
+  E_corr: -0.10310718 Ha   CCSD energy: -850.35010256 Ha   Converged: True
+
+-- CCSD(T) --
+  [CCSD(T)] done in 0.0s
+  (T) correction: -0.00771208 Ha   CCSD(T) energy: -850.35781464 Ha
+
+========================================================================
+[Step 0] Results -- ScF / sto-3g
+========================================================================
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
+  ----------------------------------------------------------------------
+  HF             -850.24699538     +0.000000       +0.00  deterministic       
+  MP2            -850.33328457     -0.086289      -54.15  deterministic       
+  CCSD           -850.35010256     -0.103107      -64.70  deterministic       
+  CCSD_T         -850.35781464     -0.110819      -69.54  deterministic       
+
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 5.6s
+========================================================================
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas/results/step0_classical.pkl
+
+============================================================
+  Step 1: Active space
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- ScF
+         Selector: avas
+============================================================
+  Atoms     : 2 ['Sc', 'F']  Basis: sto-3g
+  Electrons : 30  AOs: 23
+
+-- Phase A: UHF + Classification --
+  UHF energy = -850.24699538 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=10.7367 eV
+  TM    : True  ->  Tier 3
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -0.086289 Ha
+  Selector: avas (PySCF) -- skipping ASF/DMRG.
+  AVAS labels    : ['Sc 3d', 'Sc 4s']
+  AVAS threshold : 0.2  minao=minao
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/active_space/selectors.py:219: RuntimeWarning: AVAS is running in a minimal basis (sto-3g). The projection onto minao is near-trivial there, so avas_threshold is weakly discriminating. Scan the threshold, and confirm in a polarised basis before concluding the selection is wrong.
+  warnings.warn(
+  AVAS selected 6 orbitals [14, 15, 16, 17, 18, 19] with 2 electrons.
+  Phase C skipped: it can only shrink a selection, and these orbitals were chosen deliberately.
+
+  Active electrons from AVAS: 2 (not recomputed -- mo_list is in the selector's basis)
+
+-- Phase D: Loewdin Population --
+
+     MO    Atom  Symbol    Weight
+  ---------------------------------
+     14       0      Sc    0.9588
+     15       0      Sc    1.0000
+     16       0      Sc    1.0000
+     17       0      Sc    0.8876
+     18       0      Sc    0.8876
+     19       0      Sc    0.9262
+
+============================================================
+[Step 1] Summary -- ScF
+  Tier: 3  Active space: (2e, 6orb)  Orbitals: [14, 15, 16, 17, 18, 19]
+  Selection: automatic (AVAS, PySCF)
+  Selector settings: {'selector': 'avas', 'ao_labels': ['Sc 3d', 'Sc 4s'], 'threshold': 0.2, 'minao': 'minao', 'openshell_option': 2, 'ncas': 6, 'nelecas': 2}
+  Correlation strength: 0.0192
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+============================================================
+[Step 2] DMET Embedding -- ScF
+============================================================
+  Active space (step 1): (2e, 6orb) MOs=[14, 15, 16, 17, 18, 19]
+  reference=casci   mu_correction=True
+
+-- Phase A: Restore UHF from step 1 --
+  UHF energy = -850.24699538 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+  [diag] MP2 density active<->non-active coupling: max|.|=7.34e-03
+  {'method': 'casci', 'e_cas': -0.8872327296386353, 'n_active': 6, 'nel_active': 2}
+  [diag] reference density electron count: 30.000554  (mol.nelectron = 30)
+
+-- Phase C: Schmidt Decomposition --
+  [diag] Schmidt singular values (all 6): [0.016953 0.001879 0.001879 0.000338 0.       0.      ]
+  [diag] max |Q_imp.T @ Q_bath| over the 3 kept bath orbital(s): 3.00e-13  (should be ~1e-10)
+  Impurity: 6  Bath: 3  Embedding: 9 -> 18 qubits
+  sv^2 coverage: 0.9996
+  [diag] C_emb orthonormality error: 3.00e-13
+  [diag] embedding electron count from the reference density: alpha=2.020281 -> 2, beta=2.020280 -> 2  (the active-space count would give 1, 1)
+
+-- Phase D: Core Mean-Field Potential --
+  [diag] core density electron count: 25.959993  (expect mol.nelectron - embedding electrons = 30 - 4 = 26)
+
+-- Phase E: Integral Transformation --
+  [diag] h2e symmetry error: 1.39e-17
+  ecore = -844.45282259 Ha
+
+-- Phase F: Chemical Potential Correction --
+  mu = -0.984202 Ha   ecore -> -848.38962913 Ha
+
+  h1e (9, 9)  h2e (9, 9, 9, 9)  Time: 0.0s
+
+-- Verification: independent embedded SCF --
+  Embedded SCF (independent check) = -850.2470312356 Ha
+  Full-molecule UHF                = -850.2469953785 Ha
+  delta = -3.586e-05 Ha  (tol 2e-07)  FAIL
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/hamiltonian.py:114: RuntimeWarning: The embedded SCF differs from full UHF by -3.586e-05 Ha, beyond the 2e-07 tolerance. The embedding Hamiltonian is probably wrong; do not trust downstream energies.
+  warnings.warn(
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- ScF
+  Embedding : 6 imp + 3 bath = 9 orbitals (18 qubits)
+  Electrons : 2 alpha + 2 beta
+  ecore     : -848.38962913 Ha    mu: -0.984202 Ha
+============================================================
+
+[QuEnAIS] Pipeline complete.
