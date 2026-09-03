@@ -1,51 +1,4 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-run --molecule ScF --basis  sto-3g --project-dir runs/ScF_avas_v2 --active-space-method avas --avas-ao-labels "Sc 3d" "Sc 4s" "F 2p" --classical-method
-s HF MP2 CCSD CCSD_T --steps 0 1 2
-
-============================================================
-  Step 0: Classical
-============================================================
-
-============================================================
-[Step 0] Classical Methods -- ScF
-============================================================
-  Basis     : sto-3g
-  Charge    : 0   Spin (2S): 0
-  Methods   : ['HF', 'MP2', 'CCSD', 'CCSD_T']
-  Electrons : 30   AOs: 23
-  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
-
--- HF --
-  [HF] done in 0.2s
-  RHF energy: -850.24699538 Ha (converged: True)
-
--- MP2 --
-  [MP2] done in 0.0s
-  E_corr: -0.08628919 Ha   MP2 energy: -850.33328457 Ha
-
--- CCSD --
-  [CCSD] done in 0.2s
-  E_corr: -0.10310718 Ha   CCSD energy: -850.35010256 Ha   Converged: True
-
--- CCSD(T) --
-  [CCSD(T)] done in 0.0s
-  (T) correction: -0.00771208 Ha   CCSD(T) energy: -850.35781464 Ha
-
-========================================================================
-[Step 0] Results -- ScF / sto-3g
-========================================================================
-
-  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
-  ----------------------------------------------------------------------
-  HF             -850.24699538     +0.000000       +0.00  deterministic       
-  MP2            -850.33328457     -0.086289      -54.15  deterministic       
-  CCSD           -850.35010256     -0.103107      -64.70  deterministic       
-  CCSD_T         -850.35781464     -0.110819      -69.54  deterministic       
-
-  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
-  Total time: 2.3s
-========================================================================
-
-[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas_v2/results/step0_classical.pkl
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-run --molecule ScF --basis  sto-3g --project-dir runs/ScF_avas_mp2 --active-space-method avas --avas-ao-labels "Sc 3d" "Sc 4s" "F 2p" --dmet-reference mp2 --steps 1 2
 
 ============================================================
   Step 1: Active space
@@ -98,7 +51,7 @@ s HF MP2 CCSD CCSD_T --steps 0 1 2
   Correlation strength: 0.0185
 ============================================================
 
-[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas_v2/results/step1_asf.pkl
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas_mp2/results/step1_asf.pkl
 
 ============================================================
   Step 2: Embedding Hamiltonian
@@ -108,30 +61,29 @@ s HF MP2 CCSD CCSD_T --steps 0 1 2
 [Step 2] DMET Embedding -- ScF
 ============================================================
   Active space (step 1): (8e, 9orb) MOs=[11, 12, 13, 14, 15, 16, 17, 18, 19]
-  reference=casci   mu_correction=True
+  reference=mp2   mu_correction=True
 
 -- Phase A: Restore UHF from step 1 --
   UHF energy = -850.24699538 Ha (restored, not recomputed)
 
--- Phase B: Reference Density (casci) --
-  [diag] MP2 density active<->non-active coupling: max|.|=7.65e-03
-  {'method': 'casci', 'e_cas': -18.130370770523115, 'n_active': 9, 'nel_active': 8}
-  [diag] reference density electron count: 30.050827  (mol.nelectron = 30)
+-- Phase B: Reference Density (mp2) --
+  {'method': 'mp2', 'recomputed': False}
+  [diag] reference density electron count: 30.000000  (mol.nelectron = 30)
 
 -- Phase C: Schmidt Decomposition --
   [diag] Schmidt singular values (all 9): [0.016499 0.00222  0.00222  0.00155  0.000952 0.000952 0.000194 0.
  0.      ]
-  [diag] max |Q_imp.T @ Q_bath| over the 6 kept bath orbital(s): 3.99e-12  (should be ~1e-10)
+  [diag] max |Q_imp.T @ Q_bath| over the 6 kept bath orbital(s): 5.39e-12  (should be ~1e-10)
   Impurity: 9  Bath: 6  Embedding: 15 -> 30 qubits
   sv^2 coverage: 0.9999
-  [diag] C_emb orthonormality error: 3.99e-12
-  [diag] embedding electron count from the reference density: alpha=8.018923 -> 8, beta=8.018922 -> 8  (the active-space count would give 4, 4)
+  [diag] C_emb orthonormality error: 5.39e-12
+  [diag] embedding electron count from the reference density: alpha=7.993509 -> 8, beta=7.993509 -> 8  (the active-space count would give 4, 4)
 
 -- Phase D: Core Mean-Field Potential --
   [diag] core density electron count: 14.012982  (expect mol.nelectron - embedding electrons = 30 - 16 = 14)
 
 -- Phase E: Integral Transformation --
-  [diag] h2e symmetry error: 2.78e-17
+  [diag] h2e symmetry error: 1.39e-17
   ecore = -774.72836341 Ha
 
 -- Phase F: Chemical Potential Correction --
@@ -146,7 +98,7 @@ s HF MP2 CCSD CCSD_T --steps 0 1 2
 /home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/hamiltonian.py:114: RuntimeWarning: The embedded SCF differs from full UHF by -4.342e-04 Ha, beyond the 2e-07 tolerance. The embedding Hamiltonian is probably wrong; do not trust downstream energies.
   warnings.warn(
 
-[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas_v2/results/step2_hamiltonian.pkl
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas_mp2/results/step2_hamiltonian.pkl
 
 ============================================================
 [Step 2] Summary -- ScF
