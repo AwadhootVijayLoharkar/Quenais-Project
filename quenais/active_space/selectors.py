@@ -48,6 +48,7 @@ __all__ = [
     "select_apc",
     "default_ao_labels",
     "active_block_indices",
+    "check_space_is_usable",
 ]
 
 
@@ -122,6 +123,48 @@ def default_ao_labels(mol):
 # ═════════════════════════════════════════════════════════════════════════
 # The one piece of real adapter logic
 # ═════════════════════════════════════════════════════════════════════════
+
+def check_space_is_usable(mol, ncas, nel, selector, hint=""):
+    """
+    Warn when the selected space is degenerate rather than merely small.
+
+    THE ScF LESSON
+    --------------
+    On ScF/sto-3g, AVAS with ['Sc 3d', 'Sc 4s'] returned (2e, 6o): one
+    occupied orbital and five empty 3d orbitals. The labels described the
+    metal correctly and described where the ELECTRONS are incorrectly --
+    ScF is ionic, so its occupied valence manifold sits on the fluorine.
+
+    Nothing downstream complains about this. CASCI runs, DMET runs, the
+    Schmidt values come back small but finite, and the first sign of
+    trouble is an embedded-SCF check failing by a number too small to
+    look like a catastrophe. Catch it here, where the cause is visible.
+
+    A space is degenerate in either direction:
+      - nearly empty: almost no electrons to correlate
+      - nearly full : almost no holes to excite into
+    Both give a CASCI that is close to a single determinant.
+    """
+    n_occ = nel / 2.0
+    n_holes = ncas - n_occ
+    if ncas >= 4 and n_occ <= 1.0:
+        warnings.warn(
+            f"{selector.upper()} returned ({nel}e, {ncas}o): only "
+            f"{n_occ:.0f} of {ncas} orbitals is occupied. That is not a "
+            f"small active space, it is very likely the WRONG one -- the "
+            f"selection named orbitals that are essentially empty, so "
+            f"there is almost nothing to correlate. {hint}",
+            RuntimeWarning,
+        )
+    elif ncas >= 4 and n_holes <= 1.0:
+        warnings.warn(
+            f"{selector.upper()} returned ({nel}e, {ncas}o): only "
+            f"{n_holes:.0f} of {ncas} orbitals is unoccupied, so there is "
+            f"almost nowhere to excite into. The space is nearly closed and "
+            f"the CASCI will be close to a single determinant. {hint}",
+            RuntimeWarning,
+        )
+
 
 def active_block_indices(mol, ncas, nelecas):
     """
@@ -211,6 +254,15 @@ def select_avas(mf, mol, cfg):
 
     mo_list, nel = active_block_indices(mol, ncas, nelecas)
 
+    check_space_is_usable(
+        mol, ncas, nel, "avas",
+        hint=f"Labels used: {labels}. For an ionic ligand the occupied "
+             f"valence density sits on the LIGAND, so metal-only labels "
+             f"select the empty d manifold. Add the ligand shell (e.g. "
+             f"'F 2p') and re-run. tools/inspect_mo_character.py shows "
+             f"which MOs actually hold the valence electrons.",
+    )
+
     # In a minimal basis the projection onto minao is close to an identity,
     # so the eigenvalue spectrum AVAS thresholds is much less structured
     # than in a polarised basis. Not an error, but the threshold means less
@@ -269,6 +321,12 @@ def select_apc(mf, mol, cfg):
         )
 
     mo_list, nel = active_block_indices(mol, ncas, nelecas)
+
+    check_space_is_usable(
+        mol, ncas, nel, "apc",
+        hint=f"Try a different apc_max_size (currently "
+             f"{cfg.asf.apc_max_size}) or apc_n (currently {cfg.asf.apc_n}).",
+    )
 
     meta = {
         "selector": "apc",
