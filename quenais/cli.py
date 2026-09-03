@@ -27,7 +27,7 @@ import importlib
 import os
 import sys
 
-__all__ = ["run_pipeline", "build_parser", "build_config"]
+__all__ = ["run_pipeline", "build_parser", "build_config", "build_asf_settings"]
 
 STEP_NAMES = {
     0: "Classical",
@@ -40,6 +40,7 @@ STEP_NAMES = {
 
 def build_parser():
     from quenais.config import SOLVERS
+    from quenais.settings.asf import SELECTION_METHODS
     from quenais.settings.gqe import CUDAQ_SIMULATOR_TARGETS, DMET_POOL_SPECS
     from quenais.settings.qiskit_solver import ANSATZE, BACKENDS, MAPPINGS
 
@@ -70,8 +71,42 @@ def build_parser():
     )
     parser.add_argument(
         "--force-active-space", nargs="+", type=int, default=None,
-        help="explicit MO indices, bypassing ASF/DMRG. Transition-metal "
-             "systems generally need this -- see docs/limitations.md",
+        help="explicit MO indices, bypassing every selector. Valid only at "
+             "the geometry it was calibrated at -- MO indices reorder as "
+             "bonds stretch. Prefer --active-space-method avas.",
+    )
+
+    # ── Active-space selection ───────────────────────────────────────────
+    sel = parser.add_argument_group(
+        "Active-space selection",
+        "--force-active-space overrides all of these.",
+    )
+    sel.add_argument(
+        "--active-space-method", default="asf",
+        choices=list(SELECTION_METHODS),
+        help="'asf' (default) is ASF/DMRG entanglement entropy and needs "
+             "block2; it under-selects for the d-block. 'avas' projects "
+             "onto named atomic valence orbitals and is the recommended "
+             "route for transition metals. 'apc' is PySCF's ranked-orbital "
+             "selector -- automatic, no AO labels. Neither PySCF selector "
+             "needs block2.",
+    )
+    sel.add_argument(
+        "--avas-ao-labels", nargs="+", default=None, metavar="LABEL",
+        help="AO labels for --active-space-method avas. QUOTE EACH ONE: "
+             "--avas-ao-labels 'Sc 3d' 'Sc 4s'. Unquoted, 'Sc 3d' becomes "
+             "two arguments and a bare 'Sc' matches every Sc orbital "
+             "including the core (rejected by AsfSettings.validate). "
+             "Default: the valence shell of each element present.",
+    )
+    sel.add_argument(
+        "--avas-threshold", type=float, default=None,
+        help="AVAS projector eigenvalue cutoff (default 0.2). Weakly "
+             "discriminating in a minimal basis -- scan it.",
+    )
+    sel.add_argument(
+        "--apc-max-size", type=int, default=None,
+        help="largest active space APC may return (default 8)",
     )
     parser.add_argument(
         "--dmet-reference", default="casci", choices=["casci", "mp2"],
@@ -183,9 +218,33 @@ def build_gqe_settings(args):
     return GqeSettings(**kwargs)
 
 
+def build_asf_settings(args):
+    """
+    AsfSettings from the selection flags, omitting anything left unset so
+    the dataclass default applies.
+
+    Same pattern as build_gqe_settings: passing None explicitly would
+    overwrite a real default with None for fields whose default is not None
+    (avas_threshold, apc_max_size).
+    """
+    from quenais.settings import AsfSettings
+
+    kwargs = {
+        "force_active_space": args.force_active_space,
+        "method": args.active_space_method,
+    }
+    if args.avas_ao_labels is not None:
+        kwargs["avas_ao_labels"] = args.avas_ao_labels
+    if args.avas_threshold is not None:
+        kwargs["avas_threshold"] = args.avas_threshold
+    if args.apc_max_size is not None:
+        kwargs["apc_max_size"] = args.apc_max_size
+    return AsfSettings(**kwargs)
+
+
 def build_config(args):
     from quenais.config import Config
-    from quenais.settings import AsfSettings, DmetSettings, QiskitSolverSettings
+    from quenais.settings import DmetSettings, QiskitSolverSettings
 
     cfg = Config(
         molecule=args.molecule,
@@ -198,7 +257,7 @@ def build_config(args):
         xyz=args.xyz,
         # None lets Config apply its own ["HF", "MP2"] default.
         classical_methods=args.classical_methods,
-        asf=AsfSettings(force_active_space=args.force_active_space),
+        asf=build_asf_settings(args),
         dmet=DmetSettings(reference=args.dmet_reference),
         qiskit=QiskitSolverSettings(
             ansatz=args.ansatz,

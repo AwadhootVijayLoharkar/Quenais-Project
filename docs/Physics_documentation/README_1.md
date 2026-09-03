@@ -21,6 +21,7 @@ folder is for understanding what the notebooks are doing.
 | 06 | [`06_determinant_selection.md`](06_determinant_selection.md) | the oracle bound, CIPSI, w₁ — how to tell whether a quantum sampler helped at all |
 | 07 | [`07_validation.md`](07_validation.md) | the checks, the three reproducibility tiers, golden data, `quenais-selftest`, `quenais-doctor` |
 | 08 | [`08_glossary.md`](08_glossary.md) | every symbol and abbreviation used above |
+| 09 | [`09_active_space_alternatives.md`](09_active_space_alternatives.md) | replacing ASF — AVAS vs APC, and how to retire `force_active_space` |
 
 Related documents outside this folder:
 

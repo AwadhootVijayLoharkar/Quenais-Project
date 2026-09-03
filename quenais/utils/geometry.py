@@ -36,6 +36,12 @@ __all__ = [
 BUILTIN_GEOMETRIES = {
     # X(1)Sigma+ ground state, r_e ~ 1.78 A.
     "ScH": [("Sc", (0.0, 0.0, 0.0)), ("H", (0.0, 0.0, 1.7800))],
+    # X(1)Sigma+ ground state, r_e = 1.7877 A (NIST/Huber-Herzberg).
+    # Closed shell, so it stays inside the validated equal-spin code paths.
+    # Under AVAS ['Sc 3d', 'Sc 4s'] the impurity is 6 orbitals -- the same
+    # size as ScH's forced space -- but with a real ionic ligand field
+    # rather than a single covalent sigma donor. No golden data yet.
+    "ScF": [("Sc", (0.0, 0.0, 0.0)), ("F", (0.0, 0.0, 1.7877))],
     "LiH": [("Li", (0.0, 0.0, 0.0)), ("H", (0.0, 0.0, 1.5949))],
     "N2": [("N", (0.0, 0.0, 0.0)), ("N", (0.0, 0.0, 1.0977))],
     "H2O": [

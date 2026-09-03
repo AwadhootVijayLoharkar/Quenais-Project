@@ -19,8 +19,22 @@ TWO THINGS TO KNOW BEFORE EDITING
    which is why step 2 could not run in its default mode.
 
 Known limitation: ASF's entropy thresholds are calibrated on main-group
-systems and under-select for the d-block. Transition-metal systems
-generally need cfg.asf.force_active_space. See docs/limitations.md.
+systems and under-select for the d-block. See docs/limitations.md.
+
+Three ways to get an active space, checked in this order:
+
+  1. cfg.asf.force_active_space -- explicit MO indices. Wins over
+     everything. Valid only at the geometry it was calibrated at, because
+     MO indices reorder as bonds stretch.
+  2. cfg.asf.method in ("avas", "apc") -- a PySCF selector, via
+     quenais.active_space.selectors. Needs no block2. AVAS is the
+     recommended route for transition metals.
+  3. cfg.asf.method == "asf" (default) -- ASF/DMRG, plus Phase C.
+
+Phases A, B and D run for all three. Phase C runs only for ASF: it can
+only ever shrink a selection, so applying it to AVAS would discard
+orbitals the user named explicitly. See docs/Physics_documentation/
+09_active_space_alternatives.md.
 """
 
 from __future__ import annotations
@@ -380,9 +394,11 @@ def main(cfg, force=False):
         cfg.load_geometry()
 
     forced = cfg.asf.force_active_space is not None
+    method = "forced" if forced else cfg.asf.method
 
     print(f"\n{'='*60}")
     print(f"[Step 1] Active Space Finder -- {cfg.molecule}")
+    print(f"         Selector: {method}")
     print(f"{'='*60}")
 
     # verbose=0: the stage prints its own summary, and PySCF's SCF banner
@@ -410,6 +426,12 @@ def main(cfg, force=False):
     dm_ao_total_mp2 = dm_ao_alpha_mp2 + dm_ao_beta_mp2
     print(f"  MP2 used: {mp2_ok}  E_corr: {e_corr:.6f} Ha")
 
+    # Set by the AVAS/APC branch. None means "compute it from the UHF
+    # occupations", which is only valid when final_mo_list indexes the same
+    # basis mf.mo_occ does -- see the note at the call site below.
+    nel_from_selector = None
+    selection_meta = None
+
     if forced:
         # No ASF, no DMRG, no block2. Worth keeping cheap: transition-metal
         # systems currently need a forced space, and requiring a working
@@ -431,6 +453,33 @@ def main(cfg, force=False):
 
         mo_coeff = np.asarray(mf.mo_coeff[0])
         n_final, gap_val = len(final_mo_list), 0.0
+
+    elif cfg.asf.method in ("avas", "apc"):
+        # PySCF selectors. No block2, no DMRG, and -- unlike a forced index
+        # list -- re-derived at every geometry, so an active space stays the
+        # same physical object along a dissociation curve.
+        from quenais.active_space.selectors import SELECTORS
+
+        print(f"  Selector: {cfg.asf.method} (PySCF) -- skipping ASF/DMRG.")
+        selection = SELECTORS[cfg.asf.method](mf, mol, cfg)
+
+        final_mo_list = list(selection.mo_list)
+        mo_coeff = np.asarray(selection.mo_coeff)
+        n_final, gap_val = len(final_mo_list), 0.0
+        nel_from_selector = selection.nel
+        selection_meta = selection.meta
+
+        print(f"  {cfg.asf.method.upper()} selected {n_final} orbitals "
+              f"{final_mo_list} with {nel_from_selector} electrons.")
+
+        # Phase C is deliberately NOT run here. It narrows by MP2 occupation
+        # deviation and can only ever shrink a selection; on ScH it dropped
+        # an orbital ASF had chosen on a stronger signal. Applied to AVAS it
+        # would discard orbitals named explicitly in cfg.asf.avas_ao_labels.
+        if cfg.asf.phase_c_enabled:
+            print("  Phase C skipped: it can only shrink a selection, and "
+                  "these orbitals were chosen deliberately.")
+
     else:
         _validate_block2_wrapper(cfg)
         os.environ["BLOCKEXE"] = cfg.blockexe_wrapper
@@ -475,7 +524,19 @@ def main(cfg, force=False):
     # this mo_coeff.
     deviation, no_occ = project_occupations(mo_coeff, dm_ao_total_mp2, S)
 
-    nel = count_active_electrons(mol, mf, final_mo_list, cfg)
+    # count_active_electrons() reads occupations out of mf.mo_occ -- the
+    # CANONICAL UHF basis -- and indexes them with final_mo_list. After AVAS
+    # or APC, final_mo_list indexes the selector's own rotated basis, so
+    # that lookup would read occupations off the wrong orbitals and never
+    # raise. Both selectors report the electron count themselves; use it.
+    # This is the same class of silent basis mismatch project_occupations()
+    # exists to prevent.
+    if nel_from_selector is not None:
+        nel = int(nel_from_selector)
+        print(f"\n  Active electrons from {cfg.asf.method.upper()}: {nel} "
+              f"(not recomputed -- mo_list is in the selector's basis)")
+    else:
+        nel = count_active_electrons(mol, mf, final_mo_list, cfg)
 
     # ── Phase D ──────────────────────────────────────────────────────────
     print("\n-- Phase D: Loewdin Population --")
@@ -498,7 +559,15 @@ def main(cfg, force=False):
     print(f"[Step 1] Summary -- {cfg.molecule}")
     print(f"  Tier: {tier}  Active space: ({nel}e, {n_final}orb)  "
           f"Orbitals: {final_mo_list}")
-    print(f"  Selection: {'forced (cfg.asf.force_active_space)' if forced else 'automatic (ASF)'}")
+    _selection_label = {
+        "forced": "forced (cfg.asf.force_active_space)",
+        "asf": "automatic (ASF/DMRG)",
+        "avas": "automatic (AVAS, PySCF)",
+        "apc": "automatic (APC, PySCF)",
+    }[method]
+    print(f"  Selection: {_selection_label}")
+    if selection_meta:
+        print(f"  Selector settings: {selection_meta}")
     print(f"  Correlation strength: {corr_strength:.4f}")
     print(f"{'='*60}")
 
@@ -534,7 +603,15 @@ def main(cfg, force=False):
         "dm_ao_alpha_mp2": dm_ao_alpha_mp2,
         "dm_ao_beta_mp2": dm_ao_beta_mp2,
         "dm_ao_total_mp2": dm_ao_total_mp2,
+        # Kept as-is so existing readers and tools/compare_pickles.py do not
+        # break. selection_method is the superset.
         "forced_active_space": forced,
+        #: "forced" | "asf" | "avas" | "apc"
+        "selection_method": method,
+        #: Everything needed to reproduce this selection from the pickle
+        #: alone. For AVAS the AO label list IS the physics, so it belongs
+        #: in provenance rather than only in the shell history.
+        "selection_meta": selection_meta,
         "gap_value": float(gap_val),
         "provenance": cfg.provenance(),
     }
