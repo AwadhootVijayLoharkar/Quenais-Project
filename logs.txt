@@ -1,154 +1,47 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-run --molecule ScF --basis  sto-3g --project-dir runs/ScF_avas --active-space-method avas --avas-ao-labels "Sc 3d" "Sc 4s" --clas
-sical-methods HF MP2 CCSD CCSD_T --steps 0 1 2
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:tools]$ python inspect_mo_characters.py --atom "Sc 0 0 0; F 0 0 1.7877"
+==========================================================================
+  Sc 0 0 0; F 0 0 1.7877   basis=sto-3g  spin=0
+  SCF = -850.24699538 Ha  (converged=True)
+==========================================================================
 
-============================================================
-  Step 0: Classical
-============================================================
+--- 1. What each MO is made of ---------------------------------------
 
-============================================================
-[Step 0] Classical Methods -- ScF
-============================================================
-  Basis     : sto-3g
-  Charge    : 0   Spin (2S): 0
-  Methods   : ['HF', 'MP2', 'CCSD', 'CCSD_T']
-  Electrons : 30   AOs: 23
-  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+  Total electrons: 30   AOs: 23   occupied MOs: 15
+  Showing MOs 7-22 (window around the HOMO-LUMO gap)
 
--- HF --
-  [HF] done in 0.4s
-  RHF energy: -850.24699538 Ha (converged: True)
+    MO   occ     E (Ha)  character (Loewdin, >5%)
+  --------------------------------------------------------------------
+     7  occ     -1.6712  Sc 3p 77%, Sc 4p 11%, F 2s 7%
+     8  occ     -1.6373  Sc 3p 88%, Sc 4p 8%
+     9  occ     -1.6373  Sc 3p 88%, Sc 4p 8%
+    10  occ     -1.3916  F 2s 76%, Sc 3p 12%, Sc 3d 6%
+    11  occ     -0.4829  F 2p 90%
+    12  occ     -0.4490  F 2p 84%, Sc 3d 12%
+    13  occ     -0.4490  F 2p 84%, Sc 3d 12%
+    14  occ     -0.1662  Sc 4s 81%, Sc 4p 8%  <-- HOMO
+    15  virt     0.2284  Sc 4p 66%, Sc 3d 28%, Sc 3p 6%
+    16  virt     0.2284  Sc 4p 66%, Sc 3d 28%, Sc 3p 6%
+    17  virt     0.2328  Sc 3d 55%, Sc 4p 41%
+    18  virt     0.2389  Sc 3d 100%
+    19  virt     0.2389  Sc 3d 100%
+    20  virt     0.3561  Sc 3d 61%, Sc 4p 22%, F 2p 16%
+    21  virt     0.3561  Sc 3d 61%, Sc 4p 22%, F 2p 16%
+    22  virt     0.6510  Sc 4p 37%, Sc 3d 32%, F 2s 13%, Sc 4s 8%
 
--- MP2 --
-  [MP2] done in 0.0s
-  E_corr: -0.08628919 Ha   MP2 energy: -850.33328457 Ha
+--- 2. What each label set would give AVAS -------------------------
 
--- CCSD --
-  [CCSD] done in 0.2s
-  E_corr: -0.10310718 Ha   CCSD energy: -850.35010256 Ha   Converged: True
+  labels                                   thr       space  occ orbs  verdict
+  ------------------------------------------------------------------------------------
+  Sc 3d,Sc 4s                              0.2     (2e,6o)         1  <-- nearly EMPTY space, labels miss the electrons
+  Sc 3d,Sc 4s                              0.1     (8e,9o)         4  
+  Sc 3d,Sc 4s                             0.02    (8e,10o)         4  
+  Sc 3d,Sc 4s,F 2p                         0.2     (8e,9o)         4  
+  Sc 3d,Sc 4s,F 2p                         0.1   (10e,10o)         5  
+  Sc 3d,Sc 4s,F 2p                        0.02   (10e,11o)         5  
+  Sc 3d,Sc 4s,F 2p,F 2s                    0.2   (10e,10o)         5  
+  Sc 3d,Sc 4s,F 2p,F 2s                    0.1   (10e,10o)         5  
+  Sc 3d,Sc 4s,F 2p,F 2s                   0.02   (10e,11o)         5  
 
--- CCSD(T) --
-  [CCSD(T)] done in 0.0s
-  (T) correction: -0.00771208 Ha   CCSD(T) energy: -850.35781464 Ha
-
-========================================================================
-[Step 0] Results -- ScF / sto-3g
-========================================================================
-
-  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
-  ----------------------------------------------------------------------
-  HF             -850.24699538     +0.000000       +0.00  deterministic       
-  MP2            -850.33328457     -0.086289      -54.15  deterministic       
-  CCSD           -850.35010256     -0.103107      -64.70  deterministic       
-  CCSD_T         -850.35781464     -0.110819      -69.54  deterministic       
-
-  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
-  Total time: 5.6s
-========================================================================
-
-[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas/results/step0_classical.pkl
-
-============================================================
-  Step 1: Active space
-============================================================
-
-============================================================
-[Step 1] Active Space Finder -- ScF
-         Selector: avas
-============================================================
-  Atoms     : 2 ['Sc', 'F']  Basis: sto-3g
-  Electrons : 30  AOs: 23
-
--- Phase A: UHF + Classification --
-  UHF energy = -850.24699538 Ha (converged: True)
-  Spin  : 0.0000  contaminated=False
-  Gap   : min=10.7367 eV
-  TM    : True  ->  Tier 3
-
--- Phase B: MP2 Density + ASF --
-  MP2 used: True  E_corr: -0.086289 Ha
-  Selector: avas (PySCF) -- skipping ASF/DMRG.
-  AVAS labels    : ['Sc 3d', 'Sc 4s']
-  AVAS threshold : 0.2  minao=minao
-/home/loharkar/quenais-standalone/Quenais-Project/quenais/active_space/selectors.py:219: RuntimeWarning: AVAS is running in a minimal basis (sto-3g). The projection onto minao is near-trivial there, so avas_threshold is weakly discriminating. Scan the threshold, and confirm in a polarised basis before concluding the selection is wrong.
-  warnings.warn(
-  AVAS selected 6 orbitals [14, 15, 16, 17, 18, 19] with 2 electrons.
-  Phase C skipped: it can only shrink a selection, and these orbitals were chosen deliberately.
-
-  Active electrons from AVAS: 2 (not recomputed -- mo_list is in the selector's basis)
-
--- Phase D: Loewdin Population --
-
-     MO    Atom  Symbol    Weight
-  ---------------------------------
-     14       0      Sc    0.9588
-     15       0      Sc    1.0000
-     16       0      Sc    1.0000
-     17       0      Sc    0.8876
-     18       0      Sc    0.8876
-     19       0      Sc    0.9262
-
-============================================================
-[Step 1] Summary -- ScF
-  Tier: 3  Active space: (2e, 6orb)  Orbitals: [14, 15, 16, 17, 18, 19]
-  Selection: automatic (AVAS, PySCF)
-  Selector settings: {'selector': 'avas', 'ao_labels': ['Sc 3d', 'Sc 4s'], 'threshold': 0.2, 'minao': 'minao', 'openshell_option': 2, 'ncas': 6, 'nelecas': 2}
-  Correlation strength: 0.0192
-============================================================
-
-[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas/results/step1_asf.pkl
-
-============================================================
-  Step 2: Embedding Hamiltonian
-============================================================
-
-============================================================
-[Step 2] DMET Embedding -- ScF
-============================================================
-  Active space (step 1): (2e, 6orb) MOs=[14, 15, 16, 17, 18, 19]
-  reference=casci   mu_correction=True
-
--- Phase A: Restore UHF from step 1 --
-  UHF energy = -850.24699538 Ha (restored, not recomputed)
-
--- Phase B: Reference Density (casci) --
-  [diag] MP2 density active<->non-active coupling: max|.|=7.34e-03
-  {'method': 'casci', 'e_cas': -0.8872327296386353, 'n_active': 6, 'nel_active': 2}
-  [diag] reference density electron count: 30.000554  (mol.nelectron = 30)
-
--- Phase C: Schmidt Decomposition --
-  [diag] Schmidt singular values (all 6): [0.016953 0.001879 0.001879 0.000338 0.       0.      ]
-  [diag] max |Q_imp.T @ Q_bath| over the 3 kept bath orbital(s): 3.00e-13  (should be ~1e-10)
-  Impurity: 6  Bath: 3  Embedding: 9 -> 18 qubits
-  sv^2 coverage: 0.9996
-  [diag] C_emb orthonormality error: 3.00e-13
-  [diag] embedding electron count from the reference density: alpha=2.020281 -> 2, beta=2.020280 -> 2  (the active-space count would give 1, 1)
-
--- Phase D: Core Mean-Field Potential --
-  [diag] core density electron count: 25.959993  (expect mol.nelectron - embedding electrons = 30 - 4 = 26)
-
--- Phase E: Integral Transformation --
-  [diag] h2e symmetry error: 1.39e-17
-  ecore = -844.45282259 Ha
-
--- Phase F: Chemical Potential Correction --
-  mu = -0.984202 Ha   ecore -> -848.38962913 Ha
-
-  h1e (9, 9)  h2e (9, 9, 9, 9)  Time: 0.0s
-
--- Verification: independent embedded SCF --
-  Embedded SCF (independent check) = -850.2470312356 Ha
-  Full-molecule UHF                = -850.2469953785 Ha
-  delta = -3.586e-05 Ha  (tol 2e-07)  FAIL
-/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/hamiltonian.py:114: RuntimeWarning: The embedded SCF differs from full UHF by -3.586e-05 Ha, beyond the 2e-07 tolerance. The embedding Hamiltonian is probably wrong; do not trust downstream energies.
-  warnings.warn(
-
-[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas/results/step2_hamiltonian.pkl
-
-============================================================
-[Step 2] Summary -- ScF
-  Embedding : 6 imp + 3 bath = 9 orbitals (18 qubits)
-  Electrons : 2 alpha + 2 beta
-  ecore     : -848.38962913 Ha    mu: -0.984202 Ha
-============================================================
-
-[QuEnAIS] Pipeline complete.
+  Pick the set whose electron count matches the valence electrons in table 1.
+  A space with 2 electrons in 6 orbitals is not a small active space -- it is
+  the wrong one: the labels named orbitals that are empty.
