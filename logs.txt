@@ -1,111 +1,386 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-run --molecule ScF --basis  sto-3g --project-dir runs/ScF_avas_mp2 --active-space-method avas --avas-ao-labels "Sc 3d" "Sc 4s" "F 2p" --dmet-reference mp2 --steps 1 2
+(base) [loharkar@erebos03:Quenais-Project]$ git fetch
+remote: Enumerating objects: 55, done.
+remote: Counting objects: 100% (55/55), done.
+remote: Compressing objects: 100% (25/25), done.
+remote: Total 39 (delta 14), reused 39 (delta 14), pack-reused 0 (from 0)
+Unpacking objects: 100% (39/39), 49.21 KiB | 116.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+ * [new branch]      lassqd     -> origin/lassqd
+(base) [loharkar@erebos03:Quenais-Project]$ git checkout lassqd
+M       gqe-for-qsci
+branch 'lassqd' set up to track 'origin/lassqd'.
+Switched to a new branch 'lassqd'
+(base) [loharkar@erebos03:Quenais-Project]$ mamba activate ./quenais-env/
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_las_core.py tests/test_las_bits.py tests/test_las_settings.py tests/test_las_sqd_logic.py 
+.....................................                                                                                                                                                                        [100%]
+37 passed in 96.97s (0:01:36)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -v tests/test_las_pyscf.py 
+=============================================================================================== test session starts ================================================================================================
+platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /home/loharkar/quenais-standalone/Quenais-Project
+configfile: setup.cfg
+plugins: hydra-core-1.3.4, anyio-4.14.2
+collected 7 items                                                                                                                                                                                                  
 
-============================================================
-  Step 1: Active space
-============================================================
+tests/test_las_pyscf.py::test_determinant_energy_is_rhf PASSED                                                                                                                                               [ 14%]
+tests/test_las_pyscf.py::test_single_fragment_lasci_and_lasscf_equal_casci_and_casscf FAILED                                                                                                                 [ 28%]
+tests/test_las_pyscf.py::test_two_fragment_lasscf_bounds_and_stationarity FAILED                                                                                                                             [ 42%]
+tests/test_las_pyscf.py::test_density_fitting_is_close FAILED                                                                                                                                                [ 57%]
+tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci FAILED                                                                                                                        [ 71%]
+tests/test_las_pyscf.py::test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[0.0] FAILED                                                                                                             [ 85%]
+tests/test_las_pyscf.py::test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[1e-05] FAILED                                                                                                           [100%]
 
-============================================================
-[Step 1] Active Space Finder -- ScF
-         Selector: avas
-============================================================
-  Atoms     : 2 ['Sc', 'F']  Basis: sto-3g
-  Electrons : 30  AOs: 23
+===================================================================================================== FAILURES =====================================================================================================
+___________________________________________________________________________ test_single_fragment_lasci_and_lasscf_equal_casci_and_casscf ___________________________________________________________________________
 
--- Phase A: UHF + Classification --
-  UHF energy = -850.24699538 Ha (converged: True)
-  Spin  : 0.0000  contaminated=False
-  Gap   : min=10.7367 eV
-  TM    : True  ->  Tier 3
+    def test_single_fragment_lasci_and_lasscf_equal_casci_and_casscf():
+        mol = _mol(H6)
+        mf = scf.RHF(mol).run()
+        ints = PyscfIntegrals(mol)
+        space = LasSpace(ncore=2, ncas_sub=(2,), nmo=6)
+        solver = FCIFragmentSolver()
+>       lasci = run_las(ints, mf.mo_coeff, space, [(1, 1)], [0], solver,
+                        LasOptions(orbital_optimization=False), **QUIET)
 
--- Phase B: MP2 Density + ASF --
-  MP2 used: True  E_corr: -0.086289 Ha
-  Selector: avas (PySCF) -- skipping ASF/DMRG.
-  AVAS labels    : ['Sc 3d', 'Sc 4s', 'F 2p']
-  AVAS threshold : 0.2  minao=minao
-/home/loharkar/quenais-standalone/Quenais-Project/quenais/active_space/selectors.py:271: RuntimeWarning: AVAS is running in a minimal basis (sto-3g). The projection onto minao is near-trivial there, so avas_threshold is weakly discriminating. Scan the threshold, and confirm in a polarised basis before concluding the selection is wrong.
-  warnings.warn(
-  AVAS selected 9 orbitals [11, 12, 13, 14, 15, 16, 17, 18, 19] with 8 electrons.
-  Phase C skipped: it can only shrink a selection, and these orbitals were chosen deliberately.
+tests/test_las_pyscf.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais/las/driver.py:128: in run_las
+    results = solver.solve(hams, cycle=macro)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais/las/fci_solver.py:51: in solve
+    solver = fci.addons.fix_spin_(solver, shift=self.spin_shift, ss=ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:607: in fix_spin_
+    sp_fci = fix_spin(fciobj, shift, ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-  Active electrons from AVAS: 8 (not recomputed -- mo_list is in the selector's basis)
+fciobj = <pyscf.fci.direct_uhf.FCISolver object at 0x7fdf99d29850>, shift = 0.2, ss = 0.0, kwargs = {}
 
--- Phase D: Loewdin Population --
+    def fix_spin(fciobj, shift=PENALTY, ss=None, **kwargs):
+        r'''If FCI solver cannot stay on spin eigenfunction, this function can
+        add a shift to the states which have wrong spin.
+    
+        .. math::
+    
+            (H + shift*S^2) |\Psi\rangle = E |\Psi\rangle
+    
+        Args:
+            fciobj : An instance of :class:`FCISolver`
+    
+        Kwargs:
+            shift : float
+                Level shift for states which have different spin
+            ss : number
+                S^2 expection value == s*(s+1)
+    
+        Returns
+                A modified FCI object based on fciobj.
+        '''
+        import types
+        from pyscf.fci import direct_uhf
+        if isinstance(fciobj, direct_uhf.FCISolver):
+>           raise NotImplementedError
+E           NotImplementedError
 
-     MO    Atom  Symbol    Weight
-  ---------------------------------
-     11       1       F    0.8862
-     12       1       F    0.8387
-     13       1       F    0.8387
-     14       0      Sc    0.9297
-     15       0      Sc    1.0000
-     16       0      Sc    1.0000
-     17       0      Sc    0.8799
-     18       0      Sc    0.8799
-     19       0      Sc    0.9200
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:585: NotImplementedError
+_________________________________________________________________________________ test_two_fragment_lasscf_bounds_and_stationarity _________________________________________________________________________________
 
-============================================================
-[Step 1] Summary -- ScF
-  Tier: 3  Active space: (8e, 9orb)  Orbitals: [11, 12, 13, 14, 15, 16, 17, 18, 19]
-  Selection: automatic (AVAS, PySCF)
-  Selector settings: {'selector': 'avas', 'ao_labels': ['Sc 3d', 'Sc 4s', 'F 2p'], 'threshold': 0.2, 'minao': 'minao', 'openshell_option': 2, 'ncas': 9, 'nelecas': 8}
-  Correlation strength: 0.0185
-============================================================
+    def test_two_fragment_lasscf_bounds_and_stationarity():
+        mol, mf, C, space, sv = _h4_problem()
+        assert min(v.min() for v in sv) > 0.9           # H2 units localise cleanly
+        ints = PyscfIntegrals(mol)
+        nel = [(1, 1), (1, 1)]
+>       lasci = run_las(ints, C, space, nel, [0, 0], FCIFragmentSolver(),
+                        LasOptions(orbital_optimization=False), **QUIET)
 
-[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas_mp2/results/step1_asf.pkl
+tests/test_las_pyscf.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais/las/driver.py:128: in run_las
+    results = solver.solve(hams, cycle=macro)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais/las/fci_solver.py:51: in solve
+    solver = fci.addons.fix_spin_(solver, shift=self.spin_shift, ss=ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:607: in fix_spin_
+    sp_fci = fix_spin(fciobj, shift, ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-============================================================
-  Step 2: Embedding Hamiltonian
-============================================================
+fciobj = <pyscf.fci.direct_uhf.FCISolver object at 0x7fdfabb5e8d0>, shift = 0.2, ss = 0.0, kwargs = {}
 
-============================================================
-[Step 2] DMET Embedding -- ScF
-============================================================
-  Active space (step 1): (8e, 9orb) MOs=[11, 12, 13, 14, 15, 16, 17, 18, 19]
-  reference=mp2   mu_correction=True
+    def fix_spin(fciobj, shift=PENALTY, ss=None, **kwargs):
+        r'''If FCI solver cannot stay on spin eigenfunction, this function can
+        add a shift to the states which have wrong spin.
+    
+        .. math::
+    
+            (H + shift*S^2) |\Psi\rangle = E |\Psi\rangle
+    
+        Args:
+            fciobj : An instance of :class:`FCISolver`
+    
+        Kwargs:
+            shift : float
+                Level shift for states which have different spin
+            ss : number
+                S^2 expection value == s*(s+1)
+    
+        Returns
+                A modified FCI object based on fciobj.
+        '''
+        import types
+        from pyscf.fci import direct_uhf
+        if isinstance(fciobj, direct_uhf.FCISolver):
+>           raise NotImplementedError
+E           NotImplementedError
 
--- Phase A: Restore UHF from step 1 --
-  UHF energy = -850.24699538 Ha (restored, not recomputed)
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:585: NotImplementedError
+__________________________________________________________________________________________ test_density_fitting_is_close ___________________________________________________________________________________________
 
--- Phase B: Reference Density (mp2) --
-  {'method': 'mp2', 'recomputed': False}
-  [diag] reference density electron count: 30.000000  (mol.nelectron = 30)
+    def test_density_fitting_is_close():
+        mol, _mf, C, space, _sv = _h4_problem()
+        nel = [(1, 1), (1, 1)]
+        opts = LasOptions(orbital_optimization=False)
+>       e = run_las(PyscfIntegrals(mol), C, space, nel, [0, 0], FCIFragmentSolver(),
+                    opts, **QUIET).energy
 
--- Phase C: Schmidt Decomposition --
-  [diag] Schmidt singular values (all 9): [0.016499 0.00222  0.00222  0.00155  0.000952 0.000952 0.000194 0.
- 0.      ]
-  [diag] max |Q_imp.T @ Q_bath| over the 6 kept bath orbital(s): 5.39e-12  (should be ~1e-10)
-  Impurity: 9  Bath: 6  Embedding: 15 -> 30 qubits
-  sv^2 coverage: 0.9999
-  [diag] C_emb orthonormality error: 5.39e-12
-  [diag] embedding electron count from the reference density: alpha=7.993509 -> 8, beta=7.993509 -> 8  (the active-space count would give 4, 4)
+tests/test_las_pyscf.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais/las/driver.py:128: in run_las
+    results = solver.solve(hams, cycle=macro)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais/las/fci_solver.py:51: in solve
+    solver = fci.addons.fix_spin_(solver, shift=self.spin_shift, ss=ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:607: in fix_spin_
+    sp_fci = fix_spin(fciobj, shift, ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
--- Phase D: Core Mean-Field Potential --
-  [diag] core density electron count: 14.012982  (expect mol.nelectron - embedding electrons = 30 - 16 = 14)
+fciobj = <pyscf.fci.direct_uhf.FCISolver object at 0x7fdf8cc7e8d0>, shift = 0.2, ss = 0.0, kwargs = {}
 
--- Phase E: Integral Transformation --
-  [diag] h2e symmetry error: 1.39e-17
-  ecore = -774.72836341 Ha
+    def fix_spin(fciobj, shift=PENALTY, ss=None, **kwargs):
+        r'''If FCI solver cannot stay on spin eigenfunction, this function can
+        add a shift to the states which have wrong spin.
+    
+        .. math::
+    
+            (H + shift*S^2) |\Psi\rangle = E |\Psi\rangle
+    
+        Args:
+            fciobj : An instance of :class:`FCISolver`
+    
+        Kwargs:
+            shift : float
+                Level shift for states which have different spin
+            ss : number
+                S^2 expection value == s*(s+1)
+    
+        Returns
+                A modified FCI object based on fciobj.
+        '''
+        import types
+        from pyscf.fci import direct_uhf
+        if isinstance(fciobj, direct_uhf.FCISolver):
+>           raise NotImplementedError
+E           NotImplementedError
 
--- Phase F: Chemical Potential Correction --
-  mu = -4.945250 Ha   ecore -> -853.85235703 Ha
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:585: NotImplementedError
+______________________________________________________________________________ test_selected_ci_with_spin_dependent_h_equals_uhf_fci _______________________________________________________________________________
 
-  h1e (15, 15)  h2e (15, 15, 15, 15)  Time: 0.1s
+    def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
+        """
+        Guards the one PySCF internal LASSQD relies on: kernel_fixed_space must
+        route through our contract_2e/make_hdiag overrides. In the full string
+        space the result must equal direct_uhf FCI with h_alpha != h_beta.
+        """
+        from pyscf.fci import addons, cistring, direct_uhf
+    
+        from quenais.las.sqd_solver import _sci_solve
+        from quenais.settings import LasSettings
+    
+        n, nelec = 4, (2, 1)
+        rng = np.random.default_rng(3)
+        h = rng.normal(size=(2, n, n))
+        h1s = 0.5 * (h + h.transpose(0, 2, 1))
+        b = rng.normal(scale=0.3, size=(6, n, n))
+        b = 0.5 * (b + b.transpose(0, 2, 1))
+        eri = np.einsum("Lpq,Lrs->pqrs", b, b)
+        s = LasSettings(fragments=["0:4:2,1"], sqd_nroots=1, sqd_davidson_tol=1e-12)
+        sa = cistring.make_strings(range(n), nelec[0])
+        sb = cistring.make_strings(range(n), nelec[1])
+        e_sci = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s)[0]
+>       solver = addons.fix_spin_(direct_uhf.FCISolver(), shift=s.sqd_spin_shift, ss=0.75)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--- Verification: independent embedded SCF --
-  Embedded SCF (independent check) = -850.2474295952 Ha
-  Full-molecule UHF                = -850.2469953785 Ha
-  delta = -4.342e-04 Ha  (tol 2e-07)  FAIL
-/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/hamiltonian.py:114: RuntimeWarning: The embedded SCF differs from full UHF by -4.342e-04 Ha, beyond the 2e-07 tolerance. The embedding Hamiltonian is probably wrong; do not trust downstream energies.
-  warnings.warn(
+tests/test_las_pyscf.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:607: in fix_spin_
+    sp_fci = fix_spin(fciobj, shift, ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_avas_mp2/results/step2_hamiltonian.pkl
+fciobj = <pyscf.fci.direct_uhf.FCISolver object at 0x7fdfaf1e9290>, shift = 0.2, ss = 0.75, kwargs = {}
 
-============================================================
-[Step 2] Summary -- ScF
-  Embedding : 9 imp + 6 bath = 15 orbitals (30 qubits)
-  Electrons : 8 alpha + 8 beta
-  ecore     : -853.85235703 Ha    mu: -4.945250 Ha
-============================================================
+    def fix_spin(fciobj, shift=PENALTY, ss=None, **kwargs):
+        r'''If FCI solver cannot stay on spin eigenfunction, this function can
+        add a shift to the states which have wrong spin.
+    
+        .. math::
+    
+            (H + shift*S^2) |\Psi\rangle = E |\Psi\rangle
+    
+        Args:
+            fciobj : An instance of :class:`FCISolver`
+    
+        Kwargs:
+            shift : float
+                Level shift for states which have different spin
+            ss : number
+                S^2 expection value == s*(s+1)
+    
+        Returns
+                A modified FCI object based on fciobj.
+        '''
+        import types
+        from pyscf.fci import direct_uhf
+        if isinstance(fciobj, direct_uhf.FCISolver):
+>           raise NotImplementedError
+E           NotImplementedError
 
-[QuEnAIS] Pipeline complete.
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:585: NotImplementedError
+_________________________________________________________________________ test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[0.0] _________________________________________________________________________
+
+eps = 0.0
+
+    @pytest.mark.slow
+    @pytest.mark.needs_qiskit
+    @pytest.mark.parametrize("eps", [0.0, 1e-5])
+    def test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space(eps):
+        pytest.importorskip("qiskit_aer")
+        pytest.importorskip("ffsim")
+        pytest.importorskip("qiskit_addon_sqd")
+        from quenais.las.sqd_solver import LassqdFragmentSolver
+        from quenais.settings import LasSettings
+    
+        mol, _mf, C, space, _sv = _h4_problem()
+        ints = PyscfIntegrals(mol)
+        nel = [(1, 1), (1, 1)]
+>       ref = run_las(ints, C, space, nel, [0, 0], FCIFragmentSolver(),
+                      LasOptions(conv_tol_energy=1e-10, conv_tol_grad=1e-6), **QUIET)
+
+tests/test_las_pyscf.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais/las/driver.py:128: in run_las
+    results = solver.solve(hams, cycle=macro)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais/las/fci_solver.py:51: in solve
+    solver = fci.addons.fix_spin_(solver, shift=self.spin_shift, ss=ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:607: in fix_spin_
+    sp_fci = fix_spin(fciobj, shift, ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fciobj = <pyscf.fci.direct_uhf.FCISolver object at 0x7fdf67ed3cd0>, shift = 0.2, ss = 0.0, kwargs = {}
+
+    def fix_spin(fciobj, shift=PENALTY, ss=None, **kwargs):
+        r'''If FCI solver cannot stay on spin eigenfunction, this function can
+        add a shift to the states which have wrong spin.
+    
+        .. math::
+    
+            (H + shift*S^2) |\Psi\rangle = E |\Psi\rangle
+    
+        Args:
+            fciobj : An instance of :class:`FCISolver`
+    
+        Kwargs:
+            shift : float
+                Level shift for states which have different spin
+            ss : number
+                S^2 expection value == s*(s+1)
+    
+        Returns
+                A modified FCI object based on fciobj.
+        '''
+        import types
+        from pyscf.fci import direct_uhf
+        if isinstance(fciobj, direct_uhf.FCISolver):
+>           raise NotImplementedError
+E           NotImplementedError
+
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:585: NotImplementedError
+________________________________________________________________________ test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[1e-05] ________________________________________________________________________
+
+eps = 1e-05
+
+    @pytest.mark.slow
+    @pytest.mark.needs_qiskit
+    @pytest.mark.parametrize("eps", [0.0, 1e-5])
+    def test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space(eps):
+        pytest.importorskip("qiskit_aer")
+        pytest.importorskip("ffsim")
+        pytest.importorskip("qiskit_addon_sqd")
+        from quenais.las.sqd_solver import LassqdFragmentSolver
+        from quenais.settings import LasSettings
+    
+        mol, _mf, C, space, _sv = _h4_problem()
+        ints = PyscfIntegrals(mol)
+        nel = [(1, 1), (1, 1)]
+>       ref = run_las(ints, C, space, nel, [0, 0], FCIFragmentSolver(),
+                      LasOptions(conv_tol_energy=1e-10, conv_tol_grad=1e-6), **QUIET)
+
+tests/test_las_pyscf.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais/las/driver.py:128: in run_las
+    results = solver.solve(hams, cycle=macro)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais/las/fci_solver.py:51: in solve
+    solver = fci.addons.fix_spin_(solver, shift=self.spin_shift, ss=ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:607: in fix_spin_
+    sp_fci = fix_spin(fciobj, shift, ss)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fciobj = <pyscf.fci.direct_uhf.FCISolver object at 0x7fdf9a1988d0>, shift = 0.2, ss = 0.0, kwargs = {}
+
+    def fix_spin(fciobj, shift=PENALTY, ss=None, **kwargs):
+        r'''If FCI solver cannot stay on spin eigenfunction, this function can
+        add a shift to the states which have wrong spin.
+    
+        .. math::
+    
+            (H + shift*S^2) |\Psi\rangle = E |\Psi\rangle
+    
+        Args:
+            fciobj : An instance of :class:`FCISolver`
+    
+        Kwargs:
+            shift : float
+                Level shift for states which have different spin
+            ss : number
+                S^2 expection value == s*(s+1)
+    
+        Returns
+                A modified FCI object based on fciobj.
+        '''
+        import types
+        from pyscf.fci import direct_uhf
+        if isinstance(fciobj, direct_uhf.FCISolver):
+>           raise NotImplementedError
+E           NotImplementedError
+
+quenais-env/lib/python3.11/site-packages/pyscf/fci/addons.py:585: NotImplementedError
+============================================================================================= short test summary info ==============================================================================================
+FAILED tests/test_las_pyscf.py::test_single_fragment_lasci_and_lasscf_equal_casci_and_casscf - NotImplementedError
+FAILED tests/test_las_pyscf.py::test_two_fragment_lasscf_bounds_and_stationarity - NotImplementedError
+FAILED tests/test_las_pyscf.py::test_density_fitting_is_close - NotImplementedError
+FAILED tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci - NotImplementedError
+FAILED tests/test_las_pyscf.py::test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[0.0] - NotImplementedError
+FAILED tests/test_las_pyscf.py::test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[1e-05] - NotImplementedError
+=========================================================================================== 6 failed, 1 passed in 49.65s ===========================================================================================
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
