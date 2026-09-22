@@ -457,7 +457,7 @@ def test_create_patch_refuses_an_incomplete_diff(tmp_path, monkeypatch=None):
 # ── Documentation contracts ──────────────────────────────────────────────
 
 def _docs_dir():
-    return Path(gqe_setup.PATCH_PATH).parents[1] / "docs"
+    return Path(gqe_setup.PATCH_PATH).parents[2] / "docs"
 
 
 def test_documented_files_match_the_code():
@@ -476,7 +476,7 @@ def test_documented_files_match_the_code():
 def test_readme_documents_both_solver_families():
     from quenais.config import GQE_SOLVERS, QISKIT_SOLVERS
 
-    readme = (Path(gqe_setup.PATCH_PATH).parents[1] / "README.md").read_text()
+    readme = (Path(gqe_setup.PATCH_PATH).parents[2] / "README.md").read_text()
     for name in list(QISKIT_SOLVERS) + list(GQE_SOLVERS):
         assert f"`{name}`" in readme, f"README does not document solver {name}"
 
@@ -494,7 +494,7 @@ def test_readme_documents_performance_levers():
     README, and must not imply a custom build is needed for correctness --
     it is not, and claiming otherwise would put people off.
     """
-    readme = (Path(gqe_setup.PATCH_PATH).parents[1] / "README.md").read_text()
+    readme = (Path(gqe_setup.PATCH_PATH).parents[2] / "README.md").read_text()
 
     assert "## Performance" in readme
     for lever in ("OMP_NUM_THREADS", "cudaq_target", "--no-binary pyscf"):
