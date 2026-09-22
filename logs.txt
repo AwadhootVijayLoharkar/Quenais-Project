@@ -1,17 +1,15 @@
-
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-remote: Enumerating objects: 13, done.
-remote: Counting objects: 100% (13/13), done.
+remote: Enumerating objects: 7, done.
+remote: Counting objects: 100% (7/7), done.
 remote: Compressing objects: 100% (1/1), done.
-remote: Total 7 (delta 6), reused 7 (delta 6), pack-reused 0 (from 0)
-Unpacking objects: 100% (7/7), 1.13 KiB | 23.00 KiB/s, done.
+remote: Total 4 (delta 3), reused 4 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 827 bytes | 28.00 KiB/s, done.
 From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   6e4acd8..91c1a40  lassqd     -> origin/lassqd
-Updating 6e4acd8..91c1a40
+   afa8bd2..7f801e0  lassqd     -> origin/lassqd
+Updating afa8bd2..7f801e0
 Fast-forward
- quenais/las/fci_solver.py |  5 +++++
- tests/test_las_pyscf.py   | 27 ++++++++++++++++++++-------
- 2 files changed, 25 insertions(+), 7 deletions(-)
+ tests/test_las_pyscf.py | 31 ++++++++++++++++++-------------
+ 1 file changed, 18 insertions(+), 13 deletions(-)
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -v tests/test_las_pyscf.py 
 =============================================================================================== test session starts ================================================================================================
 platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python3.11
@@ -36,11 +34,15 @@ ______________________________________________________________________________ t
     def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
         """
         Guards the one PySCF internal LASSQD relies on: kernel_fixed_space must
-        route through our contract_2e/make_hdiag overrides. In the full string
-        space the result must be the lowest DOUBLET of the spin-dependent
-        Hamiltonian, found here by diagonalising it completely (no penalty).
+        route through our contract_2e/make_hdiag overrides.
+    
+        Note h_alpha != h_beta breaks spin symmetry, so the eigenstates are not
+        pure doublets and "lowest doublet" is undefined. Two clean checks instead:
+          1. no spin penalty: full-space SCI == lowest eigenvalue of the bare
+             spin-dependent Hamiltonian (tests the override alone)
+          2. with the penalty: SCI == our penalised UHF FCI (same H + penalty)
         """
-        from pyscf.fci import cistring, direct_uhf, spin_op
+        from pyscf.fci import cistring, direct_uhf
     
         from quenais.las.fci_solver import spin_penalized_uhf_solver
         from quenais.las.sqd_solver import _sci_solve
@@ -54,19 +56,32 @@ ______________________________________________________________________________ t
         b = 0.5 * (b + b.transpose(0, 2, 1))
         eri = np.einsum("Lpq,Lrs->pqrs", b, b)
         ham = ((h1s[0], h1s[1]), (eri, eri, eri))
+        sa = cistring.make_strings(range(n), nelec[0])
+        sb = cistring.make_strings(range(n), nelec[1])
     
+        # 1. override alone
         dim = cistring.num_strings(n, 2) * cistring.num_strings(n, 1)
         bare = direct_uhf.FCISolver()
         bare.conv_tol = 1e-12
-        w, cis = bare.kernel(*ham, n, nelec, nroots=dim)
-        doublets = [e for e, c in zip(w, cis)
-                    if abs(spin_op.spin_square0(c, n, nelec)[0] - 0.75) < 1e-4]
->       e_ref = min(doublets)
-                ^^^^^^^^^^^^^
-E       ValueError: min() arg is an empty sequence
+        w, _ = bare.kernel(*ham, n, nelec, nroots=dim)
+        s0 = LasSettings(fragments=["0:4:2,1"], sqd_nroots=3, sqd_davidson_tol=1e-12,
+                         sqd_spin_shift=0.0)
+        e_sci0 = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s0)[0]
+        assert abs(e_sci0 - min(w)) < 1e-8, (e_sci0, sorted(w)[:3])
+    
+        # 2. with the spin penalty
+        s = LasSettings(fragments=["0:4:2,1"], sqd_nroots=3, sqd_davidson_tol=1e-12)
+        e_sci = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s)[0]
+        pen = spin_penalized_uhf_solver(s.sqd_spin_shift, 0.75)
+        pen.conv_tol = 1e-12
+        e_pen = pen.kernel(*ham, n, nelec)[0]
+>       assert abs(e_sci - e_pen) < 1e-7, (e_sci, e_pen)
+E       AssertionError: (-2.3908579612418057, np.float64(-2.28618359757945))
+E       assert np.float64(0.1046743636623555) < 1e-07
+E        +  where np.float64(0.1046743636623555) = abs((-2.3908579612418057 - np.float64(-2.28618359757945)))
 
-tests/test_las_pyscf.py:160: ValueError
+tests/test_las_pyscf.py:176: AssertionError
 ============================================================================================= short test summary info ==============================================================================================
-FAILED tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci - ValueError: min() arg is an empty sequence
-=========================================================================================== 1 failed, 7 passed in 22.04s ===========================================================================================
+FAILED tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci - AssertionError: (-2.3908579612418057, np.float64(-2.28618359757945))
+=========================================================================================== 1 failed, 7 passed in 22.11s ===========================================================================================
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
