@@ -1,5 +1,149 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ quenais-run --molecule ScF --basis sto-3g --steps 3 4 --project-dir runs/ScF_las --force  --active-space-method
- avas --avas-ao-labels 'Sc 3d' 'Sc 4s' 'F 2p'   --solver lassqd --las-fragments 'Sc:6:1,1' 'F:3:3,3' 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ quenais-run --molecule ScF --basis sto-3g --steps 0 1 2 3 4 --project-dir runs/ScF_nocarry  --active-sp
+ace-method avas --avas-ao-labels 'Sc 3d' 'Sc 4s' 'F 2p'   --solver lassqd --las-fragments 'Sc:6:1,1' 'F:3:3,3' --lassqd-carryover-eps 0
+
+============================================================
+  Step 0: Classical
+============================================================
+
+============================================================
+[Step 0] Classical Methods -- ScF
+============================================================
+  Basis     : sto-3g
+  Charge    : 0   Spin (2S): 0
+  Methods   : ['HF', 'MP2']
+  Electrons : 30   AOs: 23
+  Step 1 not found -- CASSCF/NEVPT2 will use a fallback active space. Run step 1 first for a meaningful comparison.
+
+-- HF --
+  [HF] done in 0.1s
+  RHF energy: -850.24699538 Ha (converged: True)
+
+-- MP2 --
+  [MP2] done in 0.0s
+  E_corr: -0.08628919 Ha   MP2 energy: -850.33328457 Ha
+
+========================================================================
+[Step 0] Results -- ScF / sto-3g
+========================================================================
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol  reproducibility     
+  ----------------------------------------------------------------------
+  HF             -850.24699538     +0.000000       +0.00  deterministic       
+  MP2            -850.33328457     -0.086289      -54.15  deterministic       
+
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 1.2s
+========================================================================
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/step0_classical.pkl
+
+============================================================
+  Step 1: Active space
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- ScF
+         Selector: avas
+============================================================
+  Atoms     : 2 ['Sc', 'F']  Basis: sto-3g
+  Electrons : 30  AOs: 23
+
+-- Phase A: UHF + Classification --
+  UHF energy = -850.24699538 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=10.7367 eV
+  TM    : True  ->  Tier 3
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -0.086289 Ha
+  Selector: avas (PySCF) -- skipping ASF/DMRG.
+  AVAS labels    : ['Sc 3d', 'Sc 4s', 'F 2p']
+  AVAS threshold : 0.2  minao=minao
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/active_space/selectors.py:271: RuntimeWarning: AVAS is running in a minimal basis (sto-3g). The projection onto minao is near-trivial there, so avas_threshold is weakly discriminating. Scan the threshold, and confirm in a polarised basis before concluding the selection is wrong.
+  warnings.warn(
+  AVAS selected 9 orbitals [11, 12, 13, 14, 15, 16, 17, 18, 19] with 8 electrons.
+  Phase C skipped: it can only shrink a selection, and these orbitals were chosen deliberately.
+
+  Active electrons from AVAS: 8 (not recomputed -- mo_list is in the selector's basis)
+
+-- Phase D: Loewdin Population --
+
+     MO    Atom  Symbol    Weight
+  ---------------------------------
+     11       1       F    0.8862
+     12       1       F    0.8387
+     13       1       F    0.8387
+     14       0      Sc    0.9297
+     15       0      Sc    1.0000
+     16       0      Sc    1.0000
+     17       0      Sc    0.8799
+     18       0      Sc    0.8799
+     19       0      Sc    0.9200
+
+============================================================
+[Step 1] Summary -- ScF
+  Tier: 3  Active space: (8e, 9orb)  Orbitals: [11, 12, 13, 14, 15, 16, 17, 18, 19]
+  Selection: automatic (AVAS, PySCF)
+  Selector settings: {'selector': 'avas', 'ao_labels': ['Sc 3d', 'Sc 4s', 'F 2p'], 'threshold': 0.2, 'minao': 'minao', 'openshell_option': 2, 'ncas': 9, 'nelecas': 8}
+  Correlation strength: 0.0185
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/step1_asf.pkl
+
+============================================================
+  Step 2: Embedding Hamiltonian
+============================================================
+
+============================================================
+[Step 2] DMET Embedding -- ScF
+============================================================
+  Active space (step 1): (8e, 9orb) MOs=[11, 12, 13, 14, 15, 16, 17, 18, 19]
+  reference=casci   mu_correction=True
+
+-- Phase A: Restore UHF from step 1 --
+  UHF energy = -850.24699538 Ha (restored, not recomputed)
+
+-- Phase B: Reference Density (casci) --
+  [diag] MP2 density active<->non-active coupling: max|.|=7.65e-03
+  {'method': 'casci', 'e_cas': -18.130370770523115, 'n_active': 9, 'nel_active': 8}
+  [diag] reference density electron count: 30.050827  (mol.nelectron = 30)
+
+-- Phase C: Schmidt Decomposition --
+  [diag] Schmidt singular values (all 9): [0.016499 0.00222  0.00222  0.00155  0.000952 0.000952 0.000194 0.
+ 0.      ]
+  [diag] max |Q_imp.T @ Q_bath| over the 6 kept bath orbital(s): 3.99e-12  (should be ~1e-10)
+  Impurity: 9  Bath: 6  Embedding: 15 -> 30 qubits
+  sv^2 coverage: 0.9999
+  [diag] C_emb orthonormality error: 3.99e-12
+  [diag] embedding electron count from the reference density: alpha=8.018923 -> 8, beta=8.018922 -> 8  (the active-space count would give 4, 4)
+
+-- Phase D: Core Mean-Field Potential --
+  [diag] core density electron count: 14.012982  (expect mol.nelectron - embedding electrons = 30 - 16 = 14)
+
+-- Phase E: Integral Transformation --
+  [diag] h2e symmetry error: 2.78e-17
+  ecore = -774.72836341 Ha
+
+-- Phase F: Chemical Potential Correction --
+  mu = -4.945250 Ha   ecore -> -853.85235703 Ha
+
+  h1e (15, 15)  h2e (15, 15, 15, 15)  Time: 0.1s
+
+-- Verification: independent embedded SCF --
+  Embedded SCF (independent check) = -850.2474295952 Ha
+  Full-molecule UHF                = -850.2469953785 Ha
+  delta = -4.342e-04 Ha  (tol 2e-07)  FAIL
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/embedding/hamiltonian.py:114: RuntimeWarning: The embedded SCF differs from full UHF by -4.342e-04 Ha, beyond the 2e-07 tolerance. The embedding Hamiltonian is probably wrong; do not trust downstream energies.
+  warnings.warn(
+
+[Step 2] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/step2_hamiltonian.pkl
+
+============================================================
+[Step 2] Summary -- ScF
+  Embedding : 9 imp + 6 bath = 15 orbitals (30 qubits)
+  Electrons : 8 alpha + 8 beta
+  ecore     : -853.85235703 Ha    mu: -4.945250 Ha
+============================================================
 
 ============================================================
   Step 3: Quantum solver
@@ -10,7 +154,7 @@
 ============================================================
   fragment Sc         atoms [0]  (6o, 1a+1b, 2S=0)  localisation: min singular value 0.955
   fragment F          atoms [1]  (3o, 3a+3b, 2S=0)  localisation: min singular value 0.975
-  SQD: K=15 batches x d=170, 6 iterations, carryover eps=1e-05, 100000 shots on aer_mps
+  SQD: K=15 batches x d=170, 6 iterations, carryover eps=0, 100000 shots on aer_mps
     fragment 0: SQD dim 4 (11.1% of FCI), valid shots 100.0% (3 distinct)
     fragment 1: SQD dim 1 (100.0% of FCI), valid shots 100.0% (1 distinct)
   LAS cycle   0  E = -849.8952794120  |g_orb| = 1.24e+00
@@ -23,21 +167,24 @@
     fragment 0: SQD dim 25 (69.4% of FCI), valid shots 100.0% (11 distinct)
     fragment 1: SQD dim 1 (100.0% of FCI), valid shots 100.0% (1 distinct)
   LAS cycle   3  E = -850.2841528070  dE = -1.90e-02  |g_orb| = 2.51e-02
-    fragment 0: SQD dim 25 (69.4% of FCI), valid shots 100.0% (9 distinct)
+    fragment 0: SQD dim 16 (44.4% of FCI), valid shots 100.0% (9 distinct)
     fragment 1: SQD dim 1 (100.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   4  E = -850.2852546536  dE = -1.10e-03  |g_orb| = 5.94e-03
-    fragment 0: SQD dim 25 (69.4% of FCI), valid shots 100.0% (11 distinct)
+  LAS cycle   4  E = -850.2730840155  dE = +1.11e-02  |g_orb| = 3.39e-02
+    fragment 0: SQD dim 36 (100.0% of FCI), valid shots 100.0% (14 distinct)
     fragment 1: SQD dim 1 (100.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   5  E = -850.2853740894  dE = -1.19e-04  |g_orb| = 5.07e-04
-    fragment 0: SQD dim 25 (69.4% of FCI), valid shots 100.0% (11 distinct)
+  LAS cycle   5  E = -850.2854257522  dE = -1.23e-02  |g_orb| = 2.86e-02
+    fragment 0: SQD dim 16 (44.4% of FCI), valid shots 100.0% (11 distinct)
     fragment 1: SQD dim 1 (100.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   6  E = -850.2853744478  dE = -3.58e-07  |g_orb| = 3.62e-05
-    fragment 0: SQD dim 25 (69.4% of FCI), valid shots 100.0% (10 distinct)
+  LAS cycle   6  E = -850.2846000030  dE = +8.26e-04  |g_orb| = 6.27e-03
+    fragment 0: SQD dim 16 (44.4% of FCI), valid shots 100.0% (11 distinct)
     fragment 1: SQD dim 1 (100.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   7  E = -850.2853737034  dE = +7.44e-07  |g_orb| = 2.87e-04
+  LAS cycle   7  E = -850.2846081651  dE = -8.16e-06  |g_orb| = 2.97e-04
+    fragment 0: SQD dim 16 (44.4% of FCI), valid shots 100.0% (11 distinct)
+    fragment 1: SQD dim 1 (100.0% of FCI), valid shots 100.0% (1 distinct)
+  LAS cycle   8  E = -850.2846082198  dE = -5.47e-08  |g_orb| = 3.30e-05
 
-  LASSQD converged after 8 cycles: E = -850.2853737034 Ha  |g_orb| = 2.87e-04
-[Step 3] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_las/results/step3_lassqd.pkl
+  LASSQD converged after 9 cycles: E = -850.2846082198 Ha  |g_orb| = 3.30e-05
+[Step 3] Saved -> /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/step3_lassqd.pkl
 
 ============================================================
   Step 4: Visualisation
@@ -46,16 +193,18 @@
 ============================================================
 [Step 4] Visualisation -- ScF
 ============================================================
-  [skip] step 2 (DMET): /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_las/results/step2_hamiltonian.pkl not found
-  [skip] GQE log: /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_las/results/gqe_train.log not found (run the GQE solver first)
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_las/results/plots/fig1_asf_deviation_spectrum.png
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_las/results/plots/fig6_las_convergence.png
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_las/results/plots/fig5_method_comparison.png
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_las/results/results_summary.csv
-  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_las/results/las_history.csv  (14 LAS cycles)
+  [skip] GQE log: /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/gqe_train.log not found (run the GQE solver first)
+  [skip] step 3 (lasscf): /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/step3_lasscf.pkl not found
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/plots/fig1_asf_deviation_spectrum.png
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/plots/fig2_dmet_schmidt_spectrum.png
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/plots/fig6_las_convergence.png
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/plots/fig5_method_comparison.png
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/results_summary.csv
+  Saved /home/loharkar/quenais-standalone/Quenais-Project/runs/ScF_nocarry/results/las_history.csv  (9 LAS cycles)
 
 [QuEnAIS] Pipeline complete.
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+
 
 
 molecule,ScF,
@@ -69,12 +218,24 @@ mo_list,[11, 12, 13, 14, 15, 16, 17, 18, 19],
 forced_active_space,False,
 correlation_strength,0.01845682487002904,
 ,,
+-- Step 2: DMET --,,
+n_imp,9,
+n_bath,6,
+n_emb,15,
+n_alpha,8,
+n_beta,8,
+sv2_coverage,0.9998686264613109,
+ecore_Ha,-853.8523570313064,
+mu_Ha,-4.94524960155162,
+reference_density_method,casci,
+embedded_scf_vs_uhf_Ha,-0.00043421667612619785,
+,,
 -- Method comparison (Ha) --,,
 method,energy_Ha,reproducibility
 HF,-850.2469953786052,deterministic
 MP2,-850.3332845677885,deterministic
-LASSCF,-850.2864865100231,optimizer-dependent
-LASSQD,-850.2853737033992,stochastic
+DMET+CASCI(active),-850.3331749644617,deterministic
+LASSQD,-850.2846082197798,stochastic
 ,,
 # 'optimizer-dependent' and 'stochastic' values can differ between runs; see docs/limitations.md,,
 ,,
