@@ -1,87 +1,145 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-remote: Enumerating objects: 7, done.
-remote: Counting objects: 100% (7/7), done.
-remote: Compressing objects: 100% (1/1), done.
-remote: Total 4 (delta 3), reused 4 (delta 3), pack-reused 0 (from 0)
-Unpacking objects: 100% (4/4), 827 bytes | 28.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   afa8bd2..7f801e0  lassqd     -> origin/lassqd
-Updating afa8bd2..7f801e0
-Fast-forward
- tests/test_las_pyscf.py | 31 ++++++++++++++++++-------------
- 1 file changed, 18 insertions(+), 13 deletions(-)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -v tests/test_las_pyscf.py 
-=============================================================================================== test session starts ================================================================================================
-platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python3.11
-cachedir: .pytest_cache
-rootdir: /home/loharkar/quenais-standalone/Quenais-Project
-configfile: setup.cfg
-plugins: hydra-core-1.3.4, anyio-4.14.2
-collected 8 items                                                                                                                                                                                                  
-
-tests/test_las_pyscf.py::test_determinant_energy_is_rhf PASSED                                                                                                                                               [ 12%]
-tests/test_las_pyscf.py::test_single_fragment_lasci_and_lasscf_equal_casci_and_casscf PASSED                                                                                                                 [ 25%]
-tests/test_las_pyscf.py::test_two_fragment_lasscf_bounds_and_stationarity PASSED                                                                                                                             [ 37%]
-tests/test_las_pyscf.py::test_density_fitting_is_close PASSED                                                                                                                                                [ 50%]
-tests/test_las_pyscf.py::test_spin_penalty_selects_requested_spin PASSED                                                                                                                                     [ 62%]
-tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci FAILED                                                                                                                        [ 75%]
-tests/test_las_pyscf.py::test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[0.0] PASSED                                                                                                             [ 87%]
-tests/test_las_pyscf.py::test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[1e-05] PASSED                                                                                                           [100%]
-
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_las_core.py tests/test_las_bits.py tests/test_las_bits.py tests/test_las_settings.py tests/test_las_sqd_logic.py 
+.....................................                                                                                                                                                                        [100%]
+37 passed in 87.67s (0:01:27)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q -m "not slow"
+.....................................................................................................................................................................................................FFFF... [ 63%]
+.....................ss................................................................................................                                                                                      [100%]
 ===================================================================================================== FAILURES =====================================================================================================
-______________________________________________________________________________ test_selected_ci_with_spin_dependent_h_equals_uhf_fci _______________________________________________________________________________
+_______________________________________________________________________________________ test_documented_files_match_the_code _______________________________________________________________________________________
 
-    def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
+    def test_documented_files_match_the_code():
         """
-        Guards the one PySCF internal LASSQD relies on: kernel_fixed_space must
-        route through our contract_2e/make_hdiag overrides.
-    
-        Note h_alpha != h_beta breaks spin symmetry, so the eigenstates are not
-        pure doublets and "lowest doublet" is undefined. Two clean checks instead:
-          1. no spin penalty: full-space SCI == lowest eigenvalue of the bare
-             spin-dependent Hamiltonian (tests the override alone)
-          2. with the penalty: SCI == our penalised UHF FCI (same H + penalty)
+        The GQE integration doc names the three patched files. If PATCHED_FILES
+        changes and the doc does not, the doc becomes a lie.
         """
-        from pyscf.fci import cistring, direct_uhf
-    
-        from quenais.las.fci_solver import spin_penalized_uhf_solver
-        from quenais.las.sqd_solver import _sci_solve
-        from quenais.settings import LasSettings
-    
-        n, nelec = 4, (2, 1)
-        rng = np.random.default_rng(3)
-        h = rng.normal(size=(2, n, n))
-        h1s = 0.5 * (h + h.transpose(0, 2, 1))
-        b = rng.normal(scale=0.3, size=(6, n, n))
-        b = 0.5 * (b + b.transpose(0, 2, 1))
-        eri = np.einsum("Lpq,Lrs->pqrs", b, b)
-        ham = ((h1s[0], h1s[1]), (eri, eri, eri))
-        sa = cistring.make_strings(range(n), nelec[0])
-        sb = cistring.make_strings(range(n), nelec[1])
-    
-        # 1. override alone
-        dim = cistring.num_strings(n, 2) * cistring.num_strings(n, 1)
-        bare = direct_uhf.FCISolver()
-        bare.conv_tol = 1e-12
-        w, _ = bare.kernel(*ham, n, nelec, nroots=dim)
-        s0 = LasSettings(fragments=["0:4:2,1"], sqd_nroots=3, sqd_davidson_tol=1e-12,
-                         sqd_spin_shift=0.0)
-        e_sci0 = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s0)[0]
-        assert abs(e_sci0 - min(w)) < 1e-8, (e_sci0, sorted(w)[:3])
-    
-        # 2. with the spin penalty
-        s = LasSettings(fragments=["0:4:2,1"], sqd_nroots=3, sqd_davidson_tol=1e-12)
-        e_sci = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s)[0]
-        pen = spin_penalized_uhf_solver(s.sqd_spin_shift, 0.75)
-        pen.conv_tol = 1e-12
-        e_pen = pen.kernel(*ham, n, nelec)[0]
->       assert abs(e_sci - e_pen) < 1e-7, (e_sci, e_pen)
-E       AssertionError: (-2.3908579612418057, np.float64(-2.28618359757945))
-E       assert np.float64(0.1046743636623555) < 1e-07
-E        +  where np.float64(0.1046743636623555) = abs((-2.3908579612418057 - np.float64(-2.28618359757945)))
+>       text = (_docs_dir() / "gqe_integration.md").read_text()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-tests/test_las_pyscf.py:176: AssertionError
+tests/test_gqe_runner.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais-env/lib/python3.11/pathlib.py:1058: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/gqe_integration.md'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/gqe_integration.md'
+
+quenais-env/lib/python3.11/pathlib.py:1044: FileNotFoundError
+____________________________________________________________________________________ test_readme_documents_both_solver_families ____________________________________________________________________________________
+
+    def test_readme_documents_both_solver_families():
+        from quenais.config import GQE_SOLVERS, QISKIT_SOLVERS
+    
+>       readme = (Path(gqe_setup.PATCH_PATH).parents[1] / "README.md").read_text()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_gqe_runner.py:479: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais-env/lib/python3.11/pathlib.py:1058: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'
+
+quenais-env/lib/python3.11/pathlib.py:1044: FileNotFoundError
+_____________________________________________________________________________ test_limitations_doc_exists_and_covers_the_known_issues ______________________________________________________________________________
+
+    def test_limitations_doc_exists_and_covers_the_known_issues():
+>       text = (_docs_dir() / "limitations.md").read_text().lower()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_gqe_runner.py:485: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais-env/lib/python3.11/pathlib.py:1058: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/limitations.md'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/limitations.md'
+
+quenais-env/lib/python3.11/pathlib.py:1044: FileNotFoundError
+_____________________________________________________________________________________ test_readme_documents_performance_levers _____________________________________________________________________________________
+
+    def test_readme_documents_performance_levers():
+        """
+        Partners will ask how to make it faster. The answer must be in the
+        README, and must not imply a custom build is needed for correctness --
+        it is not, and claiming otherwise would put people off.
+        """
+>       readme = (Path(gqe_setup.PATCH_PATH).parents[1] / "README.md").read_text()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_gqe_runner.py:497: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+quenais-env/lib/python3.11/pathlib.py:1058: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'
+
+quenais-env/lib/python3.11/pathlib.py:1044: FileNotFoundError
+================================================================================================= warnings summary =================================================================================================
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
+  /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
+    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ============================================================================================= short test summary info ==============================================================================================
-FAILED tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci - AssertionError: (-2.3908579612418057, np.float64(-2.28618359757945))
-=========================================================================================== 1 failed, 7 passed in 22.11s ===========================================================================================
+FAILED tests/test_gqe_runner.py::test_documented_files_match_the_code - FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/gqe_integration.md'
+FAILED tests/test_gqe_runner.py::test_readme_documents_both_solver_families - FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'
+FAILED tests/test_gqe_runner.py::test_limitations_doc_exists_and_covers_the_known_issues - FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/limitations.md'
+FAILED tests/test_gqe_runner.py::test_readme_documents_performance_levers - FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'
+4 failed, 317 passed, 2 skipped, 23 deselected, 3 warnings in 166.41s (0:02:46)
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
