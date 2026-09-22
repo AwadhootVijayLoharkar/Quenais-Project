@@ -133,9 +133,10 @@ def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
     """
     Guards the one PySCF internal LASSQD relies on: kernel_fixed_space must
     route through our contract_2e/make_hdiag overrides. In the full string
-    space the result must equal direct_uhf FCI with h_alpha != h_beta.
+    space the result must be the lowest DOUBLET of the spin-dependent
+    Hamiltonian, found here by diagonalising it completely (no penalty).
     """
-    from pyscf.fci import cistring
+    from pyscf.fci import cistring, direct_uhf, spin_op
 
     from quenais.las.fci_solver import spin_penalized_uhf_solver
     from quenais.las.sqd_solver import _sci_solve
@@ -148,14 +149,26 @@ def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
     b = rng.normal(scale=0.3, size=(6, n, n))
     b = 0.5 * (b + b.transpose(0, 2, 1))
     eri = np.einsum("Lpq,Lrs->pqrs", b, b)
-    s = LasSettings(fragments=["0:4:2,1"], sqd_nroots=1, sqd_davidson_tol=1e-12)
+    ham = ((h1s[0], h1s[1]), (eri, eri, eri))
+
+    dim = cistring.num_strings(n, 2) * cistring.num_strings(n, 1)
+    bare = direct_uhf.FCISolver()
+    bare.conv_tol = 1e-12
+    w, cis = bare.kernel(*ham, n, nelec, nroots=dim)
+    doublets = [e for e, c in zip(w, cis)
+                if abs(spin_op.spin_square0(c, n, nelec)[0] - 0.75) < 1e-4]
+    e_ref = min(doublets)
+
+    s = LasSettings(fragments=["0:4:2,1"], sqd_nroots=3, sqd_davidson_tol=1e-12)
     sa = cistring.make_strings(range(n), nelec[0])
     sb = cistring.make_strings(range(n), nelec[1])
     e_sci = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s)[0]
-    solver = spin_penalized_uhf_solver(s.sqd_spin_shift, 0.75)
-    solver.conv_tol = 1e-12
-    e_fci = solver.kernel((h1s[0], h1s[1]), (eri, eri, eri), n, nelec)[0]
-    assert abs(e_sci - e_fci) < 1e-8, (e_sci, e_fci)
+    assert abs(e_sci - e_ref) < 1e-8, (e_sci, e_ref, sorted(w)[:4])
+
+    pen = spin_penalized_uhf_solver(s.sqd_spin_shift, 0.75)
+    pen.conv_tol = 1e-12
+    e_pen = pen.kernel(*ham, n, nelec)[0]
+    assert abs(e_pen - e_ref) < 1e-8, (e_pen, e_ref)
 
 
 @pytest.mark.slow

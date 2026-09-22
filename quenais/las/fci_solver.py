@@ -34,6 +34,11 @@ def spin_penalized_uhf_solver(shift, ss):
     from pyscf.fci import cistring, direct_uhf, spin_op
 
     class _PenalizedUHF(direct_uhf.FCISolver):
+        # Below pspace_size PySCF diagonalises an explicitly built H and never
+        # calls contract_2e, which would silently drop the penalty. PySCF's
+        # own fix_spin_ forces Davidson for the same reason.
+        davidson_only = True
+
         def contract_2e(self, eri, fcivec, norb, nelec, link_index=None, **kw):
             ci1 = super().contract_2e(eri, fcivec, norb, nelec, link_index, **kw)
             if not shift:
