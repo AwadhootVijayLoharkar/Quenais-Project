@@ -1,25 +1,13 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-remote: Enumerating objects: 7, done.
-remote: Counting objects: 100% (7/7), done.
-remote: Compressing objects: 100% (1/1), done.
-remote: Total 4 (delta 3), reused 4 (delta 3), pack-reused 0 (from 0)
-Unpacking objects: 100% (4/4), 425 bytes | 13.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   fbe6a00..9e0f0b3  lassqd     -> origin/lassqd
-Updating fbe6a00..9e0f0b3
-Fast-forward
- tests/test_gqe_runner.py | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q -m "not slow"
-............................................................................................................................................................................................................ [ 63%]
-.....................ss................................................................................................                                                                                      [100%]
-================================================================================================= warnings summary =================================================================================================
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
-  /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
-    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
+# 1. Active space
+quenais-run --molecule ScF --basis sto-3g --steps 0 1 --project-dir runs/ScF_las \
+  --active-space-method avas --avas-ao-labels 'Sc 3d' 'Sc 4s' 'F 2p'
 
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-321 passed, 2 skipped, 23 deselected, 3 warnings in 125.10s (0:02:05)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+# 2. Classical reference (LASSCF)
+quenais-run --molecule ScF --basis sto-3g --steps 3 --project-dir runs/ScF_las \
+  --active-space-method avas --avas-ao-labels 'Sc 3d' 'Sc 4s' 'F 2p' \
+  --solver lasscf --las-fragments 'Sc:6:1,1' 'F:3:3,3'
+
+# 3. Quantum version (LASSQD) + plots — quick setting first
+quenais-run --molecule ScF --basis sto-3g --steps 3 4 --project-dir runs/ScF_las \
+  --active-space-method avas --avas-ao-labels 'Sc 3d' 'Sc 4s' 'F 2p' \
+  --solver lassqd --las-fragments 'Sc:6:1,1' 'F:3:3,3' --lassqd-shots 20000
