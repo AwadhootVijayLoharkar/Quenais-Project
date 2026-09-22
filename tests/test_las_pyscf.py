@@ -100,14 +100,44 @@ def test_density_fitting_is_close():
     assert abs(e - e_df) < 1e-3
 
 
+def test_spin_penalty_selects_requested_spin():
+    """
+    Two electrons in two orbitals, M_S = 0: singlet and triplet both live in
+    this sector. Whichever the bare Hamiltonian prefers, the penalised
+    solver must return the requested S^2 and that state's exact energy.
+    """
+    from pyscf.fci import direct_uhf, spin_op
+
+    from quenais.las.fci_solver import spin_penalized_uhf_solver
+
+    n, nelec = 2, (1, 1)
+    h = np.array([[0.0, 0.05], [0.05, 0.02]])
+    eri = np.zeros((n,) * 4)
+    eri[0, 0, 0, 0] = eri[1, 1, 1, 1] = 1.0
+    eri[0, 0, 1, 1] = eri[1, 1, 0, 0] = 0.6
+    eri[0, 1, 0, 1] = eri[1, 0, 1, 0] = eri[0, 1, 1, 0] = eri[1, 0, 0, 1] = 0.3
+    ham = ((h, h), (eri, eri, eri))
+    bare = direct_uhf.FCISolver()
+    bare.conv_tol = 1e-12
+    w = np.asarray(bare.kernel(*ham, n, nelec, nroots=4)[0])   # all 4 states
+    for target_ss in (0.0, 2.0):
+        solver = spin_penalized_uhf_solver(1.0, target_ss)
+        solver.conv_tol = 1e-12
+        e, ci = solver.kernel(*ham, n, nelec, nroots=1)
+        ss, _ = spin_op.spin_square0(ci, n, nelec)
+        assert abs(ss - target_ss) < 1e-6
+        assert np.min(np.abs(w - e)) < 1e-8      # an eigenvalue of the bare H
+
+
 def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
     """
     Guards the one PySCF internal LASSQD relies on: kernel_fixed_space must
     route through our contract_2e/make_hdiag overrides. In the full string
     space the result must equal direct_uhf FCI with h_alpha != h_beta.
     """
-    from pyscf.fci import addons, cistring, direct_uhf
+    from pyscf.fci import cistring
 
+    from quenais.las.fci_solver import spin_penalized_uhf_solver
     from quenais.las.sqd_solver import _sci_solve
     from quenais.settings import LasSettings
 
@@ -122,7 +152,7 @@ def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
     sa = cistring.make_strings(range(n), nelec[0])
     sb = cistring.make_strings(range(n), nelec[1])
     e_sci = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s)[0]
-    solver = addons.fix_spin_(direct_uhf.FCISolver(), shift=s.sqd_spin_shift, ss=0.75)
+    solver = spin_penalized_uhf_solver(s.sqd_spin_shift, 0.75)
     solver.conv_tol = 1e-12
     e_fci = solver.kernel((h1s[0], h1s[1]), (eri, eri, eri), n, nelec)[0]
     assert abs(e_sci - e_fci) < 1e-8, (e_sci, e_fci)
