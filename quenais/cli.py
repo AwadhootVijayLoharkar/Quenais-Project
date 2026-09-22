@@ -27,7 +27,8 @@ import importlib
 import os
 import sys
 
-__all__ = ["run_pipeline", "build_parser", "build_config", "build_asf_settings"]
+__all__ = ["run_pipeline", "build_parser", "build_config", "build_asf_settings",
+           "build_las_settings"]
 
 STEP_NAMES = {
     0: "Classical",
@@ -42,6 +43,7 @@ def build_parser():
     from quenais.config import SOLVERS
     from quenais.settings.asf import SELECTION_METHODS
     from quenais.settings.gqe import CUDAQ_SIMULATOR_TARGETS, DMET_POOL_SPECS
+    from quenais.settings.las import LAS_BACKENDS, LUCJ_PAIRS
     from quenais.settings.qiskit_solver import ANSATZE, BACKENDS, MAPPINGS
 
     parser = argparse.ArgumentParser(
@@ -177,6 +179,52 @@ def build_parser():
                           "are otherwise bit-identical and repeats are not "
                           "independent samples.")
 
+    # ── LAS solvers (--solver lasscf | lassqd) ────────────────────────────
+    las = parser.add_argument_group(
+        "LAS solvers",
+        "Only used with --solver lasscf or lassqd. They read step 1 (use "
+        "--active-space-method avas) and skip step 2. Anything left unset "
+        "keeps the LasSettings default.",
+    )
+    las.add_argument(
+        "--las-fragments", nargs="+", default=None, metavar="SPEC",
+        help="one per fragment, ATOMS:NORB:NA,NB[:2S]; ATOMS are '+'-joined "
+             "atom indices or element symbols. QUOTE each: "
+             "--las-fragments 'Sc:6:1,1' 'F:3:3,3'. Orbitals and electrons "
+             "must add up to step 1's active space.",
+    )
+    las.add_argument("--las-max-cycles", type=int, default=None,
+                     help="LAS macro cycles (default 50)")
+    las.add_argument("--las-no-orbital-opt", action="store_true",
+                     help="LASCI: keep the localised step-1 orbitals fixed")
+    las.add_argument("--las-conv-tol", type=float, default=None,
+                     help="energy convergence (default 1e-8 lasscf, 1e-5 lassqd)")
+    las.add_argument("--las-density-fit", action="store_true",
+                     help="density-fitted integrals (large basis sets)")
+    las.add_argument("--lassqd-backend", default=None, choices=list(LAS_BACKENDS),
+                     help="sampler (default aer_mps)")
+    las.add_argument("--lassqd-ibm-backend", default=None,
+                     help="IBM device name for --lassqd-backend ibm")
+    las.add_argument("--lassqd-shots", type=int, default=None,
+                     help="shots per macro cycle, all fragments in one job "
+                          "(default 100000)")
+    las.add_argument("--lassqd-batches", type=int, default=None,
+                     help="SQD batches K (default 15)")
+    las.add_argument("--lassqd-samples-per-batch", type=int, default=None,
+                     help="SQD samples per batch d (default 170)")
+    las.add_argument("--lassqd-iterations", type=int, default=None,
+                     help="configuration-recovery iterations (default 6)")
+    las.add_argument("--lassqd-carryover-eps", type=float, default=None,
+                     help="carryover threshold on |c| (default 1e-5; 0 "
+                          "disables carryover = conventional SQD)")
+    las.add_argument("--lassqd-nroots", type=int, default=None,
+                     help="Davidson roots per subspace (default 3)")
+    las.add_argument("--lassqd-lucj-pairs", default=None, choices=list(LUCJ_PAIRS),
+                     help="LUCJ interaction pairs (default heavy_hex)")
+    las.add_argument("--lassqd-lucj-optimize", action="store_true",
+                     help="refine LUCJ parameters with ffsim's linear method")
+    las.add_argument("--lassqd-seed", type=int, default=None)
+
     parser.add_argument("--steps", nargs="+", type=int, default=[0, 1, 2, 3, 4],
                         help="0=classical 1=active-space 2=embedding "
                              "3=solver 4=visualise")
@@ -216,6 +264,39 @@ def build_gqe_settings(args):
     if args.gqe_seed is not None:
         kwargs["seed"] = args.gqe_seed
     return GqeSettings(**kwargs)
+
+
+def build_las_settings(args):
+    """LasSettings from the --las-*/--lassqd-* flags; unset flags keep defaults."""
+    from quenais.settings import LasSettings
+
+    kwargs = {}
+    simple = {
+        "las_fragments": "fragments",
+        "las_max_cycles": "max_macro",
+        "las_conv_tol": "conv_tol_energy",
+        "lassqd_backend": "backend",
+        "lassqd_ibm_backend": "ibm_backend_name",
+        "lassqd_shots": "shots",
+        "lassqd_batches": "sqd_batches",
+        "lassqd_samples_per_batch": "sqd_samples_per_batch",
+        "lassqd_iterations": "sqd_iterations",
+        "lassqd_carryover_eps": "carryover_eps",
+        "lassqd_nroots": "sqd_nroots",
+        "lassqd_lucj_pairs": "lucj_pairs",
+        "lassqd_seed": "seed",
+    }
+    for arg, field_name in simple.items():
+        value = getattr(args, arg, None)
+        if value is not None:
+            kwargs[field_name] = value
+    if getattr(args, "las_no_orbital_opt", False):
+        kwargs["orbital_optimization"] = False
+    if getattr(args, "las_density_fit", False):
+        kwargs["density_fit"] = True
+    if getattr(args, "lassqd_lucj_optimize", False):
+        kwargs["lucj_optimize"] = True
+    return LasSettings(**kwargs)
 
 
 def build_asf_settings(args):
@@ -266,6 +347,7 @@ def build_config(args):
             n_shots=args.shots,
         ),
         gqe=build_gqe_settings(args),
+        las=build_las_settings(args),
     )
     return cfg.validate().make_dirs().load_geometry()
 

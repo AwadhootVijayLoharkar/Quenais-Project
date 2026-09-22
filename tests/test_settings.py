@@ -222,12 +222,18 @@ def test_settings_groups_can_be_injected():
 
 
 def test_solver_registry_is_consistent():
-    assert set(SOLVERS) == set(QISKIT_SOLVERS) | set(GQE_SOLVERS)
+    from quenais.config import LAS_SOLVERS
+
+    assert set(SOLVERS) == set(QISKIT_SOLVERS) | set(GQE_SOLVERS) | set(LAS_SOLVERS)
+    assert len(SOLVERS) == len(set(SOLVERS))
     assert "gqe" in SOLVERS
     for name in QISKIT_SOLVERS:
         assert Config(quantum_solver=name).is_qiskit
     for name in GQE_SOLVERS:
         assert Config(quantum_solver=name).is_gqe
+    for name in LAS_SOLVERS:
+        cfg = Config(quantum_solver=name)
+        assert cfg.is_las and not cfg.is_qiskit and not cfg.is_gqe
 
 
 def test_gqe_qsci_alias_is_accepted_with_a_warning():

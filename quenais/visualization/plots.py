@@ -7,6 +7,8 @@ Reads only what is on disk:
   step1_asf.pkl          active space, deviation spectrum, tier
   step2_hamiltonian.pkl  Schmidt spectrum, bath quality, ecore, mu
   results/gqe_train.log  "[epoch N] {...}" lines from the GQE trainer
+  step3_lasscf.pkl       LAS with exact fragments (quenais.las)
+  step3_lassqd.pkl       LAS with SQD fragments (quenais.las)
 
 Every output is generated independently and skipped with a printed reason
 when its input is missing. Running this after only steps 0-2, or on a
@@ -49,6 +51,8 @@ FLOAT64_RE = re.compile(r"np\.float64\(([^)]*)\)")
 CLASSICAL_COLOUR = "#4C72B0"
 DMET_COLOUR = "#C44E52"
 GQE_COLOUR = "#55A868"
+LAS_COLOUR = "#8172B2"
+LASSQD_COLOUR = "#CCB974"
 
 
 # ═════════════════════════════════════════════════════════════════════════
@@ -306,7 +310,66 @@ def plot_gqe_resources(cfg, gqe_rows):
     _save(fig, os.path.join(cfg.plots_dir, "fig4_gqe_circuit_resources.png"))
 
 
-def plot_method_comparison(cfg, step0, step2, gqe_rows):
+def plot_las_convergence(cfg, las):
+    """Energy per macro cycle for each LAS run, relative to LASSCF if present."""
+    runs = {k: v for k, v in las.items() if v and v.get("history")}
+    if not runs:
+        print("  [skip] fig6: no LAS results (run --solver lasscf / lassqd)")
+        return None
+    import matplotlib.pyplot as plt
+
+    ref = las.get("lasscf", {}) or {}
+    e_ref = ref.get("energy")
+    fig, ax = plt.subplots(figsize=(7, 4.5))
+    colours = {"lasscf": LAS_COLOUR, "lassqd": LASSQD_COLOUR}
+    for name, data in runs.items():
+        e = np.array([h["energy"] for h in data["history"]])
+        cyc = np.arange(len(e))
+        if e_ref is not None:
+            y = np.maximum(np.abs(e - e_ref), 1e-12)
+            ax.semilogy(cyc, y, "o-", ms=3, color=colours.get(name), label=name.upper())
+        else:
+            ax.plot(cyc, e, "o-", ms=3, color=colours.get(name), label=name.upper())
+    if e_ref is not None:
+        ax.axhline(1.0 / cfg.hartree_to_kcal_mol, ls="--", color="grey",
+                   label="1 kcal/mol")
+        ax.set_ylabel("|E - E(LASSCF)| (Ha)")
+    else:
+        ax.set_ylabel("Energy (Ha)")
+    ax.set_xlabel("LAS macro cycle")
+    ax.set_title(f"LAS convergence -- {cfg.molecule}")
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    _save(fig, os.path.join(cfg.plots_dir, "fig6_las_convergence.png"))
+    return True
+
+
+def write_las_history_csv(cfg, las):
+    rows = []
+    for name, data in las.items():
+        if not data:
+            continue
+        for h in data.get("history", []):
+            row = {"solver": name, "cycle": h["cycle"], "energy_Ha": h["energy"],
+                   "grad_norm": h["grad_norm"]}
+            for k, info in enumerate(h.get("fragments", [])):
+                if "subspace_fraction" in info:
+                    row[f"frag{k}_subspace_fraction"] = info["subspace_fraction"]
+                    row[f"frag{k}_subspace_dim"] = info["subspace_dim"]
+            rows.append(row)
+    if not rows:
+        return None
+    keys = sorted({k for r in rows for k in r}, key=lambda k: (k != "solver", k))
+    path = os.path.join(cfg.results_dir, "las_history.csv")
+    with open(path, "w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=keys)
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"  Saved {path}  ({len(rows)} LAS cycles)")
+    return path
+
+
+def plot_method_comparison(cfg, step0, step2, gqe_rows, las=None):
     import matplotlib.pyplot as plt
 
     labels, energies, colours = [], [], []
@@ -334,6 +397,14 @@ def plot_method_comparison(cfg, step0, step2, gqe_rows):
             labels.append("DMET+GQE (Global-refined, final)")
             energies.append(e_casci + err[-1])
             colours.append(GQE_COLOUR)
+
+    for name, colour in (("lasscf", LAS_COLOUR), ("lassqd", LASSQD_COLOUR)):
+        data = (las or {}).get(name)
+        if data and data.get("energy") is not None:
+            labels.append(name.upper() if data.get("converged")
+                          else f"{name.upper()} (not converged)")
+            energies.append(data["energy"])
+            colours.append(colour)
 
     if not labels:
         print("  [skip] fig5: no energies available from any stage yet")
@@ -400,8 +471,10 @@ def write_results_summary(cfg, step0, step1, step2, comparison):
             writer.writerow(["-- Method comparison (Ha) --"])
             writer.writerow(["method", "energy_Ha", "reproducibility"])
             for label, energy in zip(labels, energies):
-                if label.startswith("DMET+GQE"):
+                if label.startswith("DMET+GQE") or label.startswith("LASSQD"):
                     tier = "stochastic"
+                elif label.startswith("LASSCF"):
+                    tier = "optimizer-dependent"
                 elif label.startswith("DMET+CASCI"):
                     tier = "deterministic"
                 else:
@@ -453,6 +526,8 @@ def main(cfg, force=False, no_scan=False, no_quantum_scan=False):
     step1 = _load(cfg.step1_file, "step 1 (ASF)")
     step2 = _load(cfg.step2_file, "step 2 (DMET)")
     gqe_rows = parse_gqe_log(cfg.gqe_log_file)
+    las = {name: _load(cfg.las_file(name), f"step 3 ({name})")
+           for name in ("lasscf", "lassqd")}
     if gqe_rows:
         print(f"  Parsed {len(gqe_rows)} epochs from {cfg.gqe_log_file}")
 
@@ -460,14 +535,17 @@ def main(cfg, force=False, no_scan=False, no_quantum_scan=False):
     plot_dmet_spectrum(cfg, step2)
     plot_gqe_convergence(cfg, gqe_rows)
     plot_gqe_resources(cfg, gqe_rows)
-    comparison = plot_method_comparison(cfg, step0, step2, gqe_rows)
+    plot_las_convergence(cfg, las)
+    comparison = plot_method_comparison(cfg, step0, step2, gqe_rows, las)
 
     summary = write_results_summary(cfg, step0, step1, step2, comparison)
     epoch_csv = write_gqe_epoch_csv(cfg, gqe_rows)
+    las_csv = write_las_history_csv(cfg, las)
 
     return {
         "results_summary": summary,
         "gqe_epoch_log": epoch_csv,
+        "las_history": las_csv,
         "n_epochs": len(gqe_rows),
         "comparison": comparison,
     }

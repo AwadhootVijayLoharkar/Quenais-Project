@@ -17,6 +17,7 @@ from quenais.settings.gqe import (
     OPERATOR_POOL_SPECS,
     GqeSettings,
 )
+from quenais.settings.las import LAS_BACKENDS, LUCJ_PAIRS, LasSettings
 from quenais.settings.qiskit_solver import (
     ANSATZE,
     BACKENDS,
@@ -29,6 +30,7 @@ __all__ = [
     "AsfSettings",
     "DmetSettings",
     "GqeSettings",
+    "LasSettings",
     "QiskitSolverSettings",
     "TierSettings",
     "DEFAULT_ASF_PARAMS",
@@ -40,4 +42,6 @@ __all__ = [
     "MAPPINGS",
     "BACKENDS",
     "TM_ELEMENTS",
+    "LAS_BACKENDS",
+    "LUCJ_PAIRS",
 ]

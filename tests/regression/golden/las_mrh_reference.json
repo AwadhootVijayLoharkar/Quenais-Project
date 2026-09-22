@@ -1,0 +1,28 @@
+{
+  "_readme": [
+    "Reference LASSCF energies produced by running mrh (GPL) LOCALLY. mrh is",
+    "never imported by, vendored into or shipped with this repository; only",
+    "the resulting numbers live here, which is data, not code.",
+    "Fill e_lasscf with mrh's lasscf_o0.LASSCF energy for the stated system,",
+    "and record the mrh commit and PySCF version you used. Entries left null",
+    "are skipped by tests/test_las_reference.py."
+  ],
+  "H4_sto3g": {
+    "atom": "H 0 0 0; H 0 0 1.0; H 0 0 2.6; H 0 0 3.6",
+    "basis": "sto-3g",
+    "fragments": ["0+1:2:1,1", "2+3:2:1,1"],
+    "active_orbitals": "all 4 RHF MOs, localised onto H0-H1 and H2-H3",
+    "e_lasscf": null,
+    "mrh_commit": null,
+    "pyscf_version": null
+  },
+  "H8_sto3g": {
+    "atom": "H 0 0 0; H 0 0 1.0; H 0 0 2.6; H 0 0 3.6; H 0 0 5.2; H 0 0 6.2; H 0 0 7.8; H 0 0 8.8",
+    "basis": "sto-3g",
+    "fragments": ["0+1:2:1,1", "2+3:2:1,1", "4+5:2:1,1", "6+7:2:1,1"],
+    "active_orbitals": "all 8 RHF MOs, localised onto consecutive H2 units",
+    "e_lasscf": null,
+    "mrh_commit": null,
+    "pyscf_version": null
+  }
+}

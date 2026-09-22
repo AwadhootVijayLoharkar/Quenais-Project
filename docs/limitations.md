@@ -104,3 +104,22 @@ entire embedding space purely for logging. Cost grows combinatorially and
 becomes impractical above roughly 12–16 embedding orbitals. If a run hangs or
 exhausts memory before training starts, drop `"R-CASCI"` — it is a reference
 value only and is not used in training or diagonalisation.
+
+## LAS solvers (lasscf, lassqd)
+
+**Status:** new. The core math is validated against brute force (see
+[las_integration.md](las_integration.md#validation)); the PySCF/Qiskit
+tests in `tests/test_las_pyscf.py` and the mrh references in
+`tests/regression/golden/las_mrh_reference.json` still have to be run and
+filled in on a machine with the full stack.
+
+- Inter-fragment correlation is mean field. Strongly coupled fragments
+  (short metal-metal distances, bridging ligands left out of every
+  fragment) are where LAS, and therefore LASSQD, is least accurate.
+- Fragments must split cleanly by atom. Use AVAS for step 1 and read the
+  per-fragment localisation singular values in the log.
+- `lassqd` energies are `stochastic`, `lasscf` energies are
+  `optimizer-dependent` (LASSCF can have several stationary points).
+- Open-shell fragments are supported by LAS itself, but the rest of the
+  pipeline is validated for closed-shell molecules only (see above).
+

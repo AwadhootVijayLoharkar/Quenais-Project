@@ -4,12 +4,17 @@ A Python package combining density matrix embedding theory (DMET) with
 quantum solvers for strongly correlated molecules, in particular
 transition-metal systems.
 
-Two solver families are selectable by configuration:
+Three solver families are selectable by configuration:
 
 | family | solvers | stack | how it runs |
 |---|---|---|---|
 | Qiskit | `sqd`, `skqd`, `sqdrift` | `quenais[qiskit]` | in-process |
 | CUDA-Q | `gqe` | `quenais[cudaq]` + a patched `gqe-for-qsci` checkout | subprocess |
+| LAS | `lasscf`, `lassqd` | PySCF (`lassqd`: + `quenais[qiskit]`) | in-process, reads step 1, skips step 2 |
+
+The LAS family (localized active space; LASSQD after Wang et al., PNAS
+2026) is an independent Apache-2.0 implementation -- see
+[docs/las_integration.md](docs/las_integration.md).
 
 The two stacks stay independent at the *package* level — installing one
 never drags in the other, and the DMET pipeline itself needs only PySCF.
@@ -200,6 +205,14 @@ quenais-run --molecule LiH --basis sto-3g --solver gqe \
 
 # with a Qiskit solver
 quenais-run --molecule LiH --basis sto-3g --solver sqd --ansatz lucj
+
+# LAS: exact fragments, then quantum-sampled fragments (steps 1 -> 3, no step 2)
+quenais-run --molecule ScF --basis sto-3g --steps 0 1 3 \
+            --active-space-method avas --avas-ao-labels 'Sc 3d' 'Sc 4s' 'F 2p' \
+            --solver lasscf --las-fragments 'Sc:6:1,1' 'F:3:3,3'
+quenais-run --molecule ScF --basis sto-3g --steps 3 4 \
+            --active-space-method avas --avas-ao-labels 'Sc 3d' 'Sc 4s' 'F 2p' \
+            --solver lassqd --las-fragments 'Sc:6:1,1' 'F:3:3,3'
 ```
 
 ### Classical reference methods
@@ -481,6 +494,7 @@ quenais/
 ├── active_space/        step 1
 ├── embedding/           step 2 -- hamiltonian.py + side-effect-free dmet_lib.py
 ├── quantum/             step 3 -- solver.py (Qiskit), gqe_*.py (CUDA-Q)
+├── las/                 step 3 -- LASSCF / LASSQD (docs/las_integration.md)
 │   └── _gqe_shims/      top-level module names the external repo imports
 ├── visualization/       step 4
 └── patches/             the gqe-for-qsci source patch (package_data)
@@ -506,6 +520,12 @@ against its interfaces; `quenais/patches/gqe_dmet_source.patch` modifies
 upstream source and redistributes its context lines. **Check upstream's
 `NOTICE` for attribution terms that carry into derived work before
 publishing to PyPI or a public repository.**
+
+`quenais/las/` (LASSCF, LASSQD) is original Apache-2.0 code written from
+the published papers. It contains no code from `mrh` (GPL) or from the
+LASSQD authors' repository (unlicensed), and neither is a dependency; `mrh`
+is only run locally to produce reference numbers. See
+[docs/las_integration.md](docs/las_integration.md#licensing-an-independent-implementation).
 
 `theochem/pyci` is likewise a third-party project carried as a submodule
 with its own license — it is built from source, not vendored, so nothing

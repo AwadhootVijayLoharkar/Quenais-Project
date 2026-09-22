@@ -22,6 +22,7 @@ from quenais.settings import (
     AsfSettings,
     DmetSettings,
     GqeSettings,
+    LasSettings,
     QiskitSolverSettings,
     TierSettings,
 )
@@ -51,8 +52,14 @@ QISKIT_SOLVERS = ("sqd", "skqd", "sqdrift")
 #: Subprocess CUDA-Q solvers.
 GQE_SOLVERS = ("gqe",)
 
+#: Localized active space family (in-process; quenais.las). Unlike the
+#: solvers above they do not read step 2: LAS partitions the step-1 active
+#: space itself. "lasscf" = exact fragments (classical reference),
+#: "lassqd" = LUCJ sampling + SQD with carryover (Wang et al., PNAS 2026).
+LAS_SOLVERS = ("lasscf", "lassqd")
+
 #: Everything selectable via quantum_solver.
-SOLVERS = QISKIT_SOLVERS + GQE_SOLVERS
+SOLVERS = QISKIT_SOLVERS + GQE_SOLVERS + LAS_SOLVERS
 
 #: Deprecated spellings, accepted with a warning. "gqe_qsci" was the name
 #: used in the test_8 scripts.
@@ -95,6 +102,7 @@ class Config:
         dmet=None,
         qiskit=None,
         gqe=None,
+        las=None,
         tiers=None,
         # ── External tools ───────────────────────────────────────────────
         blockexe_wrapper=None,
@@ -136,6 +144,7 @@ class Config:
         self.dmet = dmet if dmet is not None else DmetSettings()
         self.qiskit = qiskit if qiskit is not None else QiskitSolverSettings()
         self.gqe = gqe if gqe is not None else GqeSettings()
+        self.las = las if las is not None else LasSettings()
         self.tiers = tiers if tiers is not None else TierSettings()
 
         # External tools
@@ -175,6 +184,10 @@ class Config:
     def is_qiskit(self):
         return self.quantum_solver in QISKIT_SOLVERS
 
+    @property
+    def is_las(self):
+        return self.quantum_solver in LAS_SOLVERS
+
     # ── Derived paths ────────────────────────────────────────────────────
     @property
     def results_dir(self):
@@ -203,6 +216,14 @@ class Config:
     @property
     def step3_file(self):
         return os.path.join(self.results_dir, "step3_results.pkl")
+
+    def las_file(self, solver):
+        """results/step3_<solver>.pkl for a LAS solver ("lasscf"/"lassqd")."""
+        return os.path.join(self.results_dir, f"step3_{solver}.pkl")
+
+    @property
+    def las_result_file(self):
+        return self.las_file(self.quantum_solver)
 
     @property
     def gqe_log_file(self):
@@ -338,6 +359,8 @@ class Config:
             self.qiskit.validate()
         if self.is_gqe:
             self.gqe.validate()
+        if self.is_las:
+            self.las.validate(self.quantum_solver)
         return self
 
     def provenance(self, extra=None):
