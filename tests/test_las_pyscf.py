@@ -132,11 +132,15 @@ def test_spin_penalty_selects_requested_spin():
 def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
     """
     Guards the one PySCF internal LASSQD relies on: kernel_fixed_space must
-    route through our contract_2e/make_hdiag overrides. In the full string
-    space the result must be the lowest DOUBLET of the spin-dependent
-    Hamiltonian, found here by diagonalising it completely (no penalty).
+    route through our contract_2e/make_hdiag overrides.
+
+    Note h_alpha != h_beta breaks spin symmetry, so the eigenstates are not
+    pure doublets and "lowest doublet" is undefined. Two clean checks instead:
+      1. no spin penalty: full-space SCI == lowest eigenvalue of the bare
+         spin-dependent Hamiltonian (tests the override alone)
+      2. with the penalty: SCI == our penalised UHF FCI (same H + penalty)
     """
-    from pyscf.fci import cistring, direct_uhf, spin_op
+    from pyscf.fci import cistring, direct_uhf
 
     from quenais.las.fci_solver import spin_penalized_uhf_solver
     from quenais.las.sqd_solver import _sci_solve
@@ -150,25 +154,26 @@ def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
     b = 0.5 * (b + b.transpose(0, 2, 1))
     eri = np.einsum("Lpq,Lrs->pqrs", b, b)
     ham = ((h1s[0], h1s[1]), (eri, eri, eri))
+    sa = cistring.make_strings(range(n), nelec[0])
+    sb = cistring.make_strings(range(n), nelec[1])
 
+    # 1. override alone
     dim = cistring.num_strings(n, 2) * cistring.num_strings(n, 1)
     bare = direct_uhf.FCISolver()
     bare.conv_tol = 1e-12
-    w, cis = bare.kernel(*ham, n, nelec, nroots=dim)
-    doublets = [e for e, c in zip(w, cis)
-                if abs(spin_op.spin_square0(c, n, nelec)[0] - 0.75) < 1e-4]
-    e_ref = min(doublets)
+    w, _ = bare.kernel(*ham, n, nelec, nroots=dim)
+    s0 = LasSettings(fragments=["0:4:2,1"], sqd_nroots=3, sqd_davidson_tol=1e-12,
+                     sqd_spin_shift=0.0)
+    e_sci0 = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s0)[0]
+    assert abs(e_sci0 - min(w)) < 1e-8, (e_sci0, sorted(w)[:3])
 
+    # 2. with the spin penalty
     s = LasSettings(fragments=["0:4:2,1"], sqd_nroots=3, sqd_davidson_tol=1e-12)
-    sa = cistring.make_strings(range(n), nelec[0])
-    sb = cistring.make_strings(range(n), nelec[1])
     e_sci = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s)[0]
-    assert abs(e_sci - e_ref) < 1e-8, (e_sci, e_ref, sorted(w)[:4])
-
     pen = spin_penalized_uhf_solver(s.sqd_spin_shift, 0.75)
     pen.conv_tol = 1e-12
     e_pen = pen.kernel(*ham, n, nelec)[0]
-    assert abs(e_pen - e_ref) < 1e-8, (e_pen, e_ref)
+    assert abs(e_sci - e_pen) < 1e-7, (e_sci, e_pen)
 
 
 @pytest.mark.slow
