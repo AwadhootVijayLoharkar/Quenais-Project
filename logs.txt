@@ -1,133 +1,18 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_las_core.py tests/test_las_bits.py tests/test_las_bits.py tests/test_las_settings.py tests/test_las_sqd_logic.py 
-.....................................                                                                                                                                                                        [100%]
-37 passed in 87.67s (0:01:27)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
+remote: Enumerating objects: 7, done.
+remote: Counting objects: 100% (7/7), done.
+remote: Compressing objects: 100% (1/1), done.
+remote: Total 4 (delta 3), reused 4 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 425 bytes | 13.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+   fbe6a00..9e0f0b3  lassqd     -> origin/lassqd
+Updating fbe6a00..9e0f0b3
+Fast-forward
+ tests/test_gqe_runner.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q -m "not slow"
-.....................................................................................................................................................................................................FFFF... [ 63%]
+............................................................................................................................................................................................................ [ 63%]
 .....................ss................................................................................................                                                                                      [100%]
-===================================================================================================== FAILURES =====================================================================================================
-_______________________________________________________________________________________ test_documented_files_match_the_code _______________________________________________________________________________________
-
-    def test_documented_files_match_the_code():
-        """
-        The GQE integration doc names the three patched files. If PATCHED_FILES
-        changes and the doc does not, the doc becomes a lie.
-        """
->       text = (_docs_dir() / "gqe_integration.md").read_text()
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-tests/test_gqe_runner.py:468: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-quenais-env/lib/python3.11/pathlib.py:1058: in read_text
-    with self.open(mode='r', encoding=encoding, errors=errors) as f:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = PosixPath('/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/gqe_integration.md'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
-
-    def open(self, mode='r', buffering=-1, encoding=None,
-             errors=None, newline=None):
-        """
-        Open the file pointed by this path and return a file object, as
-        the built-in open() function does.
-        """
-        if "b" not in mode:
-            encoding = io.text_encoding(encoding)
->       return io.open(self, mode, buffering, encoding, errors, newline)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/gqe_integration.md'
-
-quenais-env/lib/python3.11/pathlib.py:1044: FileNotFoundError
-____________________________________________________________________________________ test_readme_documents_both_solver_families ____________________________________________________________________________________
-
-    def test_readme_documents_both_solver_families():
-        from quenais.config import GQE_SOLVERS, QISKIT_SOLVERS
-    
->       readme = (Path(gqe_setup.PATCH_PATH).parents[1] / "README.md").read_text()
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-tests/test_gqe_runner.py:479: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-quenais-env/lib/python3.11/pathlib.py:1058: in read_text
-    with self.open(mode='r', encoding=encoding, errors=errors) as f:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = PosixPath('/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
-
-    def open(self, mode='r', buffering=-1, encoding=None,
-             errors=None, newline=None):
-        """
-        Open the file pointed by this path and return a file object, as
-        the built-in open() function does.
-        """
-        if "b" not in mode:
-            encoding = io.text_encoding(encoding)
->       return io.open(self, mode, buffering, encoding, errors, newline)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'
-
-quenais-env/lib/python3.11/pathlib.py:1044: FileNotFoundError
-_____________________________________________________________________________ test_limitations_doc_exists_and_covers_the_known_issues ______________________________________________________________________________
-
-    def test_limitations_doc_exists_and_covers_the_known_issues():
->       text = (_docs_dir() / "limitations.md").read_text().lower()
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-tests/test_gqe_runner.py:485: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-quenais-env/lib/python3.11/pathlib.py:1058: in read_text
-    with self.open(mode='r', encoding=encoding, errors=errors) as f:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = PosixPath('/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/limitations.md'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
-
-    def open(self, mode='r', buffering=-1, encoding=None,
-             errors=None, newline=None):
-        """
-        Open the file pointed by this path and return a file object, as
-        the built-in open() function does.
-        """
-        if "b" not in mode:
-            encoding = io.text_encoding(encoding)
->       return io.open(self, mode, buffering, encoding, errors, newline)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/limitations.md'
-
-quenais-env/lib/python3.11/pathlib.py:1044: FileNotFoundError
-_____________________________________________________________________________________ test_readme_documents_performance_levers _____________________________________________________________________________________
-
-    def test_readme_documents_performance_levers():
-        """
-        Partners will ask how to make it faster. The answer must be in the
-        README, and must not imply a custom build is needed for correctness --
-        it is not, and claiming otherwise would put people off.
-        """
->       readme = (Path(gqe_setup.PATCH_PATH).parents[1] / "README.md").read_text()
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-tests/test_gqe_runner.py:497: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-quenais-env/lib/python3.11/pathlib.py:1058: in read_text
-    with self.open(mode='r', encoding=encoding, errors=errors) as f:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = PosixPath('/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'), mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
-
-    def open(self, mode='r', buffering=-1, encoding=None,
-             errors=None, newline=None):
-        """
-        Open the file pointed by this path and return a file object, as
-        the built-in open() function does.
-        """
-        if "b" not in mode:
-            encoding = io.text_encoding(encoding)
->       return io.open(self, mode, buffering, encoding, errors, newline)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'
-
-quenais-env/lib/python3.11/pathlib.py:1044: FileNotFoundError
 ================================================================================================= warnings summary =================================================================================================
 tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
 tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
@@ -136,10 +21,5 @@ tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double exci
     warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-============================================================================================= short test summary info ==============================================================================================
-FAILED tests/test_gqe_runner.py::test_documented_files_match_the_code - FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/gqe_integration.md'
-FAILED tests/test_gqe_runner.py::test_readme_documents_both_solver_families - FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'
-FAILED tests/test_gqe_runner.py::test_limitations_doc_exists_and_covers_the_known_issues - FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/docs/limitations.md'
-FAILED tests/test_gqe_runner.py::test_readme_documents_performance_levers - FileNotFoundError: [Errno 2] No such file or directory: '/home/loharkar/quenais-standalone/Quenais-Project/quenais/README.md'
-4 failed, 317 passed, 2 skipped, 23 deselected, 3 warnings in 166.41s (0:02:46)
+321 passed, 2 skipped, 23 deselected, 3 warnings in 125.10s (0:02:05)
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
