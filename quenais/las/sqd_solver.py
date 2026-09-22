@@ -345,7 +345,11 @@ class LassqdFragmentSolver:
         n, (na, nb) = ham.norb, ham.nelec
         eri = prep["eri_mo"]
         raw, raw_p = bits.counts_to_matrix(counts, 2 * n)
-        n_valid = int(bits.postselect(raw, raw_p, n, na, nb)[0].shape[0])
+        # Fraction of SHOTS with the right electron numbers (probability
+        # weighted), and how many distinct valid bitstrings they contain.
+        ok = (raw[:, n:].sum(axis=1) == na) & (raw[:, :n].sum(axis=1) == nb)
+        valid_fraction = float(raw_p[ok].sum())
+        n_unique_valid = int(ok.sum())
         hf_a, hf_b = bits.hf_strings(na, nb)
 
         carry_a, carry_b = self._transported_carryover(ham.index, prep["u"])
@@ -397,7 +401,8 @@ class LassqdFragmentSolver:
         full_dim = _n_strings(n, na) * _n_strings(n, nb)
         info = {
             "solver": "sqd",
-            "shots_valid_fraction": n_valid / max(1, sum(counts.values())),
+            "shots_valid_fraction": valid_fraction,
+            "unique_valid_bitstrings": n_unique_valid,
             "subspace_dim": int(sa.size * sb.size),
             "full_dim": int(full_dim),
             "subspace_fraction": float(sa.size * sb.size / full_dim),
@@ -426,7 +431,8 @@ class LassqdFragmentSolver:
             res = self._sqd(ham, prep, cnt)
             self.log(f"    fragment {ham.index}: SQD dim {res.info['subspace_dim']} "
                      f"({100 * res.info['subspace_fraction']:.1f}% of FCI), "
-                     f"valid shots {100 * res.info['shots_valid_fraction']:.1f}%")
+                     f"valid shots {100 * res.info['shots_valid_fraction']:.1f}% "
+                     f"({res.info['unique_valid_bitstrings']} distinct)")
             out.append(res)
         return out
 
