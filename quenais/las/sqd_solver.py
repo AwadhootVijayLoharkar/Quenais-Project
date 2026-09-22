@@ -32,8 +32,8 @@ SPIN
 With an open-shell environment the fragment Hamiltonian has h_alpha !=
 h_beta. PySCF's selected CI is spin restricted, so it is given the average
 and the remainder (h_alpha - h_beta)/2 is added exactly inside the
-subspace (_spin_dependent_sci). The circuit is built from the average --
-it only has to generate the right configurations.
+subspace (_augmented_sci), together with the spin penalty. The circuit is
+built from the average -- it only has to generate the right configurations.
 """
 
 from __future__ import annotations
@@ -210,11 +210,17 @@ def sample_fragment_circuits(circuits, settings):
 def _sci_solve(h1s, eri, n, nelec, sa, sb, spin2s, settings):
     """
     Diagonalise in span{|a>|b> : a in sa, b in sb} with PySCF selected CI.
-    h1s is (2, n, n): the spin-dependent part (h_a - h_b)/2 is added exactly
-    on top of PySCF's spin-restricted contraction (see _spin_dependent_sci).
+
+    Two terms are added on top of PySCF's spin-restricted contraction, both
+    inside our own SelectedCI subclass (_augmented_sci):
+      * the spin-dependent one-electron part (h_a - h_b)/2, when the
+        fragment's environment is open shell
+      * the spin penalty shift * (S^2 - S(S+1))^2 -- applied here rather
+        than with fci.addons.fix_spin_, which on the cluster's PySCF did not
+        reach kernel_fixed_space. Same form as fci_solver's penalty.
     Returns (e, amplitudes, sa, sb, dm1s, dm2).
     """
-    from pyscf.fci import addons, selected_ci
+    from pyscf.fci import selected_ci
 
     sa = np.unique(np.asarray(sa, dtype=np.int64))
     sb = np.unique(np.asarray(sb, dtype=np.int64))
@@ -226,15 +232,14 @@ def _sci_solve(h1s, eri, n, nelec, sa, sb, spin2s, settings):
         )
     h_avg = 0.5 * (h1s[0] + h1s[1])
     dh = 0.5 * (h1s[0] - h1s[1])
+    ops = None
     if np.max(np.abs(dh)) > 1e-12:
-        myci = _spin_dependent_sci(selected_ci, bits.one_body_string_operator(sa, n, dh),
-                                   bits.one_body_string_operator(sb, n, dh))
-    else:
-        myci = selected_ci.SelectedCI()
+        ops = (bits.one_body_string_operator(sa, n, dh),
+               bits.one_body_string_operator(sb, n, dh))
+    ss = 0.25 * spin2s * (spin2s + 2)
+    myci = _augmented_sci(selected_ci, ops, settings.sqd_spin_shift, ss)
     myci.conv_tol = settings.sqd_davidson_tol
     myci.max_cycle = settings.sqd_max_davidson
-    ss = 0.25 * spin2s * (spin2s + 2)
-    myci = addons.fix_spin_(myci, ss=ss, shift=settings.sqd_spin_shift)
     nroots = max(1, min(settings.sqd_nroots, dim))
     e, civec = selected_ci.kernel_fixed_space(
         myci, h_avg, eri, n, nelec, (sa, sb), nroots=nroots,
@@ -253,25 +258,40 @@ def _sci_solve(h1s, eri, n, nelec, sa, sb, spin2s, settings):
             np.stack([dma, dmb]), dm2)
 
 
-def _spin_dependent_sci(selected_ci, a_mat, b_mat):
+def _augmented_sci(selected_ci, ops, shift, ss):
     """
-    SelectedCI whose Hamiltonian gains  sum_pq dh_pq (E^a_pq - E^b_pq),
-    applied as  A C - C B^T  on the (n_alpha_strings, n_beta_strings)
-    coefficient matrix. Needed when the fragment's environment is open
-    shell, i.e. h_alpha != h_beta.
+    SelectedCI whose Hamiltonian gains
+        sum_pq dh_pq (E^a_pq - E^b_pq)      (if ops = (A, B) is given)
+      + shift * (S^2 - ss)^2                (if shift != 0)
+    The first acts as A C - C B^T on the (n_alpha, n_beta) coefficient
+    matrix C; the second uses selected_ci.contract_ss twice.
     """
-    da, db = np.diag(a_mat), np.diag(b_mat)
+    a_mat, b_mat = ops if ops is not None else (None, None)
 
     class _SCI(selected_ci.SelectedCI):
         def contract_2e(self, eri, civec_strs, norb, nelec, link_index=None, **kw):
             out = super().contract_2e(eri, civec_strs, norb, nelec, link_index, **kw)
-            c = np.asarray(civec_strs).reshape(a_mat.shape[0], b_mat.shape[0])
-            extra = a_mat @ c - c @ b_mat.T
+            strs = civec_strs._strs
+            shape = (len(strs[0]), len(strs[1]))
+            c = np.asarray(civec_strs).reshape(shape)
+            extra = np.zeros(shape)
+            if a_mat is not None:
+                extra += a_mat @ c - c @ b_mat.T
+            if shift:
+                v = (np.asarray(selected_ci.contract_ss(civec_strs, norb, nelec))
+                     .reshape(shape) - ss * c)
+                v_sci = selected_ci._as_SCIvector(v, strs)
+                pen = (np.asarray(selected_ci.contract_ss(v_sci, norb, nelec))
+                       .reshape(shape) - ss * v)
+                extra += shift * pen
             return out + extra.reshape(np.shape(out))
 
         def make_hdiag(self, h1e, eri, ci_strs, norb, nelec, *args, **kw):
             hd = super().make_hdiag(h1e, eri, ci_strs, norb, nelec, *args, **kw)
-            return hd + (da[:, None] - db[None, :]).reshape(np.shape(hd))
+            if a_mat is None:
+                return hd
+            d = np.diag(a_mat)[:, None] - np.diag(b_mat)[None, :]
+            return hd + d.reshape(np.shape(hd))
 
     return _SCI()
 
@@ -415,4 +435,3 @@ def _n_strings(n, k):
     from math import comb
 
     return comb(n, k)
-
