@@ -1,16 +1,17 @@
+
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
 remote: Enumerating objects: 13, done.
 remote: Counting objects: 100% (13/13), done.
 remote: Compressing objects: 100% (1/1), done.
 remote: Total 7 (delta 6), reused 7 (delta 6), pack-reused 0 (from 0)
-Unpacking objects: 100% (7/7), 1.80 KiB | 26.00 KiB/s, done.
+Unpacking objects: 100% (7/7), 1.13 KiB | 23.00 KiB/s, done.
 From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   1cc2d91..8382ec8  lassqd     -> origin/lassqd
-Updating 1cc2d91..8382ec8
+   6e4acd8..91c1a40  lassqd     -> origin/lassqd
+Updating 6e4acd8..91c1a40
 Fast-forward
- quenais/las/fci_solver.py | 44 ++++++++++++++++++++++++++++++++++++--------
- tests/test_las_pyscf.py   | 36 +++++++++++++++++++++++++++++++++---
- 2 files changed, 69 insertions(+), 11 deletions(-)
+ quenais/las/fci_solver.py |  5 +++++
+ tests/test_las_pyscf.py   | 27 ++++++++++++++++++++-------
+ 2 files changed, 25 insertions(+), 7 deletions(-)
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -v tests/test_las_pyscf.py 
 =============================================================================================== test session starts ================================================================================================
 platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python3.11
@@ -24,53 +25,22 @@ tests/test_las_pyscf.py::test_determinant_energy_is_rhf PASSED                  
 tests/test_las_pyscf.py::test_single_fragment_lasci_and_lasscf_equal_casci_and_casscf PASSED                                                                                                                 [ 25%]
 tests/test_las_pyscf.py::test_two_fragment_lasscf_bounds_and_stationarity PASSED                                                                                                                             [ 37%]
 tests/test_las_pyscf.py::test_density_fitting_is_close PASSED                                                                                                                                                [ 50%]
-tests/test_las_pyscf.py::test_spin_penalty_selects_requested_spin FAILED                                                                                                                                     [ 62%]
+tests/test_las_pyscf.py::test_spin_penalty_selects_requested_spin PASSED                                                                                                                                     [ 62%]
 tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci FAILED                                                                                                                        [ 75%]
 tests/test_las_pyscf.py::test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[0.0] PASSED                                                                                                             [ 87%]
 tests/test_las_pyscf.py::test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space[1e-05] PASSED                                                                                                           [100%]
 
 ===================================================================================================== FAILURES =====================================================================================================
-_____________________________________________________________________________________ test_spin_penalty_selects_requested_spin _____________________________________________________________________________________
-
-    def test_spin_penalty_selects_requested_spin():
-        """
-        Two electrons in two orbitals, M_S = 0: singlet and triplet both live in
-        this sector. Whichever the bare Hamiltonian prefers, the penalised
-        solver must return the requested S^2 and that state's exact energy.
-        """
-        from pyscf.fci import direct_uhf, spin_op
-    
-        from quenais.las.fci_solver import spin_penalized_uhf_solver
-    
-        n, nelec = 2, (1, 1)
-        h = np.array([[0.0, 0.05], [0.05, 0.02]])
-        eri = np.zeros((n,) * 4)
-        eri[0, 0, 0, 0] = eri[1, 1, 1, 1] = 1.0
-        eri[0, 0, 1, 1] = eri[1, 1, 0, 0] = 0.6
-        eri[0, 1, 0, 1] = eri[1, 0, 1, 0] = eri[0, 1, 1, 0] = eri[1, 0, 0, 1] = 0.3
-        ham = ((h, h), (eri, eri, eri))
-        bare = direct_uhf.FCISolver()
-        bare.conv_tol = 1e-12
-        w = np.asarray(bare.kernel(*ham, n, nelec, nroots=4)[0])   # all 4 states
-        for target_ss in (0.0, 2.0):
-            solver = spin_penalized_uhf_solver(1.0, target_ss)
-            solver.conv_tol = 1e-12
-            e, ci = solver.kernel(*ham, n, nelec, nroots=1)
-            ss, _ = spin_op.spin_square0(ci, n, nelec)
->           assert abs(ss - target_ss) < 1e-6
-E           assert np.float64(2.0000000000000004) < 1e-06
-E            +  where np.float64(2.0000000000000004) = abs((np.float64(2.0000000000000004) - 0.0))
-
-tests/test_las_pyscf.py:128: AssertionError
 ______________________________________________________________________________ test_selected_ci_with_spin_dependent_h_equals_uhf_fci _______________________________________________________________________________
 
     def test_selected_ci_with_spin_dependent_h_equals_uhf_fci():
         """
         Guards the one PySCF internal LASSQD relies on: kernel_fixed_space must
         route through our contract_2e/make_hdiag overrides. In the full string
-        space the result must equal direct_uhf FCI with h_alpha != h_beta.
+        space the result must be the lowest DOUBLET of the spin-dependent
+        Hamiltonian, found here by diagonalising it completely (no penalty).
         """
-        from pyscf.fci import cistring
+        from pyscf.fci import cistring, direct_uhf, spin_op
     
         from quenais.las.fci_solver import spin_penalized_uhf_solver
         from quenais.las.sqd_solver import _sci_solve
@@ -83,21 +53,20 @@ ______________________________________________________________________________ t
         b = rng.normal(scale=0.3, size=(6, n, n))
         b = 0.5 * (b + b.transpose(0, 2, 1))
         eri = np.einsum("Lpq,Lrs->pqrs", b, b)
-        s = LasSettings(fragments=["0:4:2,1"], sqd_nroots=1, sqd_davidson_tol=1e-12)
-        sa = cistring.make_strings(range(n), nelec[0])
-        sb = cistring.make_strings(range(n), nelec[1])
-        e_sci = _sci_solve(h1s, eri, n, nelec, sa, sb, 1, s)[0]
-        solver = spin_penalized_uhf_solver(s.sqd_spin_shift, 0.75)
-        solver.conv_tol = 1e-12
-        e_fci = solver.kernel((h1s[0], h1s[1]), (eri, eri, eri), n, nelec)[0]
->       assert abs(e_sci - e_fci) < 1e-8, (e_sci, e_fci)
-E       AssertionError: (-2.390857961241622, np.float64(-2.480196626895655))
-E       assert np.float64(0.08933866565403292) < 1e-08
-E        +  where np.float64(0.08933866565403292) = abs((-2.390857961241622 - np.float64(-2.480196626895655)))
+        ham = ((h1s[0], h1s[1]), (eri, eri, eri))
+    
+        dim = cistring.num_strings(n, 2) * cistring.num_strings(n, 1)
+        bare = direct_uhf.FCISolver()
+        bare.conv_tol = 1e-12
+        w, cis = bare.kernel(*ham, n, nelec, nroots=dim)
+        doublets = [e for e, c in zip(w, cis)
+                    if abs(spin_op.spin_square0(c, n, nelec)[0] - 0.75) < 1e-4]
+>       e_ref = min(doublets)
+                ^^^^^^^^^^^^^
+E       ValueError: min() arg is an empty sequence
 
-tests/test_las_pyscf.py:158: AssertionError
+tests/test_las_pyscf.py:160: ValueError
 ============================================================================================= short test summary info ==============================================================================================
-FAILED tests/test_las_pyscf.py::test_spin_penalty_selects_requested_spin - assert np.float64(2.0000000000000004) < 1e-06
-FAILED tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci - AssertionError: (-2.390857961241622, np.float64(-2.480196626895655))
-=========================================================================================== 2 failed, 6 passed in 23.84s ===========================================================================================
+FAILED tests/test_las_pyscf.py::test_selected_ci_with_spin_dependent_h_equals_uhf_fci - ValueError: min() arg is an empty sequence
+=========================================================================================== 1 failed, 7 passed in 22.04s ===========================================================================================
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
