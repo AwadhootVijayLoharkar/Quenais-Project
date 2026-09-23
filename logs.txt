@@ -1,22 +1,32 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git fetch origin
-remote: Enumerating objects: 23, done.
-remote: Counting objects: 100% (23/23), done.
-remote: Compressing objects: 100% (6/6), done.
-remote: Total 14 (delta 8), reused 14 (delta 8), pack-reused 0 (from 0)
-Unpacking objects: 100% (14/14), 21.08 KiB | 205.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
- * [new branch]      references -> origin/references
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git checkout references
-M       gqe-for-qsci
-branch 'references' set up to track 'origin/references'.
-Switched to a new branch 'references'
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_references.py tests/test_references_pyscf.py 
-...........................................(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ^C
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_references.py tests/test_references_pyscf.py 
-...........................................(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_references.py tests/test_references_pys
-^C
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q -m "not slow"
-.................................................................................................................................................................................................... [ 53%]
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q -m "not slow"
-.................................................................................................................................................................................................... [ 53%]
-.............................ss..............................................................(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+...........................................(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_references.py ; echo "exit=$?"
+...............................                                                                                                                                                                      [100%]
+31 passed in 0.63s
+exit=0
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_references_pyscf.py ; echo "exit=$?"
+............exit=2
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -v tests/test_references_pyscf.py ; echo "exit=$?"
+=========================================================================================== test session starts ============================================================================================
+platform linux -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0 -- /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /home/loharkar/quenais-standalone/Quenais-Project
+configfile: setup.cfg
+plugins: hydra-core-1.3.4, anyio-4.14.2
+collected 15 items                                                                                                                                                                                         
+
+tests/test_references_pyscf.py::test_full_space_fci_equals_pyscf_fci PASSED                                                                                                                          [  6%]
+tests/test_references_pyscf.py::test_fci_refuses_an_oversized_space_before_doing_work PASSED                                                                                                         [ 13%]
+tests/test_references_pyscf.py::test_fci_in_active_space_matches_casci PASSED                                                                                                                        [ 20%]
+tests/test_references_pyscf.py::test_fci_in_active_space_skipped_without_step1 PASSED                                                                                                                [ 26%]
+tests/test_references_pyscf.py::test_casci_equals_pyscf_casci_in_the_same_space PASSED                                                                                                               [ 33%]
+tests/test_references_pyscf.py::test_casci_in_the_full_active_space_equals_fci PASSED                                                                                                                [ 40%]
+tests/test_references_pyscf.py::test_casci_is_bounded_by_hf_and_fci PASSED                                                                                                                           [ 46%]
+tests/test_references_pyscf.py::test_casci_reports_excited_roots PASSED                                                                                                                              [ 53%]
+tests/test_references_pyscf.py::test_casci_skipped_without_an_active_space PASSED                                                                                                                    [ 60%]
+tests/test_references_pyscf.py::test_closed_shell_reuses_the_callers_scf PASSED                                                                                                                      [ 66%]
+tests/test_references_pyscf.py::test_open_shell_gets_its_own_rohf PASSED                                                                                                                             [ 73%]
+tests/test_references_pyscf.py::test_open_shell_casci_runs_on_the_rohf_reference PASSED                                                                                                              [ 80%]
+tests/test_references_pyscf.py::test_dmrg_reports_a_clean_skip_without_block2 exit=2
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python -c "import pyblock2 ; print(pyblock2.__file__)"
+/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyblock2/__init__.py
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
