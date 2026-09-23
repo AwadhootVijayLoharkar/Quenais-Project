@@ -9,12 +9,19 @@ device appears.
 
 ---
 
-## 1. Two stacks, one dispatcher
+## 1. Three families, one dispatcher
 
 ```python
 QISKIT_SOLVERS = ("sqd", "skqd", "sqdrift")   # in-process, Qiskit
 GQE_SOLVERS    = ("gqe",)                     # subprocess, CUDA-Q
+LAS_SOLVERS    = ("lasscf", "lassqd")         # in-process, quenais.las
 ```
+
+The first two solve the **DMET** embedding Hamiltonian from step 2. The LAS
+family is different: it reads step 1 and partitions the active space
+itself, so it never touches step 2. Its quantum member, `lassqd`, applies
+the same SQD machinery described below to each fragment, and adds carryover
+between cycles. See [`10_las_and_lassqd.md`](10_las_and_lassqd.md).
 
 `quenais.quantum.dispatch(cfg, force=...)` is the single routing point. It
 imports lazily and rewrites `ImportError` into an actionable message

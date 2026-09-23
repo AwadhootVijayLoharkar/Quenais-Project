@@ -107,19 +107,45 @@ value only and is not used in training or diagonalisation.
 
 ## LAS solvers (lasscf, lassqd)
 
-**Status:** new. The core math is validated against brute force (see
-[las_integration.md](las_integration.md#validation)); the PySCF/Qiskit
-tests in `tests/test_las_pyscf.py` and the mrh references in
-`tests/regression/golden/las_mrh_reference.json` still have to be run and
-filled in on a machine with the full stack.
+**Status:** validated. The core maths is checked against brute force, the
+PySCF/Qiskit tests in `tests/test_las_pyscf.py` all pass, and ScF has been
+run end to end (see the README's validated-values section). Still open:
+the mrh cross-check in `tests/regression/golden/las_mrh_reference.json` is
+empty, so the agreement with the established LASSCF implementation has not
+been quantified yet.
+
+Physics and method:
 
 - Inter-fragment correlation is mean field. Strongly coupled fragments
   (short metal-metal distances, bridging ligands left out of every
   fragment) are where LAS, and therefore LASSQD, is least accurate.
 - Fragments must split cleanly by atom. Use AVAS for step 1 and read the
-  per-fragment localisation singular values in the log.
+  per-fragment localisation singular values in the log; below 0.5 the code
+  warns, and the run should not be trusted.
 - `lassqd` energies are `stochastic`, `lasscf` energies are
-  `optimizer-dependent` (LASSCF can have several stationary points).
-- Open-shell fragments are supported by LAS itself, but the rest of the
-  pipeline is validated for closed-shell molecules only (see above).
+  `optimizer-dependent` (LASSCF can have several stationary points; a run
+  restarted from a different point can land in a different one, and the two
+  are not comparable to sub-mHa).
+- LASSQD is variational in the sense that its energy is an exact
+  expectation value of a LAS state, so it lies above the LASSCF minimum of
+  the same basin -- but not necessarily above a *different* basin's.
+- Open-shell fragments are supported by LAS itself (and their
+  spin-dependent fragment Hamiltonian is treated exactly), but the rest of
+  the pipeline is validated for closed-shell molecules only.
+- Rotations inside a fragment are not optimised, as in the paper. For an
+  exact fragment solver they are redundant; for SQD they are not, so the
+  LASSQD energy depends slightly on the orbital basis handed to it.
 
+Accuracy levers, in the order that helped on ScF:
+
+1. `--lassqd-shots` (20k -> 100k halved the error: 2.21 -> 1.11 mHa)
+2. `--lassqd-carryover-eps` (1e-5 vs 0: 1.11 vs 1.88 mHa, and far steadier
+   convergence)
+3. `--lassqd-samples-per-batch` / `--lassqd-batches`
+4. `--lassqd-lucj-pairs all` and `--lassqd-lucj-optimize` (both untested at
+   scale)
+
+Engineering gaps: no restart from a previous run, serial SQD batches, an
+unexercised IBM hardware path with no error mitigation, and no MC-PDFT on
+the LAS densities. See the table in
+[las_integration.md](las_integration.md#limitations).

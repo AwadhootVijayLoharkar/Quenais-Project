@@ -16,7 +16,9 @@ equations and algorithms. It contains **no code** from
 - the LASSQD authors' repository, which carries no licence.
 
 Neither is a dependency, submodule or optional import. Runtime dependencies
-are PySCF, Qiskit, qiskit-aer, qiskit-addon-sqd and ffsim, all Apache-2.0.
+are PySCF, Qiskit, qiskit-aer, qiskit-addon-sqd and ffsim, all Apache-2.0;
+neither LAS solver touches the two GPL dependencies the package can
+otherwise pull in (see [licensing.md](licensing.md)).
 `mrh` may be run **locally** to produce reference energies; only those
 numbers are stored (`tests/regression/golden/las_mrh_reference.json`),
 never code. Keep it that way: do not copy from either codebase, and do not
@@ -123,8 +125,20 @@ Two things differ from a naive port and are deliberate:
   the average and the difference is added exactly inside the subspace.
   Without this the Fe(III) dimer's fragments would be solved in the wrong
   Hamiltonian (a toy test showed ~5 mHa error).
+- **The spin penalty is applied here, not by PySCF.** `fci.addons.fix_spin_`
+  raises `NotImplementedError` for `direct_uhf`, and on the tested PySCF it
+  did not reach `kernel_fixed_space` for selected CI either. Both solvers
+  therefore add `shift * (S^2 - S(S+1))^2` themselves, in the same form
+  (`fci_solver.spin_penalized_uhf_solver`, `sqd_solver._augmented_sci`).
+  The exact solver also sets `davidson_only`: below `pspace_size` PySCF
+  diagonalises an explicitly built H and never calls `contract_2e`, which
+  would silently drop the penalty.
 
 ## Validation
+
+**Status: validated.** All LAS tests pass with the full stack (PySCF
+2.14, Qiskit, ffsim, qiskit-addon-sqd), and the package's own suite is
+unaffected (321 passed, 0 failed).
 
 Runs anywhere (NumPy only), against brute-force Fock-space references that
 share no code with `quenais.las`:
@@ -139,19 +153,36 @@ share no code with `quenais.las`:
   shell); the spin-dependent subspace operator vs brute force.
 - `tests/test_las_bits.py`, `tests/test_las_settings.py`.
 
-Needs PySCF (and Qiskit for the last one):
+Needs PySCF (and Qiskit for the last one) -- `tests/test_las_pyscf.py`:
 
-- `tests/test_las_pyscf.py` -- RHF through the LAS energy; single fragment
-  LASCI = CASCI and LASSCF = CASSCF; H4 two-fragment bounds; density
-  fitting; selected CI with spin-dependent h = UHF FCI; LASSQD on H4 with
-  `aer_statevector` = LASSCF.
-- `tests/test_las_reference.py` -- against locally produced mrh numbers.
+| test | what it pins |
+|---|---|
+| `test_determinant_energy_is_rhf` | integrals + energy functional vs PySCF RHF |
+| `test_single_fragment_..._casci_and_casscf` | one fragment = PySCF CASCI and CASSCF |
+| `test_two_fragment_lasscf_bounds_and_stationarity` | E(FCI) <= E(LASSCF) <= E(LASCI), zero gradient |
+| `test_density_fitting_is_close` | the DF integral path |
+| `test_spin_penalty_selects_requested_spin` | the penalty returns the requested S^2 and that state's exact energy |
+| `test_selected_ci_with_spin_dependent_h_equals_uhf_fci` | the subspace solver really uses our spin-dependent term and our penalty |
+| `test_lassqd_reproduces_lasscf_when_sqd_spans_fragment_space` | full LASSQD (LUCJ -> sampling -> SQD) = LASSCF on H4, with and without carryover |
 
-Suggested ladder for the thesis: H4/H8 (fill in the mrh references) ->
-ScF (Sc 6o + F 3o, compare with DMET on the same AVAS space) -> stretched
-N2 (carryover vs `--lassqd-carryover-eps 0`, plus `det_analysis` oracle
-and CIPSI at matched subspace size) -> [Fe(H2O)4]2bpym4+ with (6e,5o)
-fragments against the paper's LASSCF value, -3655.496377 Eh (Table 1).
+`tests/test_las_reference.py` compares LASSCF against locally produced mrh
+numbers; it skips until `tests/regression/golden/las_mrh_reference.json`
+is filled in.
+
+### First production system: ScF
+
+AVAS `['Sc 3d','Sc 4s','F 2p']` gives (8e,9o); the fragments
+`'Sc:6:1,1' 'F:3:3,3'` localise with minimum singular values 0.955 and
+0.975. Energies are in the README's validated-values section. The run also
+showed what the log should look like: `valid shots 100%` (the LUCJ circuits
+conserve particle number), a subspace that grows over the first few cycles
+and then holds, and `|g_orb|` falling to ~1e-5.
+
+Suggested ladder from here: fill in the mrh references for H4/H8 ->
+stretched N2 (carryover vs `--lassqd-carryover-eps 0`, several seeds, plus
+`det_analysis` oracle and CIPSI at matched subspace size) ->
+[Fe(H2O)4]2bpym4+ with (6e,5o) fragments against the paper's LASSCF value,
+-3655.496377 Eh (Table 1).
 
 ## Limitations
 
@@ -165,3 +196,13 @@ fragments against the paper's LASSCF value, -3655.496377 Eh (Table 1).
 - Carryover transport maps orbitals by maximum overlap; if the fragment
   basis rotates too much between cycles the carryover set is dropped for
   that cycle (logged).
+
+Engineering gaps, in the order they will bite:
+
+| gap | matters when |
+|---|---|
+| No restart: a run always starts from the step-1 orbitals, and a crashed or timed-out job is lost | multi-day jobs such as the Fe dimer |
+| SQD batches are solved one after another (K x N_iter x n_frag diagonalisations per cycle) | 10-orbital fragments; negligible for ScF |
+| `--lassqd-backend ibm` has never been executed, and there is no error mitigation (the paper uses dynamical decoupling and gate twirling) | a hardware chapter |
+| No MC-PDFT on the LAS densities (the paper reports LASSQD-tPBE) | comparing with their Table 1 beyond LASSCF |
+| The orbital optimiser is first order | watch `\|g_orb\|`: 6-9 macro cycles on ScF, but harder systems may need more |

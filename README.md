@@ -351,6 +351,26 @@ from an A100 / EPYC 7402 run and are stored as golden pickles in
 zero, so `n_bath = 0`. That is correct behaviour, not a failure; DMET+CASCI
 agrees with CASSCF to 0.04 mHa.
 
+**ScF / STO-3G, AVAS (8e,9o) split into Sc (6o, 1a+1b) and F (3o, 3a+3b)**
+— the LAS solvers. LASSCF converged in 6 macro cycles with a final orbital
+gradient of 6e-6; LASSQD used the default settings (K=15, d=170, 6
+iterations, carryover eps=1e-5) on `aer_mps`.
+
+| method | E (Ha) | vs LASSCF |
+|---|---|---|
+| RHF | −850.246995 | |
+| **LASSCF** | **−850.286487** | — |
+| LASSQD, 100k shots | −850.285374 | +1.11 mHa (0.70 kcal/mol) |
+| LASSQD, 100k shots, no carryover | −850.284608 | +1.88 mHa (1.18 kcal/mol) |
+| LASSQD, 20k shots | −850.284281 | +2.21 mHa (1.38 kcal/mol) |
+
+LASSQD is `stochastic`: those numbers move between runs and seeds. The
+shape is the reproducible part — with carryover the energy fell
+monotonically and the sampled subspace stayed at 25 of 36 configurations;
+without it the energy oscillated by ~12 mHa between cycles and the
+subspace jumped between 16 and 36, which is the instability carryover
+exists to remove.
+
 Not every number reproduces to the same precision. `results_summary.csv`
 labels each one `deterministic`, `optimizer-dependent` or `stochastic` —
 see [docs/limitations.md](docs/limitations.md) before comparing results
@@ -456,7 +476,7 @@ pipeline runs in seconds either way.
 ## Known limitations
 
 Read [docs/limitations.md](docs/limitations.md) before trusting a result
-from a system other than LiH or N₂. In short: ASF under-selects for
+from a system other than LiH, N₂ or ScF. In short: ASF under-selects for
 transition metals (use `--force-active-space`), CASSCF and NEVPT2 are not
 reproducible to tight tolerance, only closed-shell systems are validated,
 GQE's accuracy on larger systems is bounded by sampling capacity, and ScH
@@ -512,21 +532,17 @@ nothing, so any non-editable install carried no patch at all and
 
 ## Licensing
 
-This package is Apache-2.0.
-
-`gqe-for-qsci` is a third-party project with its own `LICENSE` and
-`NOTICE`. The four DMET integration files are original work implementing
-against its interfaces; `quenais/patches/gqe_dmet_source.patch` modifies
-upstream source and redistributes its context lines. **Check upstream's
-`NOTICE` for attribution terms that carry into derived work before
-publishing to PyPI or a public repository.**
+**This package is Apache-2.0, and its default route uses only Apache/BSD
+dependencies.** Two optional components pull in GPL-3.0 libraries:
+`--active-space-method asf` (block2) and `--solver gqe` (theochem/PyCI).
+Neither is vendored here; both are installed from upstream by
+`install.sh`. AVAS/APC plus any SQD or LAS solver is Apache-2.0 end to
+end.
 
 `quenais/las/` (LASSCF, LASSQD) is original Apache-2.0 code written from
 the published papers. It contains no code from `mrh` (GPL) or from the
-LASSQD authors' repository (unlicensed), and neither is a dependency; `mrh`
-is only run locally to produce reference numbers. See
-[docs/las_integration.md](docs/las_integration.md#licensing-an-independent-implementation).
+LASSQD authors' repository (unlicensed), and neither is a dependency;
+`mrh` is only run locally to produce reference numbers.
 
-`theochem/pyci` is likewise a third-party project carried as a submodule
-with its own license — it is built from source, not vendored, so nothing
-of it is redistributed here.
+Full matrix, including what must not be redistributed as a bundle:
+**[docs/licensing.md](docs/licensing.md)**.

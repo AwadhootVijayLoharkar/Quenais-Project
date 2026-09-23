@@ -22,11 +22,14 @@ folder is for understanding what the notebooks are doing.
 | 07 | [`07_validation.md`](07_validation.md) | the checks, the three reproducibility tiers, golden data, `quenais-selftest`, `quenais-doctor` |
 | 08 | [`08_glossary.md`](08_glossary.md) | every symbol and abbreviation used above |
 | 09 | [`09_active_space_alternatives.md`](09_active_space_alternatives.md) | replacing ASF — AVAS vs APC, and how to retire `force_active_space` |
+| 10 | [`10_las_and_lassqd.md`](10_las_and_lassqd.md) | **the second route** — LAS fragments instead of a DMET bath, LASSCF, and LASSQD with carryover |
 
 Related documents outside this folder:
 
 - `docs/limitations.md` — what this pipeline does *not* do reliably
 - `docs/reproducibility.md` — the five failure modes and the practice that catches them
+- `docs/las_integration.md` — using the LAS solvers: specs, options, validation
+- `docs/licensing.md` — which parts are Apache-2.0 and which dependencies are GPL
 - `docs/gqe_integration.md`, `docs/gqe_setup.md` — the external GQE repo
 
 ---

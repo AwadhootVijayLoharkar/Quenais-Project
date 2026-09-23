@@ -284,6 +284,32 @@ energy-only check would have passed it. The CI-vector fingerprint caught it.
 A result that has not been run twice and fingerprinted is not a result yet — it
 is a candidate for one of the five modes in `docs/reproducibility.md`.
 
+## 10. Validating a method with no reference implementation
+
+The LAS solvers could not be checked against golden pickles, because there
+were none — and the established implementation (`mrh`) is GPL, so it is not
+a dependency. They are pinned three ways instead, which is the pattern to
+copy for any new method here:
+
+1. **Against brute force.** `tests/_las_toy.py` builds Jordan–Wigner
+   operators and applies them to explicit Fock-space vectors: slow, and
+   obviously correct. The LAS energy, the fragment Hamiltonians, the
+   orbital gradient (finite differences) and the whole SQD bookkeeping are
+   compared against it, with no shared code.
+2. **Against limits with known answers.** One fragment spanning the active
+   space must equal PySCF's CASCI (fixed orbitals) and CASSCF (optimised).
+   Sampling wide enough to span a fragment's Hilbert space must reproduce
+   the exact fragment solver.
+3. **Against inequalities that cannot be violated.** E(FCI) ≤ E(LASSCF) ≤
+   E(LASCI); a converged solution has a vanishing orbital gradient; a
+   LASSQD energy is an exact expectation value, so it never drops below the
+   LASSCF minimum of its own basin.
+
+An external cross-check remains open: `tests/test_las_reference.py` reads
+`tests/regression/golden/las_mrh_reference.json`, which is to be filled
+with energies produced by running `mrh` locally. Only the numbers enter
+this repository — never the code.
+
 ## Next
 
 [`08_glossary.md`](08_glossary.md) — every symbol and abbreviation used in
