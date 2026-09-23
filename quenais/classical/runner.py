@@ -26,7 +26,15 @@ import pickle
 import time
 import warnings
 
-__all__ = ["main", "METHOD_TIERS"]
+from quenais.classical.references import (
+    REFERENCE_TIERS,
+    restricted_reference,
+    run_casci,
+    run_dmrg,
+    run_fci,
+)
+
+__all__ = ["main", "METHOD_TIERS", "best_reference"]
 
 
 #: Reproducibility class per method -- written into the results so a partner
@@ -44,6 +52,7 @@ METHOD_TIERS = {
     "CCSD_T": "deterministic",
     "CASSCF": "optimizer-dependent",
     "NEVPT2": "optimizer-dependent",
+    **REFERENCE_TIERS,
 }
 
 
@@ -338,6 +347,47 @@ def main(cfg, force=False):
             "energy": e_nevpt2, "success": e_nevpt2 is not None,
         }
 
+    # ── Exact and near-exact references ──────────────────────────────────
+    #
+    # Run last: they are the expensive ones, and if a node dies partway the
+    # cheap answer key above has already been computed. They share a single
+    # spin-free SCF reference, built once.
+    wanted = [m for m in ("CASCI", "FCI", "DMRG") if m in cfg.classical_methods]
+    if wanted:
+        print(f"\n{'-'*60}\n  Exact references: {', '.join(wanted)}\n{'-'*60}")
+        active = None
+        if step1 is not None:
+            active = (step1["nel"], step1["n_active_orbs"], step1["mo_list"])
+        elif "CASCI" in wanted or cfg.ref.dmrg_in_active_space:
+            print("  No step 1 found. CASCI needs an active space and will be "
+                  "skipped; so will DMRG unless ref.dmrg_in_active_space is "
+                  "False. Run step 1 first.")
+
+        mf_ref, rebuilt = restricted_reference(mol, mf)
+        results["reference_scf"] = {
+            "type": "ROHF" if rebuilt else type(mf).__name__,
+            "energy": float(mf_ref.e_tot),
+            "rebuilt_for_references": bool(rebuilt),
+        }
+
+        if "CASCI" in wanted:
+            e_casci, info = run_casci(mf_ref, active, cfg.ref)
+            results["methods"]["CASCI"] = {
+                "energy": e_casci, "success": e_casci is not None, **info,
+            }
+
+        if "FCI" in wanted:
+            e_fci, info = run_fci(mol, mf_ref, cfg.ref, active)
+            results["methods"]["FCI"] = {
+                "energy": e_fci, "success": e_fci is not None, **info,
+            }
+
+        if "DMRG" in wanted:
+            e_dmrg, info = run_dmrg(mol, mf_ref, active, cfg.ref, cfg.results_dir)
+            results["methods"]["DMRG"] = {
+                "energy": e_dmrg, "success": e_dmrg is not None, **info,
+            }
+
     # Tag each method with its reproducibility class.
     for name, data in results["methods"].items():
         data["tier"] = METHOD_TIERS.get(name, "unknown")
@@ -353,25 +403,83 @@ def main(cfg, force=False):
     return results
 
 
-def _print_table(cfg, results, e_hf):
-    print(f"\n{'='*72}")
-    print(f"[Step 0] Results -- {cfg.molecule} / {cfg.basis}")
-    print(f"{'='*72}")
-    print(f"\n  {'Method':<10} {'Energy (Ha)':>17} {'vs HF (Ha)':>13} "
-          f"{'kcal/mol':>11}  {'reproducibility':<20}")
-    print(f"  {'-'*70}")
+def best_reference(methods):
+    """
+    The most trustworthy exact reference present, and its name.
 
-    for method, data in results["methods"].items():
+    Preference order is accuracy order: FCI is exact in the basis; an
+    extrapolated DMRG energy estimates the M -> infinity limit; a raw DMRG
+    energy is variational above it; CASCI is exact only inside the active
+    space. Returns (name, energy) or (None, None).
+    """
+    fci = methods.get("FCI", {})
+    if fci.get("energy") is not None and not fci.get("in_active_space", False):
+        return "FCI", fci["energy"]
+
+    dmrg = methods.get("DMRG", {})
+    if dmrg.get("extrapolated_energy") is not None:
+        return "DMRG(M->inf)", dmrg["extrapolated_energy"]
+    if dmrg.get("energy") is not None:
+        return f"DMRG(M={dmrg.get('max_bond_dim', '?')})", dmrg["energy"]
+
+    if fci.get("energy") is not None:
+        return "FCI(CAS)", fci["energy"]
+
+    casci = methods.get("CASCI", {})
+    if casci.get("energy") is not None:
+        return "CASCI", casci["energy"]
+    return None, None
+
+
+def _print_table(cfg, results, e_hf):
+    methods = results["methods"]
+    ref_name, e_ref = best_reference(methods)
+
+    print(f"\n{'='*86}")
+    print(f"[Step 0] Results -- {cfg.molecule} / {cfg.basis}")
+    print(f"{'='*86}")
+
+    ref_col = f"vs {ref_name}" if ref_name else ""
+    print(f"\n  {'Method':<10} {'Energy (Ha)':>17} {'vs HF (Ha)':>13} "
+          f"{'kcal/mol':>11} {ref_col:>16}  {'reproducibility':<22}")
+    print(f"  {'-'*84}")
+
+    for method, data in methods.items():
         energy = data.get("energy")
         tier = data.get("tier", "")
         if energy is None:
-            print(f"  {method:<10} {'FAILED':>17} {'':>13} {'':>11}  {tier:<20}")
+            why = data.get("skipped") or ("failed" if data.get("error") else "")
+            label = "SKIPPED" if data.get("skipped") else "FAILED"
+            print(f"  {method:<10} {label:>17} {'':>13} {'':>11} {'':>16}  "
+                  f"{tier:<22}")
+            if why and why != "failed":
+                print(f"  {'':<10} ({why})")
             continue
         vs_hf = energy - e_hf
+        # The error against the exact reference, in the units chemistry is
+        # judged in. This column is the point of the whole table.
+        vs_ref = ""
+        if e_ref is not None:
+            vs_ref = f"{(energy - e_ref) * cfg.hartree_to_kcal_mol:>+13.3f} kc"
         print(f"  {method:<10} {energy:>17.8f} {vs_hf:>+13.6f} "
-              f"{vs_hf * cfg.hartree_to_kcal_mol:>+11.2f}  {tier:<20}")
+              f"{vs_hf * cfg.hartree_to_kcal_mol:>+11.2f} {vs_ref:>16}  "
+              f"{tier:<22}")
 
-    print(f"\n  'optimizer-dependent' values can differ between runs and "
+        # DMRG carries a second number worth seeing next to the first.
+        e_ext = data.get("extrapolated_energy")
+        if e_ext is not None:
+            gap = (data["energy"] - e_ext) * cfg.hartree_to_kcal_mol
+            print(f"  {'':<10} {e_ext:>17.8f}  extrapolated to zero discarded "
+                  f"weight (truncation ~ {gap:.3f} kcal/mol)")
+
+    if ref_name:
+        print(f"\n  Errors are against {ref_name}. 1 kcal/mol is the usual "
+              f"threshold for 'chemically accurate'.")
+    else:
+        print(f"\n  No exact reference in this run. Add --classical-methods "
+              f"CASCI (cheap, exact in step 1's active space) to get an error "
+              f"column, or FCI/DMRG for a reference that is exact in the basis.")
+    print(f"  'optimizer-dependent' values can differ between runs and "
           f"machines; see docs/limitations.md.")
     print(f"  Total time: {results['total_time']:.1f}s")
-    print(f"{'='*72}")
+    print(f"{'='*86}")

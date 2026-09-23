@@ -28,7 +28,7 @@ import os
 import sys
 
 __all__ = ["run_pipeline", "build_parser", "build_config", "build_asf_settings",
-           "build_las_settings"]
+           "build_las_settings", "build_ref_settings"]
 
 STEP_NAMES = {
     0: "Classical",
@@ -40,11 +40,12 @@ STEP_NAMES = {
 
 
 def build_parser():
-    from quenais.config import SOLVERS
+    from quenais.config import CLASSICAL_METHODS, SOLVERS
     from quenais.settings.asf import SELECTION_METHODS
     from quenais.settings.gqe import CUDAQ_SIMULATOR_TARGETS, DMET_POOL_SPECS
     from quenais.settings.las import LAS_BACKENDS, LUCJ_PAIRS
     from quenais.settings.qiskit_solver import ANSATZE, BACKENDS, MAPPINGS
+    from quenais.settings.reference import DMRG_REORDERINGS
 
     parser = argparse.ArgumentParser(
         prog="quenais-run",
@@ -125,14 +126,87 @@ def build_parser():
     # Note "CCSD_T", not "CCSD(T)" -- parentheses would need quoting.
     parser.add_argument(
         "--classical-methods", nargs="+", default=None,
-        choices=["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "NEVPT2"],
-        help="step 0 reference methods (default: HF MP2). CASSCF and "
-             "NEVPT2 reuse step 1's active space IF step 1 has already "
-             "run -- on a first pass they fall back to a guess and warn. "
-             "For meaningful values, run steps 0 1 2 first, then re-run "
-             "step 0 with --force. Both are labelled "
-             "'optimizer-dependent' in results_summary.csv: they are not "
-             "reproducible to tight tolerance across machines.",
+        choices=list(CLASSICAL_METHODS),
+        help="step 0 reference methods (default: HF MP2). CASSCF, NEVPT2, "
+             "CASCI and (by default) DMRG reuse step 1's active space IF "
+             "step 1 has already run -- on a first pass they fall back to a "
+             "guess and warn, or skip. For meaningful values, run steps 0 1 "
+             "first, then re-run step 0 with --force. CASSCF/NEVPT2 are "
+             "labelled 'optimizer-dependent' in results_summary.csv: not "
+             "reproducible to tight tolerance across machines. "
+             "CASCI/FCI/DMRG are the exact tier: CASCI is exact in step 1's "
+             "active space and is the reference every step-3 solver is "
+             "approximating, FCI is exact in the full basis, DMRG reaches "
+             "what FCI cannot. Use these, not CCSD_T, to benchmark "
+             "stretched bonds -- CCSD(T) is the method that breaks there.",
+    )
+
+    # ── Exact references (cfg.ref) ───────────────────────────────────────
+    ref_group = parser.add_argument_group(
+        "exact references",
+        "FCI / CASCI / DMRG settings. Only read when the matching method is "
+        "in --classical-methods.",
+    )
+    ref_group.add_argument(
+        "--fci-max-dets", type=int, default=None,
+        help="refuse a full-space FCI larger than this many determinants "
+             "(default 5000000). The check runs before the integral "
+             "transformation, so an impossible request costs a message "
+             "rather than a killed job.",
+    )
+    ref_group.add_argument(
+        "--fci-in-active-space", action="store_true",
+        help="run FCI inside step 1's active space instead of the full "
+             "basis. Makes it a synonym for CASCI; only useful when the "
+             "full space is out of reach.",
+    )
+    ref_group.add_argument(
+        "--casci-nroots", type=int, default=None,
+        help="CASCI roots (default 1). >1 shows excited states, which is "
+             "how you catch a curve where the solver tracked the wrong one.",
+    )
+    ref_group.add_argument(
+        "--dmrg-bond-dims", type=int, nargs="+", default=None,
+        help="DMRG bond dimensions, non-decreasing (default 250 500 1000). "
+             "Each is a stage restarted from the previous MPS, and the list "
+             "is also the extrapolation data -- three points minimum.",
+    )
+    ref_group.add_argument(
+        "--dmrg-sweeps", type=int, default=None,
+        help="sweeps per bond-dimension stage (default 8).",
+    )
+    ref_group.add_argument(
+        "--dmrg-full-space", action="store_true",
+        help="run DMRG in the full basis instead of step 1's active space. "
+             "The active space is the default because that is what the "
+             "step-3 solvers work in.",
+    )
+    ref_group.add_argument(
+        "--dmrg-no-extrapolate", action="store_true",
+        help="report only the largest-M energy, with no fit to zero "
+             "discarded weight.",
+    )
+    ref_group.add_argument(
+        "--dmrg-reorder", default=None, choices=list(DMRG_REORDERINGS),
+        help="orbital ordering before the MPO is built (default fiedler). "
+             "DMRG accuracy depends strongly on this.",
+    )
+    ref_group.add_argument(
+        "--dmrg-threads", type=int, default=None,
+        help="OpenMP threads for block2. 0 (default) leaves it to block2 "
+             "and OMP_NUM_THREADS, which is right under a scheduler that "
+             "already pinned cores.",
+    )
+    ref_group.add_argument(
+        "--dmrg-scratch", default=None,
+        help="scratch directory for the MPS (default: under results/). "
+             "Point this at node-local fast storage -- block2 writes every "
+             "renormalised operator to disk, and NFS turns a ten-minute run "
+             "into an hour.",
+    )
+    ref_group.add_argument(
+        "--dmrg-keep-scratch", action="store_true",
+        help="keep block2's scratch files after the run (GB-sized).",
     )
 
     # ── GQE solver (--solver gqe) ────────────────────────────────────────
@@ -266,6 +340,55 @@ def build_gqe_settings(args):
     return GqeSettings(**kwargs)
 
 
+def build_ref_settings(args):
+    """ReferenceSettings from the --fci-*/--casci-*/--dmrg-* flags."""
+    from quenais.settings import ReferenceSettings
+
+    kwargs = {}
+    simple = {
+        "fci_max_dets": "fci_max_dets",
+        "casci_nroots": "casci_nroots",
+        "dmrg_sweeps": "dmrg_sweeps_per_stage",
+        "dmrg_reorder": "dmrg_reorder",
+        "dmrg_threads": "dmrg_threads",
+        "dmrg_scratch": "dmrg_scratch",
+    }
+    for arg, field_name in simple.items():
+        value = getattr(args, arg, None)
+        if value is not None:
+            kwargs[field_name] = value
+
+    if getattr(args, "fci_in_active_space", False):
+        kwargs["fci_in_active_space"] = True
+    if getattr(args, "dmrg_full_space", False):
+        kwargs["dmrg_in_active_space"] = False
+    if getattr(args, "dmrg_no_extrapolate", False):
+        kwargs["dmrg_extrapolate"] = False
+    if getattr(args, "dmrg_keep_scratch", False):
+        kwargs["dmrg_keep_scratch"] = True
+
+    dims = getattr(args, "dmrg_bond_dims", None)
+    if dims:
+        # The noise and Davidson schedules are per stage, so changing the
+        # number of bond dimensions without rebuilding them would fail
+        # validation with a length mismatch the user did not cause. Noise
+        # must end at exactly zero; the ramp below is the usual shape.
+        n = len(dims)
+        kwargs["dmrg_bond_dims"] = tuple(dims)
+        if n == 1:
+            noises = (0.0,)
+        else:
+            noises = tuple([1e-4] * (n - 2) + [1e-5, 0.0])
+        kwargs["dmrg_noises"] = noises
+        kwargs["dmrg_thrds"] = tuple(
+            max(1e-12, 1e-8 / (10 ** i)) for i in range(n)
+        )
+        if n < 3:
+            kwargs["dmrg_extrapolate"] = False
+
+    return ReferenceSettings(**kwargs)
+
+
 def build_las_settings(args):
     """LasSettings from the --las-*/--lassqd-* flags; unset flags keep defaults."""
     from quenais.settings import LasSettings
@@ -338,6 +461,7 @@ def build_config(args):
         xyz=args.xyz,
         # None lets Config apply its own ["HF", "MP2"] default.
         classical_methods=args.classical_methods,
+        ref=build_ref_settings(args),
         asf=build_asf_settings(args),
         dmet=DmetSettings(reference=args.dmet_reference),
         qiskit=QiskitSolverSettings(

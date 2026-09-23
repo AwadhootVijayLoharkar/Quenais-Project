@@ -24,6 +24,7 @@ from quenais.settings import (
     GqeSettings,
     LasSettings,
     QiskitSolverSettings,
+    ReferenceSettings,
     TierSettings,
 )
 from quenais.utils.cif_parser import load_geometry as _load_geometry
@@ -35,7 +36,8 @@ from quenais.utils.geometry import (
 )
 
 __all__ = ["Config", "SOLVERS", "QISKIT_SOLVERS", "GQE_SOLVERS",
-           "SOLVER_ALIASES", "BUILTIN_GEOMETRIES"]
+           "SOLVER_ALIASES", "BUILTIN_GEOMETRIES", "CLASSICAL_METHODS",
+           "EXACT_METHODS"]
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -64,6 +66,30 @@ SOLVERS = QISKIT_SOLVERS + GQE_SOLVERS + LAS_SOLVERS
 #: Deprecated spellings, accepted with a warning. "gqe_qsci" was the name
 #: used in the test_8 scripts.
 SOLVER_ALIASES = {"gqe_qsci": "gqe"}
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# Step-0 reference methods -- the single source of truth, same principle as
+# the solver registry above. The CLI's --classical-methods choices and
+# Config.validate() both read this, so a method cannot be accepted in one
+# place and rejected in the other.
+# ─────────────────────────────────────────────────────────────────────────
+
+#: Single-reference and perturbative references. Accurate near equilibrium,
+#: unreliable at stretched geometries and on multireference systems -- which
+#: is where this package is aimed, hence the exact tier below.
+APPROXIMATE_METHODS = ("HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "NEVPT2")
+
+#: Exact and near-exact references (quenais.classical.references).
+#:
+#: "CASCI" is exact inside step 1's active space at step 1's orbitals, so it
+#: is the number every step-3 solver is approximating -- the comparison that
+#: isolates solver error. "FCI" is exact in the full basis and also tests the
+#: active-space choice. "DMRG" reaches systems FCI cannot, through block2.
+EXACT_METHODS = ("CASCI", "FCI", "DMRG")
+
+#: Everything selectable via classical_methods.
+CLASSICAL_METHODS = APPROXIMATE_METHODS + EXACT_METHODS
 
 
 HARTREE_TO_EV = 27.211386245988          # NIST 2018 CODATA
@@ -103,6 +129,7 @@ class Config:
         qiskit=None,
         gqe=None,
         las=None,
+        ref=None,
         tiers=None,
         # ── External tools ───────────────────────────────────────────────
         blockexe_wrapper=None,
@@ -145,6 +172,7 @@ class Config:
         self.qiskit = qiskit if qiskit is not None else QiskitSolverSettings()
         self.gqe = gqe if gqe is not None else GqeSettings()
         self.las = las if las is not None else LasSettings()
+        self.ref = ref if ref is not None else ReferenceSettings()
         self.tiers = tiers if tiers is not None else TierSettings()
 
         # External tools
@@ -349,10 +377,22 @@ class Config:
             )
         if not self.classical_methods:
             raise ValueError("classical_methods must not be empty")
+        unknown = [m for m in self.classical_methods
+                   if m not in CLASSICAL_METHODS]
+        if unknown:
+            raise ValueError(
+                f"Unknown classical method(s) {unknown}. Choose from "
+                f"{CLASSICAL_METHODS}. (Note CCSD_T, not 'CCSD(T)' -- "
+                f"parentheses would need shell quoting.)"
+            )
 
         self.asf.validate()
         self.dmet.validate()
         self.tiers.validate()
+        # Cheap and always relevant: the exact references are selected per
+        # run, but a malformed DMRG schedule should fail before step 0 spends
+        # an hour on CCSD rather than after it.
+        self.ref.validate()
         # Only validate the stack actually selected, so a Qiskit-only user is
         # never blocked by a GQE setting they have not touched.
         if self.is_qiskit:

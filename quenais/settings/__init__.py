@@ -24,6 +24,7 @@ from quenais.settings.qiskit_solver import (
     MAPPINGS,
     QiskitSolverSettings,
 )
+from quenais.settings.reference import DMRG_REORDERINGS, ReferenceSettings
 from quenais.settings.tiering import TM_ELEMENTS, TierSettings
 
 __all__ = [
@@ -32,6 +33,7 @@ __all__ = [
     "GqeSettings",
     "LasSettings",
     "QiskitSolverSettings",
+    "ReferenceSettings",
     "TierSettings",
     "DEFAULT_ASF_PARAMS",
     "REFERENCE_METHODS",
@@ -44,4 +46,5 @@ __all__ = [
     "TM_ELEMENTS",
     "LAS_BACKENDS",
     "LUCJ_PAIRS",
+    "DMRG_REORDERINGS",
 ]
