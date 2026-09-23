@@ -1,11 +1,10 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ls -a $VIRTUAL_ENV/lib/python3.11/site-packages/block2.libs
-ls: cannot access '/lib/python3.11/site-packages/block2.libs': No such file or directory
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ls -a $CONDA_PREFIX/lib/python3.11/site-packages/block2.libs
-.  ..  libgomp-a34b3233.so.1.0.0  libmkl_avx2.so.1  libmkl_avx512.so.1  libmkl_core-a1f8e95a.so.1  libmkl_gnu_thread-76126a9d.so.1  libmkl_intel_lp64-eeafede9.so.1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ lscpu | grep -i "model name\|^Flags" | cut -c1-200
-Model name:                              AMD EPYC 7402 24-Core Processor
-Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ MKL_ENABLE_INSTRUCTIONS=AVX2 python tools/diagnose_block2.py ; echo "exit=$?"
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ cd $CONDA_PREFIX/lib/python3.11/site-packages/block2.libs/
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:block2.libs]$ ln -s libmkl_avx2.so.1 libmkl_def.so.1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:block2.libs]$ ls -l libmkl_def.so.1
+lrwxr-xr-x 1 loharkar itwm-guest 16 Sep 23 17:58 libmkl_def.so.1 -> libmkl_avx2.so.1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:block2.libs]$ cd -
+/home/loharkar/quenais-standalone/Quenais-Project
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/diagnose_block2.py ; echo "exit=$?"
 python      : 3.11.15
 OMP_NUM_THREADS = (unset)
 MKL_NUM_THREADS = (unset)
@@ -14,23 +13,9 @@ import order: pyscf first
 [2] import pyscf and run RHF on H4 ... ok (E_RHF = -2.12741980)
 [3] import pyblock2.driver.core ... ok
 [4] build the active-space Hamiltonian with PySCF ... ok (ecore = 1.94314324, h1e (4, 4), g2e (4, 4, 4, 4))
-[5] construct DMRGDriver (scratch /tmp/block2_diag_np3jyhzc) ... ok
+[5] construct DMRGDriver (scratch /tmp/block2_diag_rxfeo1t3) ... ok
 [6] initialize_system(n_sites=4, n_elec=4, spin=0) ... ok
-[7] get_qc_mpo (reorder=fiedler) ... INTEL MKL ERROR: /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/block2.libs/libmkl_def.so.1: cannot open shared object file: No such file or directory.
-Intel MKL FATAL ERROR: Cannot load libmkl_def.so.1.
-exit=2
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ MKL_DEBUG_CPU_TYPE=5 python tools/diagnose_block2.py ; echo "exit=$?"
-python      : 3.11.15
-OMP_NUM_THREADS = (unset)
-MKL_NUM_THREADS = (unset)
-import order: pyscf first
-
-[2] import pyscf and run RHF on H4 ... ok (E_RHF = -2.12741980)
-[3] import pyblock2.driver.core ... ok
-[4] build the active-space Hamiltonian with PySCF ... ok (ecore = 1.94314324, h1e (4, 4), g2e (4, 4, 4, 4))
-[5] construct DMRGDriver (scratch /tmp/block2_diag_wbnncsuk) ... ok
-[6] initialize_system(n_sites=4, n_elec=4, spin=0) ... ok
-[7] get_qc_mpo (reorder=fiedler) ... INTEL MKL ERROR: /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/block2.libs/libmkl_def.so.1: cannot open shared object file: No such file or directory.
-Intel MKL FATAL ERROR: Cannot load libmkl_def.so.1.
-exit=2
+[7] get_qc_mpo (reorder=fiedler) ... 
+Intel MKL WARNING: Library libmkl_def.so.1 (MKL type 5) is not suitable for this processor (MKL type 0).
+exit=1
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
