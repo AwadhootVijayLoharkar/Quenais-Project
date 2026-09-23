@@ -205,9 +205,13 @@ def test_dmrg_matches_fci_on_a_full_active_space(tmp_path):
     dimension is exact. This pins the PySCF -> block2 integral handoff,
     not the DMRG algorithm.
 
-    Marked slow AND needs_block2: block2 is a C++ extension that can take
-    the interpreter down with it, and a crash there must not be able to
-    kill an otherwise healthy `pytest -m "not slow"` run.
+    Opt-in only. block2 is a C++ extension that can take the interpreter
+    down with it, and a crash there kills the whole pytest process -- no
+    summary, no traceback, every other result in the run lost. conftest
+    skips this unless QUENAIS_TEST_BLOCK2=1, so running it is a deliberate
+    act rather than something a plain `pytest` stumbles into:
+
+        QUENAIS_TEST_BLOCK2=1 pytest -m needs_block2
     """
     pytest.importorskip("pyblock2")
 

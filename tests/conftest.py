@@ -14,6 +14,7 @@ Nothing may be imported above it.
 
 import quenais  # noqa: F401  isort:skip
 
+import os
 import sys
 from pathlib import Path
 
@@ -39,6 +40,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "needs_cudaq: requires the [cudaq] extra and a patched submodule"
     )
+    config.addinivalue_line(
+        "markers",
+        "needs_block2: runs block2; opt in with QUENAIS_TEST_BLOCK2=1"
+    )
 
 
 def _have(name):
@@ -61,6 +66,24 @@ def pytest_collection_modifyitems(config, items):
         for marker, (dist, present) in missing.items():
             if marker in item.keywords and not present:
                 item.add_marker(pytest.mark.skip(reason=f"{dist} not installed"))
+
+        # block2 is the opposite case, and the inversion is the point.
+        #
+        # For every marker above, "installed" means "safe to test". block2 is
+        # a C++ extension that can abort the interpreter -- on erebos03 it
+        # kills the process outright -- so INSTALLED is exactly when it is
+        # dangerous. A skip-if-missing rule gives no protection where it
+        # matters, and a crash takes the whole pytest process with it: no
+        # summary, no traceback, every other result in that run lost.
+        #
+        # So these tests are opt-in. Running them is a deliberate act:
+        #     QUENAIS_TEST_BLOCK2=1 pytest -m needs_block2
+        if ("needs_block2" in item.keywords
+                and os.environ.get("QUENAIS_TEST_BLOCK2") != "1"):
+            item.add_marker(pytest.mark.skip(
+                reason="block2 can abort the interpreter; "
+                       "set QUENAIS_TEST_BLOCK2=1 to run"
+            ))
 
 
 @pytest.fixture(scope="session")
