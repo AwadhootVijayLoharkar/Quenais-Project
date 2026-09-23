@@ -274,9 +274,19 @@ def main(cfg, force=False):
     # fixed filename shared across molecules, so a plain exists() check
     # silently reuses the previous system's results.
     if cfg.cached_result_is_current(cfg.step0_file) and not force:
-        print(f"[Step 0] Using cached result: {cfg.step0_file}")
         with open(cfg.step0_file, "rb") as fh:
-            return pickle.load(fh)
+            cached = pickle.load(fh)
+        # A checkpoint left behind by a DMRG run that never came back is
+        # a valid pickle for this molecule, so the content check passes and
+        # the cache would be reused forever -- silently never retrying the
+        # method that crashed. Treat it as stale when DMRG is wanted again.
+        if cached.get("dmrg_in_progress") and "DMRG" in cfg.classical_methods:
+            print(f"[Step 0] Cached result is a checkpoint from a DMRG run "
+                  f"that did not finish (block2 most likely aborted the "
+                  f"process). Recomputing.")
+        else:
+            print(f"[Step 0] Using cached result: {cfg.step0_file}")
+            return cached
 
     print(f"\n{'='*60}")
     print(f"[Step 0] Classical Methods -- {cfg.molecule}")
@@ -383,10 +393,28 @@ def main(cfg, force=False):
             }
 
         if "DMRG" in wanted:
+            # Checkpoint BEFORE block2 runs.
+            #
+            # block2 is a C++ extension. When it dies -- a failed
+            # allocation, an OpenMP runtime clash with PySCF's MKL, an
+            # assertion in the sweep -- it takes the interpreter with it,
+            # and no Python exception handler gets a turn. Everything
+            # computed so far would be lost with it, which on a real
+            # system is hours of CCSD and CASSCF.
+            #
+            # So the pickle is written here, marked incomplete, and
+            # rewritten below if DMRG returns. A crashed run then leaves a
+            # usable step 0 that says DMRG never finished.
+            results["dmrg_in_progress"] = True
+            _save(cfg, results, quiet=True)
+            print("  Checkpoint written before DMRG (block2 can abort the "
+                  "process; the rest of step 0 is already safe).")
+
             e_dmrg, info = run_dmrg(mol, mf_ref, active, cfg.ref, cfg.results_dir)
             results["methods"]["DMRG"] = {
                 "energy": e_dmrg, "success": e_dmrg is not None, **info,
             }
+            results["dmrg_in_progress"] = False
 
     # Tag each method with its reproducibility class.
     for name, data in results["methods"].items():
@@ -397,10 +425,24 @@ def main(cfg, force=False):
 
     _print_table(cfg, results, e_hf)
 
+    _save(cfg, results)
+    return results
+
+
+def _save(cfg, results, quiet=False):
+    """
+    Write the step-0 pickle.
+
+    Called twice when DMRG is requested: once as a checkpoint before
+    block2 gets control, once at the end. A partial write is completed by
+    the second call, and a process killed in between leaves a valid
+    pickle carrying dmrg_in_progress=True.
+    """
+    results.setdefault("provenance", cfg.provenance())
     with open(cfg.step0_file, "wb") as fh:
         pickle.dump(results, fh)
-    print(f"\n[Step 0] Saved -> {cfg.step0_file}")
-    return results
+    if not quiet:
+        print(f"\n[Step 0] Saved -> {cfg.step0_file}")
 
 
 def best_reference(methods):

@@ -174,29 +174,48 @@ def _small_dmrg_settings():
                              dmrg_sweeps_per_stage=4)
 
 
-def test_dmrg_reports_a_clean_skip_without_block2(tmp_path):
+def test_dmrg_reports_a_clean_skip_without_block2(tmp_path, monkeypatch):
     """
-    Installed or not, a DMRG request must never take down a step-0 run
-    that has already paid for CCSD. Either it returns an energy, or it
-    says why it could not.
+    A missing block2 must be reported, not raised.
+
+    The skip path is forced by poisoning the import rather than by
+    checking whether block2 happens to be installed. An environment-
+    dependent branch means the assertion that actually runs differs
+    between machines, so the case you care about is the one that never
+    gets tested -- and on a machine WITH block2 this test would quietly
+    become a live DMRG run inside the unit suite.
     """
+    import sys
+
+    monkeypatch.setitem(sys.modules, "pyblock2.driver.core", None)
+
     mol, mf = _h4()
-    settings = _small_dmrg_settings()
+    with pytest.warns(RuntimeWarning, match="block2 is not importable"):
+        e, info = run_dmrg(mol, mf, (4, 4, None), _small_dmrg_settings(),
+                           str(tmp_path))
+    assert e is None
+    assert info["skipped"] == "block2 not installed"
 
-    try:
-        import pyblock2  # noqa: F401
-    except ImportError:
-        with pytest.warns(RuntimeWarning, match="block2 is not importable"):
-            e, info = run_dmrg(mol, mf, (4, 4, None), settings, str(tmp_path))
-        assert e is None
-        assert info["skipped"] == "block2 not installed"
-        return
 
-    e, info = run_dmrg(mol, mf, (4, 4, None), settings, str(tmp_path))
+@pytest.mark.slow
+@pytest.mark.needs_block2
+def test_dmrg_matches_fci_on_a_full_active_space(tmp_path):
+    """
+    (4e,4o) is the whole basis for H4/STO-3G, so DMRG at any usable bond
+    dimension is exact. This pins the PySCF -> block2 integral handoff,
+    not the DMRG algorithm.
+
+    Marked slow AND needs_block2: block2 is a C++ extension that can take
+    the interpreter down with it, and a crash there must not be able to
+    kill an otherwise healthy `pytest -m "not slow"` run.
+    """
+    pytest.importorskip("pyblock2")
+
+    mol, mf = _h4()
+    e, info = run_dmrg(mol, mf, (4, 4, None), _small_dmrg_settings(),
+                       str(tmp_path))
     assert e is not None, info
     e_fci, _ = run_fci(mol, mf, ReferenceSettings())
-    # (4e,4o) is the whole basis, so DMRG at any usable bond dimension is
-    # exact here. This pins the integral handoff, not the DMRG algorithm.
     assert abs(e - e_fci) < 1e-6, (e, e_fci)
     assert [s["bond_dim"] for s in info["stages"]] == [50, 100, 200]
     # Variational: every stage sits above the exact answer.
