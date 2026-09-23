@@ -1,33 +1,11 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-remote: Enumerating objects: 14, done.
-remote: Counting objects: 100% (14/14), done.
-remote: Compressing objects: 100% (2/2), done.
-remote: Total 8 (delta 6), reused 8 (delta 6), pack-reused 0 (from 0)
-Unpacking objects: 100% (8/8), 2.76 KiB | 39.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   bde690a..a2f4949  references -> origin/references
-Updating bde690a..a2f4949
-Fast-forward
- setup.cfg                      |  3 +--
- tests/conftest.py              | 23 +++++++++++++++++++++++
- tests/test_references_pyscf.py | 10 +++++++---
- tools/diagnose_block2.py       | 96 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 127 insertions(+), 5 deletions(-)
- create mode 100644 tools/diagnose_block2.py
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q
-.................................................................................................................................................................................................... [ 49%]
-..................................................ss...............................................................s................................................................................ [ 99%]
-.                                                                                                                                                                                                    [100%]
-============================================================================================= warnings summary =============================================================================================
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
-  /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
-    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-390 passed, 3 skipped, 3 warnings in 158.14s (0:02:38)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/diagnose_block2.py ; echo "exit=$?"
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ls -a $VIRTUAL_ENV/lib/python3.11/site-packages/block2.libs
+ls: cannot access '/lib/python3.11/site-packages/block2.libs': No such file or directory
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ls -a $CONDA_PREFIX/lib/python3.11/site-packages/block2.libs
+.  ..  libgomp-a34b3233.so.1.0.0  libmkl_avx2.so.1  libmkl_avx512.so.1  libmkl_core-a1f8e95a.so.1  libmkl_gnu_thread-76126a9d.so.1  libmkl_intel_lp64-eeafede9.so.1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ lscpu | grep -i "model name\|^Flags" | cut -c1-200
+Model name:                              AMD EPYC 7402 24-Core Processor
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ MKL_ENABLE_INSTRUCTIONS=AVX2 python tools/diagnose_block2.py ; echo "exit=$?"
 python      : 3.11.15
 OMP_NUM_THREADS = (unset)
 MKL_NUM_THREADS = (unset)
@@ -36,35 +14,21 @@ import order: pyscf first
 [2] import pyscf and run RHF on H4 ... ok (E_RHF = -2.12741980)
 [3] import pyblock2.driver.core ... ok
 [4] build the active-space Hamiltonian with PySCF ... ok (ecore = 1.94314324, h1e (4, 4), g2e (4, 4, 4, 4))
-[5] construct DMRGDriver (scratch /tmp/block2_diag_6xsh_k9m) ... ok
+[5] construct DMRGDriver (scratch /tmp/block2_diag_np3jyhzc) ... ok
 [6] initialize_system(n_sites=4, n_elec=4, spin=0) ... ok
 [7] get_qc_mpo (reorder=fiedler) ... INTEL MKL ERROR: /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/block2.libs/libmkl_def.so.1: cannot open shared object file: No such file or directory.
 Intel MKL FATAL ERROR: Cannot load libmkl_def.so.1.
 exit=2
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/diagnose_block2.py --first ; echo "exit=$?"
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ MKL_DEBUG_CPU_TYPE=5 python tools/diagnose_block2.py ; echo "exit=$?"
 python      : 3.11.15
 OMP_NUM_THREADS = (unset)
-MKL_NUM_THREADS = (unset)
-import order: block2 first
-
-[1] import pyblock2.driver.core ... ok
-[2] import pyscf and run RHF on H4 ... ok (E_RHF = -2.12741980)
-[4] build the active-space Hamiltonian with PySCF ... ok (ecore = 1.94314324, h1e (4, 4), g2e (4, 4, 4, 4))
-[5] construct DMRGDriver (scratch /tmp/block2_diag_yprmulql) ... ok
-[6] initialize_system(n_sites=4, n_elec=4, spin=0) ... ok
-[7] get_qc_mpo (reorder=fiedler) ... INTEL MKL ERROR: /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/block2.libs/libmkl_def.so.1: cannot open shared object file: No such file or directory.
-Intel MKL FATAL ERROR: Cannot load libmkl_def.so.1.
-exit=2
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ OMP_NUM_THREADS=1 python tools/diagnose_block2.py ; echo "exit=$?"
-python      : 3.11.15
-OMP_NUM_THREADS = 1
 MKL_NUM_THREADS = (unset)
 import order: pyscf first
 
 [2] import pyscf and run RHF on H4 ... ok (E_RHF = -2.12741980)
 [3] import pyblock2.driver.core ... ok
 [4] build the active-space Hamiltonian with PySCF ... ok (ecore = 1.94314324, h1e (4, 4), g2e (4, 4, 4, 4))
-[5] construct DMRGDriver (scratch /tmp/block2_diag_y_b0unfm) ... ok
+[5] construct DMRGDriver (scratch /tmp/block2_diag_wbnncsuk) ... ok
 [6] initialize_system(n_sites=4, n_elec=4, spin=0) ... ok
 [7] get_qc_mpo (reorder=fiedler) ... INTEL MKL ERROR: /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/block2.libs/libmkl_def.so.1: cannot open shared object file: No such file or directory.
 Intel MKL FATAL ERROR: Cannot load libmkl_def.so.1.
