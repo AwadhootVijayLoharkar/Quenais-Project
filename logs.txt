@@ -1,16 +1,13 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-remote: Enumerating objects: 15, done.
-remote: Counting objects: 100% (15/15), done.
-remote: Compressing objects: 100% (1/1), done.
-remote: Total 8 (delta 7), reused 8 (delta 7), pack-reused 0 (from 0)
-Unpacking objects: 100% (8/8), 2.43 KiB | 40.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   57eee9b..d626dc4  references -> origin/references
-Updating 57eee9b..d626dc4
-Fast-forward
- quenais/classical/runner.py    | 50 ++++++++++++++++++++++++++++++++++++++++++++++----
- setup.cfg                      |  5 ++++-
- tests/test_references_pyscf.py | 55 +++++++++++++++++++++++++++++++++++++------------------
- 3 files changed, 87 insertions(+), 23 deletions(-)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_references.py tests/test_references_pyscf.py 
-............................................(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q -m "not slow"
+.................................................................................................................................................................................................... [ 53%]
+.............................ss.............................................................................................................................................                         [100%]
+============================================================================================= warnings summary =============================================================================================
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
+  /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
+    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+366 passed, 2 skipped, 25 deselected, 3 warnings in 126.15s (0:02:06)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
