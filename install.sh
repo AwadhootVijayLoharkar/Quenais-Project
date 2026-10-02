@@ -37,6 +37,12 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_ROOT"
 
+TOTAL_CORES=$(nproc)
+MAKEFLAGS=$(( TOTAL_CORES / 2 ))
+if [[ "$MAKEFLAGS" -lt 1 ]]; then
+    MAKEFLAGS=1
+fi
+
 TOTAL=16
 step() { printf '\n[%02d/%02d] %s\n' "$1" "$TOTAL" "$2"; }
 ok()   { printf '   ok  %s\n' "$1"; }
@@ -76,7 +82,7 @@ echo "    repo: $REPO_ROOT"
 # ─────────────────────────────────────────────────────────────────────────
 step 1 "Checking system requirements"
 
-for cmd in python pip git make; do
+for cmd in python uv pip git make; do
     command -v "$cmd" >/dev/null || die "$cmd not found"
 done
 command -v cargo >/dev/null || die "cargo (Rust) not found.
@@ -106,18 +112,18 @@ step 2 "Pinning setuptools <82"
 # setuptools >=82.0.0 (Feb 2026) removed pkg_resources outright. tequila and
 # several other deps still import it, so the pin has to land BEFORE anything
 # that would pull a newer setuptools in.
-pip install "setuptools<82" wheel
+uv pip install "setuptools<82" wheel
 ok "setuptools $(python -c 'import setuptools; print(setuptools.__version__)')"
 
 # ─────────────────────────────────────────────────────────────────────────
 step 3 "Installing base dependencies"
 # numpy/scipy must exist before pyscf or block2 compile against them.
-pip install -r requirements-base.txt
+uv pip install -r requirements-base.txt
 ok "base"
 
 # ─────────────────────────────────────────────────────────────────────────
 step 4 "Installing quantum dependencies"
-pip install -r requirements-quantum.txt
+uv pip install -r requirements-quantum.txt
 ok "quantum"
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -165,7 +171,7 @@ ASF_TMP=$(mktemp -d)
 QF_TMP=""
 trap 'rm -rf "${ASF_TMP:-}" "${QF_TMP:-}"' EXIT
 git clone --depth 1 https://github.com/HQSquantumsimulations/ActiveSpaceFinder.git "$ASF_TMP"
-pip install "$ASF_TMP"
+uv pip install "$ASF_TMP"
 "$ASF_TMP/init_dmrgscf_settings.sh"
 ok "asf"
 
@@ -174,8 +180,8 @@ step 7 "Installing qiskit-fermions (Rust build)"
 QF_TMP=$(mktemp -d)
 ( cd "$QF_TMP" \
   && git clone --depth 1 https://github.com/Qiskit/qiskit-fermions.git . \
-  && pip install --group build \
-  && pip install --no-build-isolation . )
+  && uv pip install --group build \
+  && uv pip install --no-build-isolation . )
 ok "qiskit-fermions"
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -205,13 +211,13 @@ ok "submodules present"
 step 9 "Building theochem/pyci from source"
 # theochem/pyci has no usable wheel and is not the PyPI package of the same
 # name. It must be compiled here.
-( cd external/pyci && make && pip install --no-deps . )
+( cd external/pyci && make && uv pip install --no-deps . )
 python -c "import pyci; print('   pyci ->', getattr(pyci, '__file__', '?'))"
 ok "pyci"
 
 # ─────────────────────────────────────────────────────────────────────────
 step 10 "Installing quenais (all extras)"
-pip install -e ".[all]"
+uv pip install -e ".[all]"
 ok "quenais"
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -220,7 +226,7 @@ step 11 "Installing gqe-for-qsci"
 # downgrade the 2.4.x this pipeline needs for qiskit-fermions and
 # qiskit-ibm-runtime. Verified upstream never imports qiskit -- the pin is
 # dead.
-pip install --no-deps -e ./gqe-for-qsci
+uv pip install --no-deps -e ./gqe-for-qsci
 
 # But --no-deps means NONE of its dependency list gets installed either,
 # and the first version of this script leaned on quenais's [cudaq] extra,
@@ -286,7 +292,7 @@ pathlib.Path(sys.argv[1]).write_text("\n".join(install) + "\n")
 PY
 
 if [ -s "$GQE_REQS" ]; then
-    pip install -r "$GQE_REQS"
+    uv pip install -r "$GQE_REQS"
 else
     echo "   nothing missing"
 fi
@@ -319,7 +325,7 @@ if [ -f "$MPI_ACTIVATE" ]; then
     ok "cudaq MPI plugin built"
 else
     die "CUDA-Q's distributed_interfaces/ was not found under $SITE_PACKAGES.
-  cudaq is installed but incomplete -- reinstall it: pip install -U cudaq"
+  cudaq is installed but incomplete -- reinstall it: uv pip install -U cudaq"
 fi
 
 # Persist, so they survive future activations. A bare export does not.
@@ -395,9 +401,10 @@ if [ "$PYSCF_BUILD" = "source" ]; then
     echo "   building pyscf from source (allow 20-60 minutes)"
     # --no-deps so nothing else in the env is disturbed. Safe alongside
     # pyscf-dmrgscf / openfermionpyscf: neither pins pyscf tightly.
-    pip install "pyscf>=2.12" --no-binary pyscf --force-reinstall --no-deps
+    # export MAKEFLAGS
+    CMAKE_BUILD_PARALLEL_LEVEL=$MAKEFLAGS uv pip install "pyscf>=2.12" --no-binary pyscf --force-reinstall --no-deps
 else
-    pip install "pyscf>=2.12"
+    uv pip install "pyscf>=2.12"
 fi
 python -c "from pyscf import gto, scf; m = gto.M(atom='H 0 0 0; H 0 0 0.74', basis='sto-3g', verbose=0); scf.RHF(m).run()" >/dev/null \
   || die "PySCF crashed on a trivial H2 SCF. If this was 'Illegal instruction',

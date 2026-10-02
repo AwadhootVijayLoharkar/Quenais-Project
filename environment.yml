@@ -31,6 +31,7 @@ dependencies:
   # holds from the moment the env exists.
   - pip
   - setuptools<82
+  - uv
 
   # Toolchain: PySCF and block2 compile C/Fortran extensions, theochem/pyci
   # compiles C++, ffsim and qiskit-fermions compile Rust.
