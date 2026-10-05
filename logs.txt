@@ -1,4 +1,4 @@
-B=/home/loharkar/quenais-standalone/benchmark_results
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ B=/home/loharkar/quenais-standalone/benchmark_results
 cat > benchmarks/h8_lucj_opt.json <<'EOF'
 {
   "name": "h8_lucj_opt",
@@ -14,10 +14,86 @@ cat > benchmarks/h8_lucj_opt.json <<'EOF'
 }
 EOF
 python tools/run_benchmark.py benchmarks/h8_lucj_opt.json --out $B/h8_smoke --dry-run
+[benchmark] h8_lucj_opt: 6 runs over 1 system(s); this shard: 6  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+  58a24bd6ed7f  sys=a669e73b20a8  lassqd  shots=1000    seed=1    
+  e22fc31c00ff  sys=a669e73b20a8  lassqd  shots=1000    seed=2    
+  c25993d5db59  sys=a669e73b20a8  lassqd  shots=1000    seed=3    
+  449835098a6e  sys=a669e73b20a8  lassqd  shots=10000   seed=1    
+  29bd3030b004  sys=a669e73b20a8  lassqd  shots=10000   seed=2    
+  abb700d10dbb  sys=a669e73b20a8  lassqd  shots=10000   seed=3    
 
+  first run reproduces with:
+  quenais-run --active-space-method avas --avas-ao-labels 'H 1s' --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASCI FCI --geometry 'H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0' --las-fragments 0+1:2:1,1 2+3:2:1,1 4+5:2:1,1 6+7:2:1,1 --lassqd-carryover-eps 1e-05 --lassqd-lucj-optimize --lassqd-seed 1 --lassqd-shots 1000 --molecule H8 --solver lassqd --steps 1 && quenais-run --active-space-method avas --avas-ao-labels 'H 1s' --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASCI FCI --geometry 'H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0' --las-fragments 0+1:2:1,1 2+3:2:1,1 4+5:2:1,1 6+7:2:1,1 --lassqd-carryover-eps 1e-05 --lassqd-lucj-optimize --lassqd-seed 1 --lassqd-shots 1000 --molecule H8 --solver lassqd --steps 0 3
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ python tools/run_benchmark.py benchmarks/h8_lucj_opt.json
+ --out $B/h8_smoke
+[benchmark] h8_lucj_opt: 6 runs over 1 system(s); this shard: 6  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+[1/6] 58a24bd6ed7f lassqd  shots=1000 seed=1  ok   58.1 s  E=-4.26201230  err_solver=- kcal/mol  subspace=1.0
+[2/6] e22fc31c00ff lassqd  shots=1000 seed=2  ok   58.6 s  E=-4.26201230  err_solver=- kcal/mol  subspace=1.0
+[3/6] c25993d5db59 lassqd  shots=1000 seed=3  ok   57.8 s  E=-4.26201230  err_solver=- kcal/mol  subspace=1.0
+[4/6] 449835098a6e lassqd  shots=10000 seed=1  ok   60.1 s  E=-4.26201230  err_solver=- kcal/mol  subspace=1.0
+[5/6] 29bd3030b004 lassqd  shots=10000 seed=2  ok   59.6 s  E=-4.26201230  err_solver=- kcal/mol  subspace=1.0
+[6/6] abb700d10dbb lassqd  shots=10000 seed=3  ok   59.9 s  E=-4.26201230  err_solver=- kcal/mol  subspace=1.0
+[collect] 25 runs (25 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results.csv
+[collect] 9 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results_agg.csv
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ python tools/run_benchmark.py --out $B/h8_smoke --check
+[collect] 25 runs (25 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results.csv
+[collect] 9 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results_agg.csv
 
+== 1. Required columns ==
+  lasscf     1 rows  PASS
+  lassqd    12 rows  PASS
+  skqd       6 rows  PASS
+  sqd        6 rows  PASS
 
-python tools/run_benchmark.py benchmarks/h8_lucj_opt.json --out $B/h8_smoke
+== 2. Sanity ==
 
+== 3. Seed repeats ==
+  lassqd   shots=1000    seeds=[1, 2, 3]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
+  lassqd   shots=1000    seeds=[1, 2, 3]  spread=1.87e+01 kcal/mol  subspace=0.250-0.250
+  lassqd   shots=10000   seeds=[1, 2, 3]  spread=1.38e+01 kcal/mol  subspace=0.250-1.000
+  lassqd   shots=10000   seeds=[1, 2, 3]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
+  skqd     shots=1000    seeds=[1, 2, 3]  spread=4.63e-01 kcal/mol  subspace=0.310-0.360
+  skqd     shots=10000   seeds=[1, 2, 3]  spread=6.16e-01 kcal/mol  subspace=0.413-0.490
+  sqd      shots=1000    seeds=[1, 2, 3]  spread=3.15e+00 kcal/mol  subspace=0.552-0.687
+  sqd      shots=10000   seeds=[1, 2, 3]  spread=4.82e+00 kcal/mol  subspace=0.916-1.000
 
-python tools/run_benchmark.py --out $B/h8_smoke --check
+== 4. Summary (mean +- std over seeds) ==
+  solver      shots   n    err_solver kcal/mol   err_vs_best kcal/mol  subspace   t3 (s)
+  lasscf          -   1                      -     +28.5888 +- 0.0000         -     44.6
+  lassqd       1000   3      +0.0001 +- 0.0000     +28.5889 +- 0.0000     1.000     56.6
+  lassqd       1000   3    +42.5441 +- 10.7842    +71.1329 +- 10.7842     0.250     31.2
+  lassqd      10000   3      +7.4174 +- 6.9545     +36.0062 +- 6.9545     0.500     47.6
+  lassqd      10000   3      +0.0001 +- 0.0000     +28.5889 +- 0.0000     1.000     58.3
+  skqd         1000   3      +1.7868 +- 0.2382      +1.7868 +- 0.2382     0.332   1468.3
+  skqd        10000   3      +0.9985 +- 0.3350      +0.9985 +- 0.3350     0.458   1471.0
+  sqd          1000   3     +17.5700 +- 1.5994     +17.5700 +- 1.5994     0.597      7.4
+  sqd         10000   3      +1.6282 +- 2.7670      +1.6282 +- 2.7670     0.963      7.8
+
+== Result ==
+  note: 091608e2e059 sqd: git tree was dirty when this ran
+  note: 0b2f133585e3 lassqd: git tree was dirty when this ran
+  note: 226e03b411b4 sqd: git tree was dirty when this ran
+  note: 29bd3030b004 lassqd: git tree was dirty when this ran
+  note: 3e90e9db4be4 skqd: git tree was dirty when this ran
+  note: 449835098a6e lassqd: git tree was dirty when this ran
+  note: 58a24bd6ed7f lassqd: git tree was dirty when this ran
+  note: 5aa99bd35e06 sqd: git tree was dirty when this ran
+  note: 5adaf3920585 skqd: git tree was dirty when this ran
+  note: 5cdb58455164 sqd: git tree was dirty when this ran
+  note: 73c5450d45df lassqd: git tree was dirty when this ran
+  note: 7d5475928f48 lassqd: git tree was dirty when this ran
+  note: 81ee048810ac skqd: git tree was dirty when this ran
+  note: 832ae8142a7e skqd: git tree was dirty when this ran
+  note: 83fbcc176ba0 sqd: git tree was dirty when this ran
+  note: 8aca9cc998ca lassqd: git tree was dirty when this ran
+  note: abb700d10dbb lassqd: git tree was dirty when this ran
+  note: c25993d5db59 lassqd: git tree was dirty when this ran
+  note: d10f2e4497f0 lasscf: git tree was dirty when this ran
+  note: d5ee15057527 lassqd: git tree was dirty when this ran
+  note: d6a815f97dd7 sqd: git tree was dirty when this ran
+  note: e22fc31c00ff lassqd: git tree was dirty when this ran
+  note: e4d799007244 skqd: git tree was dirty when this ran
+  note: f29a794a84f9 lassqd: git tree was dirty when this ran
+  note: fcd4e9483e14 skqd: git tree was dirty when this ran
+  CHECK PASSED
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
