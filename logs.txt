@@ -1,116 +1,37 @@
-cd /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/runs
-grep -E "LAS cycle|fragment [0-9]:|converged|UCCSD" 27df8c7baf40/run.log
-grep -E "LAS cycle|fragment [0-9]:|converged" 20a4e934edc6/run.log | tail -8
-cd /home/loharkar/quenais-standalone/Quenais-Project
-git status --short
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ python tools/diagnose_lassqd_circuit.py /home/loharkar/quenais-standalone/benchmark_results/h4_lucj_pairs/runs/b6606645305a
+run b6606645305a: H4/sto-3g, fragments ['0+1:2:1,1', '2+3:2:1,1'], first macro cycle, 100000 shots
+determinant labels: alpha|beta, printed orbital n-1 ... 0 (rightmost = lowest fragment MO)
 
+=== fragment 0: 2 orbitals, 1a + 1b ===
+  fragment mean field converged=True  orbital energies [-0.4701  0.5606]
+  UCCSD: max|t1| = 0.0062  max|t2| (aa, ab, bb) = 0.0000, 0.1639, 0.0000
+  fragment FCI energy (sampling basis, no const) -1.62304550
+  det a|b      exact   LUCJ hea   LUCJ all     Aer hh
+    01|01    0.97378    0.99961    0.99824    0.99957
+    10|10    0.02615    0.00010    0.00167    0.00012
+    10|01    0.00004    0.00005    0.00004    0.00006
+    01|10    0.00004    0.00023    0.00004    0.00025
+  weight OFF the HF determinant:  exact 0.02622   LUCJ hea 0.00039   LUCJ all 0.00176   Aer hh 0.00043
 
+=== fragment 1: 2 orbitals, 1a + 1b ===
+  fragment mean field converged=True  orbital energies [-0.4701  0.5606]
+  UCCSD: max|t1| = 0.0062  max|t2| (aa, ab, bb) = 0.0000, 0.1639, 0.0000
+  fragment FCI energy (sampling basis, no const) -1.62304550
+  det a|b      exact   LUCJ hea   LUCJ all     Aer hh
+    01|01    0.97378    0.99961    0.99824    0.99957
+    10|10    0.02615    0.00010    0.00167    0.00012
+    10|01    0.00004    0.00005    0.00004    0.00006
+    01|10    0.00004    0.00023    0.00004    0.00025
+  weight OFF the HF determinant:  exact 0.02622   LUCJ hea 0.00039   LUCJ all 0.00176   Aer hh 0.00043
 
-cat > benchmarks/h8_smoke.json <<'EOF'
-{
-  "name": "h8_smoke",
-  "defaults": {
-    "molecule": "H8", "basis": "sto-3g",
-    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0",
-    "active_space_method": "avas", "avas_ao_labels": ["H 1s"],
-    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
-    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
-    "las_fragments": ["0+1:2:1,1", "2+3:2:1,1", "4+5:2:1,1", "6+7:2:1,1"],
-    "lassqd_carryover_eps": 1e-5
-  },
-  "studies": [{"name": "smoke", "sweep": {
-    "solver": ["sqd", "skqd", "lassqd", "lasscf"],
-    "shots": [1000, 10000], "seed": [1, 2, 3]}}]
-}
-EOF
-
-nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke > /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1 &
-tail -f /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log
-
-
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ cd /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/runs
-grep -E "LAS cycle|fragment [0-9]:|converged|UCCSD" 27df8c7baf40/run.log
-grep -E "LAS cycle|fragment [0-9]:|converged" 20a4e934edc6/run.log | tail -8
-cd /home/loharkar/quenais-standalone/Quenais-Project
-git status --short
-    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   0  E = -1.9712203701  |g_orb| = 8.58e-01
-    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   1  E = -2.0983891152  dE = -1.27e-01  |g_orb| = 2.77e-02
-    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   2  E = -2.0985447658  dE = -1.56e-04  |g_orb| = 2.43e-03
-    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   3  E = -2.0985459295  dE = -1.16e-06  |g_orb| = 1.94e-04
-    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-  LAS cycle   4  E = -2.0985459369  dE = -7.48e-09  |g_orb| = 1.57e-05
-  LASSQD converged after 5 cycles: E = -2.0985459369 Ha  |g_orb| = 1.57e-05
-  LAS cycle   2  E = -2.1507653410  dE = -1.67e-04  |g_orb| = 7.64e-04
-    fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (4 distinct)
-    fragment 1: SQD dim 4 (100.0% of FCI), valid shots 100.0% (3 distinct)
-  LAS cycle   3  E = -2.1507655065  dE = -1.65e-07  |g_orb| = 9.00e-05
-    fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (4 distinct)
-    fragment 1: SQD dim 4 (100.0% of FCI), valid shots 100.0% (3 distinct)
-  LAS cycle   4  E = -2.1507655082  dE = -1.76e-09  |g_orb| = 6.70e-06
-  LASSQD converged after 5 cycles: E = -2.1507655082 Ha  |g_orb| = 6.70e-06
- m gqe-for-qsci
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
-
-
-
-cd /home/loharkar/quenais-standalone/Quenais-Project
-cat > benchmarks/h4_lucj_pairs.json <<'EOF'
-{
-  "name": "h4_lucj_pairs",
-  "defaults": {
-    "molecule": "H4", "basis": "sto-3g",
-    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0",
-    "active_space_method": "avas", "avas_ao_labels": ["H 1s"],
-    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
-    "las_fragments": ["0+1:2:1,1", "2+3:2:1,1"],
-    "lassqd_carryover_eps": 1e-5, "solver": "lassqd", "shots": 1000
-  },
-  "studies": [{"name": "pairs", "sweep": {
-    "lassqd_lucj_pairs": ["heavy_hex", "all"], "seed": [1, 2, 3]}}]
-}
-EOF
-python tools/run_benchmark.py benchmarks/h4_lucj_pairs.json --out /home/loharkar/quenais-standalone/benchmark_results/h4_lucj_pairs
-grep -h "fragment 0:" /home/loharkar/quenais-standalone/benchmark_results/h4_lucj_pairs/runs/*/run.log | sort | uniq -c
-
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ cd /home/loharkar/quenais-standalone/Quenais-Project
-cat > benchmarks/h4_lucj_pairs.json <<'EOF'
-{
-  "name": "h4_lucj_pairs",
-  "defaults": {
-    "molecule": "H4", "basis": "sto-3g",
-    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0",
-    "active_space_method": "avas", "avas_ao_labels": ["H 1s"],
-    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
-    "las_fragments": ["0+1:2:1,1", "2+3:2:1,1"],
-    "lassqd_carryover_eps": 1e-5, "solver": "lassqd", "shots": 1000
-  },
-  "studies": [{"name": "pairs", "sweep": {
-    "lassqd_lucj_pairs": ["heavy_hex", "all"], "seed": [1, 2, 3]}}]
-}
-EOF
-python tools/run_benchmark.py benchmarks/h4_lucj_pairs.json --out /home/loharkar/quenais-standalone/benchmark_results/h4_lucj_pairs
-grep -h "fragment 0:" /home/loharkar/quenais-standalone/benchmark_results/h4_lucj_pairs/runs/*/run.log | sort | uniq -c
-[benchmark] h4_lucj_pairs: 6 runs over 1 system(s); this shard: 6  -> /home/loharkar/quenais-standalone/benchmark_results/h4_lucj_pairs
-  [system 5844585e34c1] steps 1, 0 ...
-  [system 5844585e34c1] ready (5 s)
-[1/6] b6606645305a lassqd  shots=1000 seed=1  ok   12.3 s  E=-2.09854594  err_solver=- kcal/mol  subspace=0.25
-[2/6] b6c5422a93fa lassqd  shots=1000 seed=2  ok   14.9 s  E=-2.12981578  err_solver=- kcal/mol  subspace=0.25
-[3/6] 9d939ed5e500 lassqd  shots=1000 seed=3  ok   12.5 s  E=-2.09854594  err_solver=- kcal/mol  subspace=0.25
-[4/6] cbe127095de9 lassqd  shots=1000 seed=1  ok   11.8 s  E=-2.09854594  err_solver=- kcal/mol  subspace=0.25
-[5/6] 6f4a43d70fd4 lassqd  shots=1000 seed=2  ok   16.3 s  E=-2.15076551  err_solver=- kcal/mol  subspace=1.0
-[6/6] 2e9fa508189f lassqd  shots=1000 seed=3  ok   15.6 s  E=-2.15076551  err_solver=- kcal/mol  subspace=1.0
-[collect] 6 runs (6 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h4_lucj_pairs/results.csv
-[collect] 2 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h4_lucj_pairs/results_agg.csv
-     15     fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
-      4     fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (1 distinct)
-     11     fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (2 distinct)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1 &
+[1] 53684
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup: ignoring input and appending output to 'nohup.out'
+^C
+[1]+  Exit 1                  nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1 &
+[1] 53873
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup: ignoring input and appending output to 'nohup.out'
+^C
+[1]+  Exit 1                  nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
