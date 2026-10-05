@@ -1,0 +1,13 @@
+{
+  "name": "h4_lucj_pairs",
+  "defaults": {
+    "molecule": "H4", "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0",
+    "active_space_method": "avas", "avas_ao_labels": ["H 1s"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
+    "las_fragments": ["0+1:2:1,1", "2+3:2:1,1"],
+    "lassqd_carryover_eps": 1e-5, "solver": "lassqd", "shots": 1000
+  },
+  "studies": [{"name": "pairs", "sweep": {
+    "lassqd_lucj_pairs": ["heavy_hex", "all"], "seed": [1, 2, 3]}}]
+}

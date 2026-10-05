@@ -1,0 +1,15 @@
+{
+  "name": "h8_smoke",
+  "defaults": {
+    "molecule": "H8", "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0",
+    "active_space_method": "avas", "avas_ao_labels": ["H 1s"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
+    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
+    "las_fragments": ["0+1:2:1,1", "2+3:2:1,1", "4+5:2:1,1", "6+7:2:1,1"],
+    "lassqd_carryover_eps": 1e-5
+  },
+  "studies": [{"name": "smoke", "sweep": {
+    "solver": ["sqd", "skqd", "lassqd", "lasscf"],
+    "shots": [1000, 10000], "seed": [1, 2, 3]}}]
+}
