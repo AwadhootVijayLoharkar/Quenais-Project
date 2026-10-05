@@ -46,3 +46,25 @@ Traceback (most recent call last):
     raise JSONDecodeError("Expecting value", s, err.value) from None
 json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
+
+
+rm -f benchmarks/scf_quick.json
+cat > benchmarks/scf_quick.json <<'EOF'
+{
+  "name": "scf_quick",
+  "defaults": {
+    "molecule": "ScF", "basis": "sto-3g",
+    "active_space_method": "avas", "avas_ao_labels": ["Sc 3d", "Sc 4s", "F 2p"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "CASCI"],
+    "las_fragments": ["Sc:6:1,1", "F:3:3,3"],
+    "lassqd_lucj_optimize": true
+  },
+  "studies": [
+    {"name": "carryover", "fixed": {"solver": "lassqd"},
+     "sweep": {"lassqd_carryover_eps": [0, 1e-5],
+               "shots": [1000, 10000], "seed": [1, 2, 3]}},
+    {"name": "reference", "fixed": {"solver": "lasscf"}}
+  ]
+}
+EOF
+python tools/run_benchmark.py benchmarks/scf_quick.json --out $B/scf --dry-run  
