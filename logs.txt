@@ -17,3 +17,32 @@ done
 
 
 python tools/run_benchmark.py --out $B/scf --check
+
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ B=/home/loharkar/quenais-standalone/benchmark_results
+sed -e 's/"shots": \[1000, 10000, 100000\]/"shots": [1000, 10000]/' \
+    -e 's/"seed": \[1, 2, 3, 4, 5\]/"seed": [1, 2, 3]/' \
+    benchmarks/scf_carryover.json > benchmarks/scf_quick.json 2>/dev/null \
+  || echo "scf_carryover.json missing - create it from my last message first"
+python tools/run_benchmark.py benchmarks/scf_quick.json --out $B/scf --dry-run
+scf_carryover.json missing - create it from my last message first
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 999, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 973, in main
+    grid = json.load(fh)
+           ^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+           ^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
