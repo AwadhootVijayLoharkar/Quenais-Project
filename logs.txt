@@ -1,75 +1,28 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ mkdir -p /home/loharkar/quenais-standalone/benchmark_results
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ ls /home/loharkar/quenais-standalone/
-benchmark_results  Quenais-Project
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/h4_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h4_smoke > /home/loharkar/quenais-standalone/benchmark_results/h4_smoke.log 2>&1 &
-[1] 36708
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f /home/loharkar/quenais-standalone/benchmark_results/h4_smoke.log 
-nohup: ignoring input
-[benchmark] h4_smoke: 13 runs over 1 system(s); this shard: 13  -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke
-  [system 5844585e34c1] steps 1, 0 ...
-  [system 5844585e34c1] ready (5 s)
-  [system 5844585e34c1] step 2 (casci) ...
-[1/13] d5a8d55645f5 sqd     shots=1000 seed=1  ok    9.2 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[2/13] 311df409e325 sqd     shots=1000 seed=2  ok    7.5 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[3/13] 2378b6d87008 sqd     shots=10000 seed=1  ok    7.8 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[4/13] 23ee149a4b01 sqd     shots=10000 seed=2  ok    8.8 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[5/13] fc23bb965607 skqd    shots=1000 seed=1  ok   13.8 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[6/13] dc9bf634cef5 skqd    shots=1000 seed=2  ok   15.6 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[7/13] e2c24abbbb19 skqd    shots=10000 seed=1  ok   15.3 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[8/13] 708fb6bcaec0 skqd    shots=10000 seed=2  ok   15.4 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[9/13] 27df8c7baf40 lassqd  shots=1000 seed=1  ok   12.5 s  E=-2.09854594  err_solver=- kcal/mol  subspace=0.25
-[10/13] e7abe9c63016 lassqd  shots=1000 seed=2  ok   13.8 s  E=-2.12981578  err_solver=- kcal/mol  subspace=0.25
-[11/13] 20a4e934edc6 lassqd  shots=10000 seed=1  ok   16.4 s  E=-2.15076551  err_solver=- kcal/mol  subspace=1.0
-[12/13] 78dc657295ca lassqd  shots=10000 seed=2  ok   17.0 s  E=-2.15076551  err_solver=- kcal/mol  subspace=1.0
-[13/13] 9e19a827c490 lasscf  shots=- seed=-  ok    4.9 s  E=-2.15076551  err_solver=- kcal/mol  subspace=None
-[collect] 13 runs (13 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/results.csv
-[collect] 7 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/results_agg.csv
-^C[1]+  Done                    nohup python tools/run_benchmark.py benchmarks/h4_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h4_smoke > /home/loharkar/quenais-standalone/benchmark_results/h4_smoke.log 2>&1
+cd /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/runs
+grep -E "LAS cycle|fragment [0-9]:|converged|UCCSD" 27df8c7baf40/run.log
+grep -E "LAS cycle|fragment [0-9]:|converged" 20a4e934edc6/run.log | tail -8
+cd /home/loharkar/quenais-standalone/Quenais-Project
+git status --short
 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ python tools/run_benchmark.py --out /home/loharkar/quenais-standalone/benchmark_results/h4_smoke --check
-[collect] 13 runs (13 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/results.csv
-[collect] 7 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/results_agg.csv
 
-== 1. Required columns ==
-  lasscf     1 rows  PASS
-  lassqd     4 rows  PASS
-  skqd       4 rows  PASS
-  sqd        4 rows  PASS
 
-== 2. Sanity ==
+cat > benchmarks/h8_smoke.json <<'EOF'
+{
+  "name": "h8_smoke",
+  "defaults": {
+    "molecule": "H8", "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0",
+    "active_space_method": "avas", "avas_ao_labels": ["H 1s"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
+    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
+    "las_fragments": ["0+1:2:1,1", "2+3:2:1,1", "4+5:2:1,1", "6+7:2:1,1"],
+    "lassqd_carryover_eps": 1e-5
+  },
+  "studies": [{"name": "smoke", "sweep": {
+    "solver": ["sqd", "skqd", "lassqd", "lasscf"],
+    "shots": [1000, 10000], "seed": [1, 2, 3]}}]
+}
+EOF
 
-== 3. Seed repeats ==
-  lassqd   shots=1000    seeds=[1, 2]  spread=1.96e+01 kcal/mol  subspace=0.250-0.250
-  lassqd   shots=10000   seeds=[1, 2]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
-  skqd     shots=1000    seeds=[1, 2]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
-  skqd     shots=10000   seeds=[1, 2]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
-  sqd      shots=1000    seeds=[1, 2]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
-  sqd      shots=10000   seeds=[1, 2]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
-
-== 4. Summary (mean +- std over seeds) ==
-  solver      shots   n    err_solver kcal/mol   err_vs_best kcal/mol  subspace   t3 (s)
-  lasscf          -   1                      -      +9.8029 +- 0.0000         -      3.7
-  lassqd       1000   2    +22.9572 +- 13.8749    +32.7601 +- 13.8749     0.250     11.6
-  lassqd      10000   2      +0.0000 +- 0.0000      +9.8029 +- 0.0000     1.000     15.1
-  skqd         1000   2      +0.0000 +- 0.0000      +0.0000 +- 0.0000     1.000     12.8
-  skqd        10000   2      +0.0000 +- 0.0000      +0.0000 +- 0.0000     1.000     13.5
-  sqd          1000   2      +0.0000 +- 0.0000      +0.0000 +- 0.0000     1.000      6.8
-  sqd         10000   2      +0.0000 +- 0.0000      +0.0000 +- 0.0000     1.000      6.8
-
-== Result ==
-  note: 20a4e934edc6 lassqd: git tree was dirty when this ran
-  note: 2378b6d87008 sqd: git tree was dirty when this ran
-  note: 23ee149a4b01 sqd: git tree was dirty when this ran
-  note: 27df8c7baf40 lassqd: git tree was dirty when this ran
-  note: 311df409e325 sqd: git tree was dirty when this ran
-  note: 708fb6bcaec0 skqd: git tree was dirty when this ran
-  note: 78dc657295ca lassqd: git tree was dirty when this ran
-  note: 9e19a827c490 lasscf: git tree was dirty when this ran
-  note: d5a8d55645f5 sqd: git tree was dirty when this ran
-  note: dc9bf634cef5 skqd: git tree was dirty when this ran
-  note: e2c24abbbb19 skqd: git tree was dirty when this ran
-  note: e7abe9c63016 lassqd: git tree was dirty when this ran
-  note: fc23bb965607 skqd: git tree was dirty when this ran
-  note: CCSD_T below FCI on 1 system(s) -- not variational; expected at stretched geometry, and itself a result
-  CHECK PASSED
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
+nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke > /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1 &
+tail -f /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log
