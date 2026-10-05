@@ -16,6 +16,10 @@ mean-field basis (the basis the circuit is built and measured in):
     Aer hh     measured frequency from the real sampling path (glued
                circuit -> transpile -> AerSimulator), heavy_hex
 
+then an ANSATZ SCAN: off-HF weight and energy error of the LUCJ state for
+interaction pairs {heavy_hex, all} x n_reps {1, 2, 4} x linear-method
+optimisation {off, on}. The production default is heavy_hex, n_reps=1, off.
+
 Reading it:
     LUCJ << exact on the excited determinants -> the ansatz construction
     Aer  << LUCJ                               -> circuit / transpile / bit order
@@ -49,6 +53,8 @@ def main(argv=None):
     ap.add_argument("run_dir")
     ap.add_argument("--shots", type=int, default=100_000)
     ap.add_argument("--top", type=int, default=8, help="determinants to list")
+    ap.add_argument("--reps", type=int, nargs="+", default=[1, 2, 4],
+                    help="LUCJ n_reps values to scan (default 1 2 4)")
     a = ap.parse_args(argv)
 
     import ffsim
@@ -119,19 +125,39 @@ def main(argv=None):
         cols, msgs = {}, []
         rng = np.random.default_rng(0)
         hf = ffsim.hartree_fock_state(n, (na, nb))
-        ops = {}
+        hop = ffsim.linear_operator(ffsim.MolecularHamiltonian(h_mo, eri_mo, 0.0),
+                                    norb=n, nelec=(na, nb))
+        hf_i, hf_j = idx_a[(1 << na) - 1], idx_b[(1 << nb) - 1]
+        ops, scan = {}, []
         for pairs in ("heavy_hex", "all"):
-            s = dataclasses.replace(cfg.las, lucj_pairs=pairs)
-            op = sq._lucj_operator(h_mo, eri_mo, n, (na, nb), amps, s, rng,
-                                   lambda m, p=pairs: msgs.append(f"[{p}] {m.strip()}"))
-            ops[pairs] = op
-            vec = ffsim.apply_unitary(hf, op, norb=n, nelec=(na, nb))
-            cols[f"LUCJ {pairs[:3]}"] = (np.abs(vec) ** 2).reshape(len(strs_a), len(strs_b))
+            for n_reps in a.reps:
+                for opt in (False, True):
+                    s = dataclasses.replace(cfg.las, lucj_pairs=pairs,
+                                            lucj_n_reps=n_reps, lucj_optimize=opt)
+                    tag = f"{pairs[:3]} r={n_reps}{' opt' if opt else ''}"
+                    try:
+                        op = sq._lucj_operator(
+                            h_mo, eri_mo, n, (na, nb), amps, s,
+                            np.random.default_rng(0),
+                            lambda m, t=tag: msgs.append(f"[{t}] {m.strip()}"))
+                    except Exception as exc:
+                        scan.append((tag, None, None, repr(exc)[:60]))
+                        continue
+                    vec = ffsim.apply_unitary(hf, op, norb=n, nelec=(na, nb))
+                    pw = (np.abs(vec) ** 2).reshape(len(strs_a), len(strs_b))
+                    e = float(np.real(np.vdot(vec, hop @ vec)))
+                    scan.append((tag, 1 - pw[hf_i, hf_j], e - e_fci, ""))
+                    if n_reps == cfg.las.lucj_n_reps and not opt:
+                        ops[pairs] = op
+                        cols[f"LUCJ {pairs[:3]}"] = pw
         for m in msgs:
             print(f"  {m}")
 
         s = dataclasses.replace(cfg.las, lucj_pairs="heavy_hex", shots=a.shots,
                                 seed=7)
+        if "heavy_hex" not in ops:
+            sys.exit(f"--reps must include the production n_reps "
+                     f"({cfg.las.lucj_n_reps})")
         counts = sq.sample_fragment_circuits(
             [sq._fragment_circuit(n, (na, nb), ops["heavy_hex"])], s)[0]
         mat, pr = bits.counts_to_matrix(counts, 2 * n)
@@ -155,12 +181,18 @@ def main(argv=None):
             lab = f"{int(strs_a[i]):0{n}b}|{int(strs_b[j]):0{n}b}"
             print(f"  {lab:>{2 * n + 3}}  {exact[i, j]:9.5f}" + "".join(
                 f"  {cols[k][i, j]:9.5f}" for k in cols))
-        hf_i, hf_j = idx_a[(1 << na) - 1], idx_b[(1 << nb) - 1]
         print("  weight OFF the HF determinant:  exact "
               f"{1 - exact[hf_i, hf_j]:.5f}" + "".join(
                   f"   {k} {1 - cols[k][hf_i, hf_j]:.5f}" for k in cols))
         if lost:
             print(f"  Aer shots with wrong electron numbers: {lost:.5f}")
+        print(f"\n  ansatz scan (exact off-HF weight {1 - exact[hf_i, hf_j]:.5f}):")
+        print(f"  {'variant':<16} {'off-HF weight':>14} {'E - E_FCI (mHa)':>16}")
+        for tag, w, de, err in scan:
+            if w is None:
+                print(f"  {tag:<16} {'failed':>14}   {err}")
+            else:
+                print(f"  {tag:<16} {w:14.5f} {1000 * de:16.3f}")
         print()
     return 0
 
