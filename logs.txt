@@ -1,32 +1,14 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ pytest -q -m "not slow"
-........................................................................................................................................................................ [ 44%]
-......................................................................ss................................................................................................ [ 88%]
-.............................................                                                                                                                            [100%]
-=============================================================================== warnings summary ===============================================================================
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
-  /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
-    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-379 passed, 2 skipped, 26 deselected, 3 warnings in 206.48s (0:03:26)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ python tools/run_benchmark.py benchmarks/h4_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h4_smoke --dry-run
-[benchmark] h4_smoke: 13 runs over 1 system(s); this shard: 13  -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke
-  d5a8d55645f5  sys=5844585e34c1  sqd     shots=1000    seed=1    
-  311df409e325  sys=5844585e34c1  sqd     shots=1000    seed=2    
-  2378b6d87008  sys=5844585e34c1  sqd     shots=10000   seed=1    
-  23ee149a4b01  sys=5844585e34c1  sqd     shots=10000   seed=2    
-  fc23bb965607  sys=5844585e34c1  skqd    shots=1000    seed=1    
-  dc9bf634cef5  sys=5844585e34c1  skqd    shots=1000    seed=2    
-  e2c24abbbb19  sys=5844585e34c1  skqd    shots=10000   seed=1    
-  708fb6bcaec0  sys=5844585e34c1  skqd    shots=10000   seed=2    
-  27df8c7baf40  sys=5844585e34c1  lassqd  shots=1000    seed=1    
-  e7abe9c63016  sys=5844585e34c1  lassqd  shots=1000    seed=2    
-  20a4e934edc6  sys=5844585e34c1  lassqd  shots=10000   seed=1    
-  78dc657295ca  sys=5844585e34c1  lassqd  shots=10000   seed=2    
-  9e19a827c490  sys=5844585e34c1  lasscf  shots=-       seed=-    
-
-  first run reproduces with:
-  quenais-run --active-space-method avas --ansatz lucj --avas-ao-labels 'H 1s' --backend mps --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASCI FCI --dmet-reference casci --geometry 'H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0' --mapping jw --molecule H4 --seed 1 --shots 1000 --solver sqd --steps 1 && quenais-run --active-space-method avas --ansatz lucj --avas-ao-labels 'H 1s' --backend mps --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASCI FCI --dmet-reference casci --geometry 'H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0' --mapping jw --molecule H4 --seed 1 --shots 1000 --solver sqd --steps 0 2 3
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ cd ..
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:quenais-standalone]$ ls
+Quenais-Project
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:quenais-standalone]$ ls -a
+.  ..  Quenais-Project
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:quenais-standalone]$ cd Quenais-Project/
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/h4_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h4_smoke > /home/loharkar/quenais-standalone/benchmark_results/h4_smoke.log 2>&1 &
+[1] 34686
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ bash: /home/loharkar/quenais-standalone/benchmark_results/h4_smoke.log: No such file or directory
+jobs
+[1]+  Exit 1                  nohup python tools/run_benchmark.py benchmarks/h4_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h4_smoke > /home/loharkar/quenais-standalone/benchmark_results/h4_smoke.log 2>&1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ jobs
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ ps -u loharkar | grep run_benchmark
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
