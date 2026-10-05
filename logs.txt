@@ -1,9 +1,247 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ pkill -f run_benchmark.py
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ rm -rf /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log
-[1]+  Terminated              nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ rm -f nohup.out
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ git config submodule.gqe-for-qsci.ignore dirty
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ git status --short
- m gqe-for-qsci
 ?? benchmarks/h4_lucj_pairs.json
 ?? benchmarks/h8_smoke.json
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ B=/home/loharkar/quenais-standalone/benchmark_results
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/h
+h4_lucj_pairs.json  h4_smoke.json       h8_smoke.json       
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out $B/h8_smoke > $B/h8_smoke.log 2>&1 &
+[1] 58906
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+nohup: ignoring input
+[benchmark] h8_smoke: 19 runs over 1 system(s); this shard: 19  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+  [system a669e73b20a8] steps 1, 0 ...
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ python tools/diagnose_lassqd_circuit.py $B/h4_lucj_pairs/runs/b6606645305a/
+ 
+run b6606645305a: H4/sto-3g, fragments ['0+1:2:1,1', '2+3:2:1,1'], first macro cycle, 100000 shots
+determinant labels: alpha|beta, printed orbital n-1 ... 0 (rightmost = lowest fragment MO)
+
+=== fragment 0: 2 orbitals, 1a + 1b ===
+  fragment mean field converged=True  orbital energies [-0.4701  0.5606]
+  UCCSD: max|t1| = 0.0062  max|t2| (aa, ab, bb) = 0.0000, 0.1639, 0.0000
+  [hea r=1 opt] LUCJ linear method: E = -1.62304550 (3 it)
+  [hea r=2 opt] LUCJ linear method: E = -1.62304550 (3 it)
+  [hea r=4 opt] LUCJ linear method: E = -1.62304550 (3 it)
+  [all r=1 opt] LUCJ linear method: E = -1.62304550 (2 it)
+  [all r=2 opt] LUCJ linear method: E = -1.62304550 (3 it)
+  [all r=4 opt] LUCJ linear method: E = -1.62304550 (5 it)
+  fragment FCI energy (sampling basis, no const) -1.62304550
+  det a|b      exact   LUCJ hea   LUCJ all     Aer hh
+    01|01    0.97378    0.99961    0.99824    0.99957
+    10|10    0.02615    0.00010    0.00167    0.00012
+    10|01    0.00004    0.00005    0.00004    0.00006
+    01|10    0.00004    0.00023    0.00004    0.00025
+  weight OFF the HF determinant:  exact 0.02622   LUCJ hea 0.00039   LUCJ all 0.00176   Aer hh 0.00043
+
+  ansatz scan (exact off-HF weight 0.02622):
+  variant           off-HF weight  E - E_FCI (mHa)
+  hea r=1                 0.00039           29.531
+  hea r=1 opt             0.02622            0.000
+  hea r=2                 0.00110           26.057
+  hea r=2 opt             0.02622            0.000
+  hea r=4                 0.00296           19.609
+  hea r=4 opt             0.02622            0.000
+  all r=1                 0.00176           18.815
+  all r=1 opt             0.02622            0.000
+  all r=2                 0.00678            8.289
+  all r=2 opt             0.02622            0.000
+  all r=4                 0.02671            0.004
+  all r=4 opt             0.02622            0.000
+
+=== fragment 1: 2 orbitals, 1a + 1b ===
+  fragment mean field converged=True  orbital energies [-0.4701  0.5606]
+  UCCSD: max|t1| = 0.0062  max|t2| (aa, ab, bb) = 0.0000, 0.1639, 0.0000
+  [hea r=1 opt] LUCJ linear method: E = -1.62304550 (3 it)
+  [hea r=2 opt] LUCJ linear method: E = -1.62304550 (3 it)
+  [hea r=4 opt] LUCJ linear method: E = -1.62304550 (3 it)
+  [all r=1 opt] LUCJ linear method: E = -1.62304550 (2 it)
+  [all r=2 opt] LUCJ linear method: E = -1.62304550 (3 it)
+  [all r=4 opt] LUCJ linear method: E = -1.62304550 (5 it)
+  fragment FCI energy (sampling basis, no const) -1.62304550
+  det a|b      exact   LUCJ hea   LUCJ all     Aer hh
+    01|01    0.97378    0.99961    0.99824    0.99957
+    10|10    0.02615    0.00010    0.00167    0.00012
+    10|01    0.00004    0.00005    0.00004    0.00006
+    01|10    0.00004    0.00023    0.00004    0.00025
+  weight OFF the HF determinant:  exact 0.02622   LUCJ hea 0.00039   LUCJ all 0.00176   Aer hh 0.00043
+
+  ansatz scan (exact off-HF weight 0.02622):
+  variant           off-HF weight  E - E_FCI (mHa)
+  hea r=1                 0.00039           29.531
+  hea r=1 opt             0.02622            0.000
+  hea r=2                 0.00110           26.057
+  hea r=2 opt             0.02622            0.000
+  hea r=4                 0.00296           19.609
+  hea r=4 opt             0.02622            0.000
+  all r=1                 0.00176           18.815
+  all r=1 opt             0.02622            0.000
+  all r=2                 0.00678            8.289
+  all r=2 opt             0.02622            0.000
+  all r=4                 0.02671            0.004
+  all r=4 opt             0.02622            0.000
+
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+[benchmark] h8_smoke: 19 runs over 1 system(s); this shard: 19  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+  [system a669e73b20a8] steps 1, 0 ...
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -5 $B/h8_smoke/runs/<that ID>/run.log
+bash: that: No such file or directory
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ ls -t $B/h8_smoke/runs | head -1
+3e90e9db4be4
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -5 $B/h8_smoke/runs/3e90e9db4be4/run.log
+── SKQD (JW mapping) ──────────────────────────────────────
+  Krylov dim: 5,  dt=0.9,  Trotter reps=1
+  JW Hamiltonian: 2913 Pauli terms
+  Circuit depths: [2, 3, 4, 5, 6]
+  Sampling 5 Krylov circuits @ 1000 shots each...
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ top -u loharkar -n 1 | head -15
+top - 15:35:29 up 34 days,  5:30,  0 users,  load average: 5.80, 8.72, 9.60
+Tasks:  25 total,   1 running,  24 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  3.9 us,  0.9 sy,  0.0 ni, 95.2 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem : 515874.9 total, 415567.1 free,  49657.4 used,  68834.5 buff/cache     
+MiB Swap:      0.0 total,      0.0 free,      0.0 used. 466217.6 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+  59710 loharkar  20   0 2816232 862540  14932 S 100.0   0.2  12:21.58 python   
+  63509 loharkar  20   0    9844   4884   3088 R  10.0   0.0   0:00.02 top      
+      1 loharkar  20   0 1240452  21156   9024 S   0.0   0.0   0:00.06 sinit    
+     21 loharkar  20   0    7212   3496   3076 S   0.0   0.0   0:00.02 bash     
+     34 loharkar  20   0   11736   7492   6364 S   0.0   0.0   0:00.81 sshd     
+     43 loharkar  20   0    7080   3484   3184 S   0.0   0.0   0:00.00 code-se+ 
+     54 loharkar  20   0  226004 100544  22348 S   0.0   0.0   0:05.56 jupyter+ 
+     63 loharkar  20   0 1139716  71236  48520 S   0.0   0.0   0:03.21 node     
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+[benchmark] h8_smoke: 19 runs over 1 system(s); this shard: 19  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+  [system a669e73b20a8] steps 1, 0 ...
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+  [system a669e73b20a8] steps 1, 0 ...
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+[7/19] 3e90e9db4be4 skqd    shots=1000 seed=1  ok 1483.4 s  E=-4.30482736  err_solver=+1.7220 kcal/mol  subspace=0.32653061224489793
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+  [system a669e73b20a8] steps 1, 0 ...
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+[7/19] 3e90e9db4be4 skqd    shots=1000 seed=1  ok 1483.4 s  E=-4.30482736  err_solver=+1.7220 kcal/mol  subspace=0.32653061224489793
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+[7/19] 3e90e9db4be4 skqd    shots=1000 seed=1  ok 1483.4 s  E=-4.30482736  err_solver=+1.7220 kcal/mol  subspace=0.32653061224489793
+[8/19] 81ee048810ac skqd    shots=1000 seed=2  ok 1461.6 s  E=-4.30504146  err_solver=+1.5877 kcal/mol  subspace=0.36
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+[7/19] 3e90e9db4be4 skqd    shots=1000 seed=1  ok 1483.4 s  E=-4.30482736  err_solver=+1.7220 kcal/mol  subspace=0.32653061224489793
+[8/19] 81ee048810ac skqd    shots=1000 seed=2  ok 1461.6 s  E=-4.30504146  err_solver=+1.5877 kcal/mol  subspace=0.36
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+[7/19] 3e90e9db4be4 skqd    shots=1000 seed=1  ok 1483.4 s  E=-4.30482736  err_solver=+1.7220 kcal/mol  subspace=0.32653061224489793
+[8/19] 81ee048810ac skqd    shots=1000 seed=2  ok 1461.6 s  E=-4.30504146  err_solver=+1.5877 kcal/mol  subspace=0.36
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+  [system a669e73b20a8] ready (5 s)
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+[7/19] 3e90e9db4be4 skqd    shots=1000 seed=1  ok 1483.4 s  E=-4.30482736  err_solver=+1.7220 kcal/mol  subspace=0.32653061224489793
+[8/19] 81ee048810ac skqd    shots=1000 seed=2  ok 1461.6 s  E=-4.30504146  err_solver=+1.5877 kcal/mol  subspace=0.36
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ top -u loharkar -n 1 | head -15
+top - 16:46:59 up 34 days,  6:41,  0 users,  load average: 5.47, 5.41, 6.62
+Tasks:  27 total,   1 running,  26 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  4.8 us,  0.5 sy,  0.0 ni, 94.7 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st 
+MiB Mem : 515874.9 total, 410372.9 free,  54834.2 used,  70081.6 buff/cache     
+MiB Swap:      0.0 total,      0.0 free,      0.0 used. 461040.7 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND  
+  95673 loharkar  20   0 2816104 991864 144320 S  90.9   0.2  10:21.37 python   
+  63328 loharkar  20   0    7996   4468   3488 S  27.3   0.0   1:14.24 htop     
+      1 loharkar  20   0 1240452  21156   9024 S   0.0   0.0   0:00.07 sinit    
+     21 loharkar  20   0    7212   3496   3076 S   0.0   0.0   0:00.02 bash     
+     34 loharkar  20   0   11736   7492   6364 S   0.0   0.0   0:00.81 sshd     
+     43 loharkar  20   0    7080   3484   3184 S   0.0   0.0   0:00.00 code-se+ 
+     54 loharkar  20   0  226004 100544  22348 S   0.0   0.0   0:05.56 jupyter+ 
+     63 loharkar  20   0 1139716  71236  48520 S   0.0   0.0   0:03.21 node     
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -5 $B/h8_smoke/runs/3e90e9db4be4/run.log
+  Subspace      : 1600 / 4900 determinants (32.7%)
+
+[Step 3] ✓ Saved → /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/runs/3e90e9db4be4/results/step3_skqd.pkl
+
+[benchmark] row written: energy=-4.304827358683275  err_vs_best_ref=1.7220386845943518 kcal/mol
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ tail -f $B/h8_smoke.log
+  [system a669e73b20a8] step 2 (casci) ...
+[1/19] 83fbcc176ba0 sqd     shots=1000 seed=1  ok    9.2 s  E=-4.27905863  err_solver=+17.8922 kcal/mol  subspace=0.5518367346938775
+[2/19] 226e03b411b4 sqd     shots=1000 seed=2  ok    8.1 s  E=-4.27731912  err_solver=+18.9837 kcal/mol  subspace=0.5518367346938775
+[3/19] 5aa99bd35e06 sqd     shots=1000 seed=3  ok    9.1 s  E=-4.28233844  err_solver=+15.8340 kcal/mol  subspace=0.686530612244898
+[4/19] 091608e2e059 sqd     shots=10000 seed=1  ok    8.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
+[5/19] d6a815f97dd7 sqd     shots=10000 seed=2  ok    9.4 s  E=-4.30747355  err_solver=+0.0615 kcal/mol  subspace=0.9161224489795918
+[6/19] 5cdb58455164 sqd     shots=10000 seed=3  ok    9.1 s  E=-4.29988561  err_solver=+4.8230 kcal/mol  subspace=0.9716326530612245
+[7/19] 3e90e9db4be4 skqd    shots=1000 seed=1  ok 1483.4 s  E=-4.30482736  err_solver=+1.7220 kcal/mol  subspace=0.32653061224489793
+[8/19] 81ee048810ac skqd    shots=1000 seed=2  ok 1461.6 s  E=-4.30504146  err_solver=+1.5877 kcal/mol  subspace=0.36
+[9/19] 5adaf3920585 skqd    shots=1000 seed=3  ok 1465.6 s  E=-4.30430352  err_solver=+2.0508 kcal/mol  subspace=0.3104081632653061
