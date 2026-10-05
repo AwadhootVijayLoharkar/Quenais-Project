@@ -1,4 +1,4 @@
-cat > benchmarks/h8_smoke.json <<'EOF'
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ cat > benchmarks/h8_smoke.json <<'EOF'
 {
   "name": "h8_smoke",
   "defaults": {
@@ -16,3 +16,32 @@ cat > benchmarks/h8_smoke.json <<'EOF'
 }
 EOF
 python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke --dry-run
+[benchmark] h8_smoke: 19 runs over 1 system(s); this shard: 19  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+  83fbcc176ba0  sys=a669e73b20a8  sqd     shots=1000    seed=1    
+  226e03b411b4  sys=a669e73b20a8  sqd     shots=1000    seed=2    
+  5aa99bd35e06  sys=a669e73b20a8  sqd     shots=1000    seed=3    
+  091608e2e059  sys=a669e73b20a8  sqd     shots=10000   seed=1    
+  d6a815f97dd7  sys=a669e73b20a8  sqd     shots=10000   seed=2    
+  5cdb58455164  sys=a669e73b20a8  sqd     shots=10000   seed=3    
+  3e90e9db4be4  sys=a669e73b20a8  skqd    shots=1000    seed=1    
+  81ee048810ac  sys=a669e73b20a8  skqd    shots=1000    seed=2    
+  5adaf3920585  sys=a669e73b20a8  skqd    shots=1000    seed=3    
+  fcd4e9483e14  sys=a669e73b20a8  skqd    shots=10000   seed=1    
+  e4d799007244  sys=a669e73b20a8  skqd    shots=10000   seed=2    
+  832ae8142a7e  sys=a669e73b20a8  skqd    shots=10000   seed=3    
+  73c5450d45df  sys=a669e73b20a8  lassqd  shots=1000    seed=1    
+  f29a794a84f9  sys=a669e73b20a8  lassqd  shots=1000    seed=2    
+  8aca9cc998ca  sys=a669e73b20a8  lassqd  shots=1000    seed=3    
+  d5ee15057527  sys=a669e73b20a8  lassqd  shots=10000   seed=1    
+  0b2f133585e3  sys=a669e73b20a8  lassqd  shots=10000   seed=2    
+  7d5475928f48  sys=a669e73b20a8  lassqd  shots=10000   seed=3    
+  d10f2e4497f0  sys=a669e73b20a8  lasscf  shots=-       seed=-    
+
+  first run reproduces with:
+  quenais-run --active-space-method avas --ansatz lucj --avas-ao-labels 'H 1s' --backend mps --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASCI FCI --dmet-reference casci --geometry 'H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0' --mapping jw --molecule H8 --seed 1 --shots 1000 --solver sqd --steps 1 && quenais-run --active-space-method avas --ansatz lucj --avas-ao-labels 'H 1s' --backend mps --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASCI FCI --dmet-reference casci --geometry 'H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0' --mapping jw --molecule H8 --seed 1 --shots 1000 --solver sqd --steps 0 2 3
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1 &
+[1] 56072
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ nohup: ignoring input and appending output to 'nohup.out'
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
+
