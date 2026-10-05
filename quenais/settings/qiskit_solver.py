@@ -48,6 +48,13 @@ class QiskitSolverSettings:
     sqdrift_iters: int = 10
     sqdrift_shots: int = 8192
 
+    # ── Seed ─────────────────────────────────────────────────────────────
+    #: Seeds the measurement: simulator shot sampling, configuration
+    #: recovery and SqDRIFT's random circuit draws. NOT the ansatz angles
+    #: (lucj_random_seed), so a seed repeat resamples the same circuit.
+    #: None = previous behaviour (fixed recovery seeds, unseeded sampler).
+    seed: int | None = None
+
     # ── Backend ──────────────────────────────────────────────────────────
     backend: str = "mps"
     mps_max_bond_dim: int = 256
@@ -75,6 +82,9 @@ class QiskitSolverSettings:
                      "mps_max_bond_dim", "lucj_num_layers"):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} must be > 0, got {getattr(self, name)}")
+        if self.seed is not None and (int(self.seed) != self.seed or self.seed < 0):
+            raise ValueError(f"seed must be a non-negative integer or None, "
+                             f"got {self.seed!r}")
         if self.mps_trunc_thresh <= 0:
             raise ValueError("mps_trunc_thresh must be > 0")
         if not 0 <= self.ibm_optimization_level <= 3:

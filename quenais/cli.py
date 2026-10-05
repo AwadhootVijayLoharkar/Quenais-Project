@@ -60,7 +60,19 @@ def build_parser():
     parser.add_argument("--ansatz", default="lucj", choices=list(ANSATZE))
     parser.add_argument("--mapping", default="bk", choices=list(MAPPINGS))
     parser.add_argument("--backend", default="mps", choices=list(BACKENDS))
-    parser.add_argument("--shots", type=int, default=8192)
+    parser.add_argument(
+        "--shots", type=int, default=8192,
+        help="shots PER CIRCUIT for sqd, skqd and sqdrift (SQD samples one "
+             "circuit; SKQD one per Krylov vector; SqDRIFT one per random "
+             "circuit, so total shots differ -- the step-3 pickle records "
+             "both). LAS solvers use --lassqd-shots.",
+    )
+    parser.add_argument(
+        "--seed", type=int, default=None,
+        help="seed for sqd/skqd/sqdrift sampling, configuration recovery "
+             "and SqDRIFT circuit draws (not the ansatz angles). Default: "
+             "unseeded sampler. LAS uses --lassqd-seed, GQE --gqe-seed.",
+    )
     parser.add_argument("--project-dir", default=".")
     parser.add_argument(
         "--xyz", default=None,
@@ -464,11 +476,16 @@ def build_config(args):
         ref=build_ref_settings(args),
         asf=build_asf_settings(args),
         dmet=DmetSettings(reference=args.dmet_reference),
+        # --shots used to set n_shots only, so SKQD and SqDRIFT silently
+        # ran at their 8192 default whatever was asked for.
         qiskit=QiskitSolverSettings(
             ansatz=args.ansatz,
             fermion_to_qubit=args.mapping,
             backend=args.backend,
             n_shots=args.shots,
+            skqd_shots=args.shots,
+            sqdrift_shots=args.shots,
+            seed=getattr(args, "seed", None),
         ),
         gqe=build_gqe_settings(args),
         las=build_las_settings(args),

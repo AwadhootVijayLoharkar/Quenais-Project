@@ -1,0 +1,28 @@
+{
+  "name": "h4_smoke",
+  "description": "End-to-end smoke test: linear H4 at 1.0 A spacing, sto-3g, AVAS H 1s -> (4e,4o) = the full space, so CASCI == FCI and every solver's exact limit is known. Three sampled solvers (DMET+SQD, DMET+SKQD, LASSQD) x two shot counts x two seeds, plus the deterministic LASSCF reference LASSQD is measured against.",
+  "defaults": {
+    "molecule": "H4",
+    "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0",
+    "active_space_method": "avas",
+    "avas_ao_labels": ["H 1s"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "las_fragments": ["0+1:2:1,1", "2+3:2:1,1"],
+    "lassqd_carryover_eps": 1e-5
+  },
+  "studies": [
+    {
+      "name": "smoke",
+      "sweep": {
+        "solver": ["sqd", "skqd", "lassqd", "lasscf"],
+        "shots": [1000, 10000],
+        "seed": [1, 2]
+      }
+    }
+  ]
+}
