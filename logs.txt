@@ -26,3 +26,36 @@ EOF
 
 nohup python tools/run_benchmark.py benchmarks/h8_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke > /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log 2>&1 &
 tail -f /home/loharkar/quenais-standalone/benchmark_results/h8_smoke.log
+
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ cd /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/runs
+grep -E "LAS cycle|fragment [0-9]:|converged|UCCSD" 27df8c7baf40/run.log
+grep -E "LAS cycle|fragment [0-9]:|converged" 20a4e934edc6/run.log | tail -8
+cd /home/loharkar/quenais-standalone/Quenais-Project
+git status --short
+    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+  LAS cycle   0  E = -1.9712203701  |g_orb| = 8.58e-01
+    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+  LAS cycle   1  E = -2.0983891152  dE = -1.27e-01  |g_orb| = 2.77e-02
+    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+  LAS cycle   2  E = -2.0985447658  dE = -1.56e-04  |g_orb| = 2.43e-03
+    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+  LAS cycle   3  E = -2.0985459295  dE = -1.16e-06  |g_orb| = 1.94e-04
+    fragment 0: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+    fragment 1: SQD dim 1 (25.0% of FCI), valid shots 100.0% (1 distinct)
+  LAS cycle   4  E = -2.0985459369  dE = -7.48e-09  |g_orb| = 1.57e-05
+  LASSQD converged after 5 cycles: E = -2.0985459369 Ha  |g_orb| = 1.57e-05
+  LAS cycle   2  E = -2.1507653410  dE = -1.67e-04  |g_orb| = 7.64e-04
+    fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (4 distinct)
+    fragment 1: SQD dim 4 (100.0% of FCI), valid shots 100.0% (3 distinct)
+  LAS cycle   3  E = -2.1507655065  dE = -1.65e-07  |g_orb| = 9.00e-05
+    fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (4 distinct)
+    fragment 1: SQD dim 4 (100.0% of FCI), valid shots 100.0% (3 distinct)
+  LAS cycle   4  E = -2.1507655082  dE = -1.76e-09  |g_orb| = 6.70e-06
+  LASSQD converged after 5 cycles: E = -2.1507655082 Ha  |g_orb| = 6.70e-06
+ m gqe-for-qsci
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos02:Quenais-Project]$ 
