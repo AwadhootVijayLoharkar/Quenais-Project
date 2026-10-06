@@ -1,0 +1,16 @@
+{
+  "name": "scf_quick",
+  "defaults": {
+    "molecule": "ScF", "basis": "sto-3g",
+    "active_space_method": "avas", "avas_ao_labels": ["Sc 3d", "Sc 4s", "F 2p"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "CASCI"],
+    "las_fragments": ["Sc:6:1,1", "F:3:3,3"],
+    "lassqd_lucj_optimize": true
+  },
+  "studies": [
+    {"name": "carryover", "fixed": {"solver": "lassqd"},
+     "sweep": {"lassqd_carryover_eps": [0, 1e-5],
+               "shots": [1000, 10000], "seed": [1, 2, 3]}},
+    {"name": "reference", "fixed": {"solver": "lasscf"}}
+  ]
+}

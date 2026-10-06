@@ -1,0 +1,29 @@
+{
+  "name": "n2_curve",
+  "defaults": {
+    "molecule": "N2", "basis": "sto-3g",
+    "active_space_method": "avas", "avas_ao_labels": ["N 2s", "N 2p"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "CASCI", "FCI"],
+    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
+    "lassqd_lucj_optimize": true, "lassqd_carryover_eps": 1e-5, "shots": 10000
+  },
+  "studies": [{
+    "name": "curve",
+    "cases": [
+      {"geometry": "N 0 0 0; N 0 0 1.0",  "tag_R": 1.0},
+      {"geometry": "N 0 0 0; N 0 0 1.1",  "tag_R": 1.1},
+      {"geometry": "N 0 0 0; N 0 0 1.2",  "tag_R": 1.2},
+      {"geometry": "N 0 0 0; N 0 0 1.4",  "tag_R": 1.4},
+      {"geometry": "N 0 0 0; N 0 0 1.6",  "tag_R": 1.6},
+      {"geometry": "N 0 0 0; N 0 0 1.8",  "tag_R": 1.8},
+      {"geometry": "N 0 0 0; N 0 0 2.0",  "tag_R": 2.0},
+      {"geometry": "N 0 0 0; N 0 0 2.25", "tag_R": 2.25},
+      {"geometry": "N 0 0 0; N 0 0 2.5",  "tag_R": 2.5}
+    ],
+    "sweep": {
+      "solver": ["sqd", "lassqd", "lasscf"],
+      "las_fragments": [["0:4:4,1:3", "1:4:1,4:3"], ["0:4:3,2:1", "1:4:2,3:1"]],
+      "seed": [1, 2, 3]
+    }
+  }]
+}
