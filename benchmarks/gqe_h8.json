@@ -1,0 +1,13 @@
+{
+  "name": "gqe_h8",
+  "description": "GQE on H8/sto-3g (16 qubits), 3 seeds, default 120 epochs. Same system as h8_smoke.json, so with --out pointing at the h8_smoke folder the rows join the SQD/SKQD/LASSQD table.",
+  "defaults": {
+    "molecule": "H8", "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0",
+    "active_space_method": "avas", "avas_ao_labels": ["H 1s"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
+    "dmet_reference": "casci",
+    "solver": "gqe", "cudaq_target": "nvidia"
+  },
+  "studies": [{"name": "gqe", "sweep": {"seed": [1, 2, 3]}}]
+}

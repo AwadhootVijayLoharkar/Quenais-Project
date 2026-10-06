@@ -1,36 +1,12 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ pgrep -af run_benchmark
-[2]+  Done                    nohup python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed > $B/gqe_smoke.log 2>&1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failedDDDDD^C
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ pgrep -af run_benchmark
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed
-[benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
-[1/2] 8d80a341c68c gqe     shots=- seed=-  skip (done)
-[2/2] e8f58c6f4dc1 gqe     shots=- seed=-  skip (done)
-[collect] 2 runs (2 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
-[collect] 1 configurations -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results_agg.csv
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed
-[benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
-[1/2] 8d80a341c68c gqe     shots=- seed=-  skip (done)
-[2/2] e8f58c6f4dc1 gqe     shots=- seed=-  skip (done)
-[collect] 2 runs (2 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
-[collect] 1 configurations -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results_agg.csv
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py --out $B/gqe_smoke --check
-[collect] 2 runs (2 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
-[collect] 1 configurations -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results_agg.csv
+B=/home/loharkar/quenais-standalone/benchmark_results
+python tools/run_benchmark.py benchmarks/gqe_h8.json --out $B/h8_smoke --dry-run 2>/dev/null | head -2
 
-== 1. Required columns ==
-  gqe        2 rows  PASS
 
-== 2. Sanity ==
+nohup python tools/run_benchmark.py benchmarks/gqe_h8.json --out $B/h8_smoke > $B/gqe_h8.log 2>&1 &
 
-== 3. Seed repeats ==
-  gqe                                         shots=None    seeds=[1, 2]  spread=8.36e-13 kcal/mol  subspace=0.556-0.556
+grep -c "^\[epoch" $B/h8_smoke/runs/$(ls -t $B/h8_smoke/runs | head -1)/run.log
 
-== 4. Summary (mean +- std over seeds) ==
-  solver      shots   n    err_solver kcal/mol   err_vs_best kcal/mol  subspace   t3 (s)
-  gqe             -   2      -0.0000 +- 0.0000      +0.0000 +- 0.0000     0.556    132.7
 
-== Result ==
-  note: CCSD_T below FCI on 1 system(s) -- not variational; expected at stretched geometry, and itself a result
-  CHECK PASSED
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ 
+python tools/run_benchmark.py --out $B/h8_smoke --check
+python tools/plot_benchmark.py $B/h8_smoke
+cat $B/h8_smoke/figures/summary.md
