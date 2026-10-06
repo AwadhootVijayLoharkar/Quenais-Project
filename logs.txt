@@ -1,46 +1,24 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-doctor 
-quenais-doctor  --  python 3.11.15 on Linux-5.15.0-198-generic-x86_64-with-glibc2.41
-
-[  ok  ] CPU AVX-512                            absent, but PySCF was built from source
-[  ok  ] GPU                                    NVIDIA A100-SXM4-40GB (cc 8.0)
-[  ok  ] setuptools                             81.0.0, pkg_resources importable
-[  ok  ] CUDAQ_DEFAULT_SIMULATOR                nvidia
-[  ok  ] WANDB_MODE                             disabled
-^C[1791290246.221080] [erebos05:364755:0]         netlink.c:145  UCX  ERROR   failed to get netlink message size -10 (No progress)
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/quenais-doctor", line 6, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 524, in main
-    rep = run_checks(repo)
-          ^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 497, in run_checks
-    fn(rep)
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 264, in check_mpi
-    from mpi4py import MPI  # noqa: F401
-    ^^^^^^^^^^^^^^^^^^^^^^
-KeyboardInterrupt
+export OMPI_MCA_pml=ob1
+export OMPI_MCA_btl=self,vader,tcp
+export OMPI_MCA_osc=^ucx
+export UCX_NET_DEVICES=lo
+timeout 30 python -c "from mpi4py import MPI; print('MPI OK:', MPI.COMM_WORLD.Get_size())"
 
 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ quenais-doctor 
-quenais-doctor  --  python 3.11.15 on Linux-5.15.0-198-generic-x86_64-with-glibc2.41
+export MPI4PY_RC_INITIALIZE=false
+timeout 30 python -c "from mpi4py import MPI; print('MPI imported, initialized =', MPI.Is_initialized())"
 
-[  ok  ] CPU AVX-512                            absent, but PySCF was built from source
-[  ok  ] GPU                                    NVIDIA GeForce RTX 4070 Ti SUPER (cc 8.9)
-[  ok  ] setuptools                             81.0.0, pkg_resources importable
-[  ok  ] CUDAQ_DEFAULT_SIMULATOR                nvidia
-[  ok  ] WANDB_MODE                             disabled
-^C[1791290241.987769] [makaria11:19775:0]         netlink.c:145  UCX  ERROR   failed to get netlink message size -10 (No progress)
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/quenais-doctor", line 6, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 524, in main
-    rep = run_checks(repo)
-          ^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 497, in run_checks
-    fn(rep)
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 264, in check_mpi
-    from mpi4py import MPI  # noqa: F401
-    ^^^^^^^^^^^^^^^^^^^^^^
-KeyboardInterrupt
+
+cat >> ~/.bashrc <<'EOF'
+export OMPI_MCA_pml=ob1
+export OMPI_MCA_btl=self,vader,tcp
+export OMPI_MCA_osc=^ucx
+export UCX_NET_DEVICES=lo
+export PYTHONUNBUFFERED=1
+EOF
+
+
+quenais-doctor
+B=/home/loharkar/quenais-standalone/benchmark_results
+nohup python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed > $B/gqe_smoke.log 2>&1 &
+sleep 120; grep -c "^\[epoch" $B/gqe_smoke/runs/8d80a341c68c/run.log
