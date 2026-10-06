@@ -15,3 +15,62 @@ When all four logs end with [collect], merge, check and plot:
 bash
 python tools/run_benchmark.py --out $B/scf --check
 python tools/plot_benchmark.py $B/scf
+
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
+remote: Enumerating objects: 8, done.
+remote: Counting objects: 100% (8/8), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 5 (delta 2), reused 5 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 1.07 KiB | 24.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+   45bc82f..efed890  main       -> origin/main
+Updating 45bc82f..efed890
+Fast-forward
+ benchmarks/scf_carryover.json | 18 ++++++++++++++++++
+ logs.txt                      | 72 +++++++++++++++---------------------------------------------------------
+ 2 files changed, 33 insertions(+), 57 deletions(-)
+ create mode 100644 benchmarks/scf_carryover.json
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
+B=/home/loharkar/quenais-standalone/benchmark_results
+python tools/run_benchmark.py benchmarks/scf_carryover.json --out $B/scf --dry-run 2>/dev/null | head -1
+Already up to date.
+[benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 81  -> /home/loharkar/quenais-standalone/benchmark_results/scf
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ for i in 0 1 2 3; do
+  nohup python tools/run_benchmark.py benchmarks/scf_carryover.json --out $B/scf --shard $i/4 > $B/scf_carryover_$i.log 2>&1 &
+done
+[2] 75432
+[3] 75433
+[4] 75434
+[5] 75435
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ sleep 30; tail -2 $B/scf_carryover_*.log
+tail: option used in invalid context -- 2
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -2 $B/scf_carryover_*.log
+tail: option used in invalid context -- 2
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -f $B/scf_carryover_*.log
+==> /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_0.log <==
+nohup: ignoring input
+[benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 21  -> /home/loharkar/quenais-standalone/benchmark_results/scf
+[1/21] c9b9c598a009 lassqd  shots=1000 seed=1  skip (done)
+
+==> /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_1.log <==
+nohup: ignoring input
+[benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 20  -> /home/loharkar/quenais-standalone/benchmark_results/scf
+[1/20] d25034cf8b0a lassqd  shots=1000 seed=2  skip (done)
+
+==> /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_2.log <==
+nohup: ignoring input
+[benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 20  -> /home/loharkar/quenais-standalone/benchmark_results/scf
+[1/20] d3af6a6ab9e3 lassqd  shots=1000 seed=3  skip (done)
+
+==> /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_3.log <==
+nohup: ignoring input
+[benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 20  -> /home/loharkar/quenais-standalone/benchmark_results/scf
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+grep -c " ok " $B/scf_carryover_*.log
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_0.log:0
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_1.log:0
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_2.log:0
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_3.log:0
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
