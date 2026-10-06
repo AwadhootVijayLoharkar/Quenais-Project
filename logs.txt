@@ -14,4 +14,85 @@ ls benchmarks/
 
 python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --dry-run | head -3
 
-python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --dry-run | head -3
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/run_benchmark.py --out $B/scf --check
+grep -E "^(status|E_CASSCF)" -m1 $B/scf/results.csv >/dev/null; python -c "
+import csv; r=[x for x in csv.DictReader(open('$B/scf/results.csv')) if x['solver']=='lasscf'][0]
+print('CASSCF', r['E_CASSCF_Ha']); print('CASCI ', r['E_CASCI_Ha']); print('LASSCF', r['energy_Ha'])"
+[collect] 13 runs (13 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/scf/results.csv
+[collect] 5 configurations -> /home/loharkar/quenais-standalone/benchmark_results/scf/results_agg.csv
+
+== 1. Required columns ==
+  lasscf     1 rows  FAIL  empty: {'E_FCI_Ha': 1}
+  lassqd    12 rows  FAIL  empty: {'E_FCI_Ha': 12}
+
+== 2. Sanity ==
+
+== 3. Seed repeats ==
+  lassqd   shots=1000    seeds=[1, 2, 3]  spread=2.41e+01 kcal/mol  subspace=0.028-0.694
+  lassqd   shots=1000    seeds=[1, 2, 3]  spread=2.41e+01 kcal/mol  subspace=0.028-0.694
+  lassqd   shots=10000   seeds=[1, 2, 3]  spread=1.83e-08 kcal/mol  subspace=1.000-1.000
+  lassqd   shots=10000   seeds=[1, 2, 3]  spread=7.86e+00 kcal/mol  subspace=0.444-1.000
+
+== 4. Summary (mean +- std over seeds) ==
+  solver      shots   n    err_solver kcal/mol   err_vs_best kcal/mol  subspace   t3 (s)
+  lasscf          -   1                      -      -0.0418 +- 0.0000         -     31.2
+  lassqd       1000   3     +8.6933 +- 13.9324     +8.6515 +- 13.9324     0.472    457.4
+  lassqd       1000   3    +12.7445 +- 12.0688    +12.7028 +- 12.0688     0.278    458.1
+  lassqd      10000   3      +0.0000 +- 0.0000      -0.0418 +- 0.0000     1.000    631.0
+  lassqd      10000   3      +3.6122 +- 3.9657      +3.5705 +- 3.9657     0.713    953.9
+
+== Result ==
+  note: 011364a8ba80 lassqd: git tree was dirty when this ran
+  note: 58cf9c0b01aa lassqd: git tree was dirty when this ran
+  note: 5be3eb7667dd lassqd: git tree was dirty when this ran
+  note: 7d82faa65595 lasscf: git tree was dirty when this ran
+  note: b506f6e58176 lassqd: git tree was dirty when this ran
+  note: b5c57319d398 lassqd: git tree was dirty when this ran
+  note: b9c090302b1c lassqd: git tree was dirty when this ran
+  note: c9b9c598a009 lassqd: git tree was dirty when this ran
+  note: d25034cf8b0a lassqd: git tree was dirty when this ran
+  note: d3af6a6ab9e3 lassqd: git tree was dirty when this ran
+  note: d8b934e13596 lassqd: git tree was dirty when this ran
+  note: e26668381f62 lassqd: git tree was dirty when this ran
+  note: ec32da25a650 lassqd: git tree was dirty when this ran
+  PROBLEM: lasscf: empty columns {'E_FCI_Ha': 1}
+  PROBLEM: lassqd: empty columns {'E_FCI_Ha': 12}
+  CHECK FAILED (2 problem(s))
+CASSCF -850.293775094741
+CASCI  -850.2864199370646
+LASSCF -850.2864865100231
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+python tools/plot_benchmark.py $B/h8_smoke
+python tools/plot_benchmark.py $B/scf
+[plot] 25 runs, 5 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures
+  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/error_vs_shots.png/.pdf
+  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/subspace_vs_error.png/.pdf
+  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/las_convergence.png/.pdf
+  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/summary.md and summary.csv (9 rows)
+[plot] 13 runs, 3 configurations -> /home/loharkar/quenais-standalone/benchmark_results/scf/figures
+  wrote /home/loharkar/quenais-standalone/benchmark_results/scf/figures/error_vs_shots.png/.pdf
+  wrote /home/loharkar/quenais-standalone/benchmark_results/scf/figures/subspace_vs_error.png/.pdf
+  wrote /home/loharkar/quenais-standalone/benchmark_results/scf/figures/las_convergence.png/.pdf
+  wrote /home/loharkar/quenais-standalone/benchmark_results/scf/figures/summary.md and summary.csv (5 rows)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat $B/n2_curve.log
+ls benchmarks/
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 999, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 972, in main
+    with open(a.grid) as fh:
+         ^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'benchmarks/n2_curve.json'
+h4_lucj_pairs.json  h4_smoke.json  h8_lucj_opt.json  h8_smoke.json  scf_quick.json
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --dry-run | head -3
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 999, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 972, in main
+    with open(a.grid) as fh:
+         ^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'benchmarks/n2_curve.json'
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
