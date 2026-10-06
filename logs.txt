@@ -1,26 +1,46 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ ps -u loharkar -o pid,etime,pcpu,args | grep -E "train.py|run_benchmark" | grep -v grep
-  10034       12:50  0.0 python tools/run_benchmark.py benchmarks/gqe_smoke.json --out /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke --retry-failed
-  10035       12:50  0.0 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke 8d80a341c68c
-  10054       12:49  1.1 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/train.py molecule=dmet_embedding trainer.seed=1 trainer.max_iters=20 trainer.num_samples=100 trainer.batch_size=100 trainer.warmup_size=100 trainer.buffer_size=100 trainer.load_checkpoint=false ngates=40 operator_pool.spec=dmet_excitation operator_pool.remove_z_ladder=false operator_pool.only_use_first_pauli=false qsci.max_dim=10000 molecule.step2_pickle_path=/home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/runs/8d80a341c68c/results/step2_hamiltonian.pkl
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ nvida-smi --query-gpu=utilization.gpu,memory.used --format=csv
-bash: nvida-smi: command not found
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ nvidia-smi --query-gpu=utilization.gpu,memory.used --for
-mat=csv
-utilization.gpu [%], memory.used [MiB]
-0 %, 45 MiB
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ find $GQE_QSCI_REPO_PATH/outputs/ -name "*.log" -nmin -30 2>/dev/null | head -3
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ grep -c "^\[epoch" $B/gqe_smoke/runs/8d80a341c68c/run.log 
-0
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ tail -50 $B/gqe_smoke/runs/8d80a341c68c/run.log 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ quenais-doctor 
+quenais-doctor  --  python 3.11.15 on Linux-5.15.0-198-generic-x86_64-with-glibc2.41
 
-============================================================
-[Step 3] GQE training -- H4
-============================================================
-  repo     : /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
-  embedding: 4 orbitals (8 qubits)
-  backend  : nvidia
-  pool     : dmet_excitation
-  log      : /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/runs/8d80a341c68c/results/gqe_train.log
-  overrides: molecule=dmet_embedding trainer.seed=1 trainer.max_iters=20 trainer.num_samples=100 trainer.batch_size=100 trainer.warmup_size=100 trainer.buffer_size=100 trainer.load_checkpoint=false ngates=40 operator_pool.spec=dmet_excitation operator_pool.remove_z_ladder=false operator_pool.only_use_first_pauli=false qsci.max_dim=10000 molecule.step2_pickle_path=/home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/runs/8d80a341c68c/results/step2_hamiltonian.pkl
+[  ok  ] CPU AVX-512                            absent, but PySCF was built from source
+[  ok  ] GPU                                    NVIDIA A100-SXM4-40GB (cc 8.0)
+[  ok  ] setuptools                             81.0.0, pkg_resources importable
+[  ok  ] CUDAQ_DEFAULT_SIMULATOR                nvidia
+[  ok  ] WANDB_MODE                             disabled
+^C[1791290246.221080] [erebos05:364755:0]         netlink.c:145  UCX  ERROR   failed to get netlink message size -10 (No progress)
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/quenais-doctor", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 524, in main
+    rep = run_checks(repo)
+          ^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 497, in run_checks
+    fn(rep)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 264, in check_mpi
+    from mpi4py import MPI  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ 
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ quenais-doctor 
+quenais-doctor  --  python 3.11.15 on Linux-5.15.0-198-generic-x86_64-with-glibc2.41
+
+[  ok  ] CPU AVX-512                            absent, but PySCF was built from source
+[  ok  ] GPU                                    NVIDIA GeForce RTX 4070 Ti SUPER (cc 8.9)
+[  ok  ] setuptools                             81.0.0, pkg_resources importable
+[  ok  ] CUDAQ_DEFAULT_SIMULATOR                nvidia
+[  ok  ] WANDB_MODE                             disabled
+^C[1791290241.987769] [makaria11:19775:0]         netlink.c:145  UCX  ERROR   failed to get netlink message size -10 (No progress)
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/quenais-doctor", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 524, in main
+    rep = run_checks(repo)
+          ^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 497, in run_checks
+    fn(rep)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 264, in check_mpi
+    from mpi4py import MPI  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
