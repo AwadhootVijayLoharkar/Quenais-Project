@@ -1,179 +1,35 @@
-python tools/run_benchmark.py --out $B/scf --check
-
-
-cat > benchmarks/n2_curve.json <<'EOF'
-{
-  "name": "n2_curve",
-  "defaults": {
-    "molecule": "N2", "basis": "sto-3g",
-    "active_space_method": "avas", "avas_ao_labels": ["N 2s", "N 2p"],
-    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "CASCI", "FCI"],
-    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
-    "lassqd_lucj_optimize": true, "lassqd_carryover_eps": 1e-5, "shots": 10000
-  },
-  "studies": [{
-    "name": "curve",
-    "cases": [
-      {"geometry": "N 0 0 0; N 0 0 1.0",  "tag_R": 1.0},
-      {"geometry": "N 0 0 0; N 0 0 1.1",  "tag_R": 1.1},
-      {"geometry": "N 0 0 0; N 0 0 1.2",  "tag_R": 1.2},
-      {"geometry": "N 0 0 0; N 0 0 1.4",  "tag_R": 1.4},
-      {"geometry": "N 0 0 0; N 0 0 1.6",  "tag_R": 1.6},
-      {"geometry": "N 0 0 0; N 0 0 1.8",  "tag_R": 1.8},
-      {"geometry": "N 0 0 0; N 0 0 2.0",  "tag_R": 2.0},
-      {"geometry": "N 0 0 0; N 0 0 2.25", "tag_R": 2.25},
-      {"geometry": "N 0 0 0; N 0 0 2.5",  "tag_R": 2.5}
-    ],
-    "sweep": {
-      "solver": ["sqd", "lassqd", "lasscf"],
-      "las_fragments": [["0:4:4,1:3", "1:4:1,4:3"], ["0:4:3,2:1", "1:4:2,3:1"]],
-      "seed": [1, 2, 3]
-    }
-  }]
-}
-EOF
-ls benchmarks/
-python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --dry-run | head -3
-
-
-nohup python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve > $B/n2_curve.log 2>&1 &
-sleep 60; tail -5 $B/n2_curve.log
-
-
-cat $B/h8_smoke/figures/summary.md
-
-
-
-
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/run_benchmark.py --out $B/scf --check
-[collect] 13 runs (13 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/scf/results.csv
-[collect] 5 configurations -> /home/loharkar/quenais-standalone/benchmark_results/scf/results_agg.csv
-
-== 1. Required columns ==
-  lasscf     1 rows  PASS
-  lassqd    12 rows  PASS
-
-== 2. Sanity ==
-
-== 3. Seed repeats ==
-  lassqd   carryover_eps=1e-05 lucj_optimize=True shots=1000    seeds=[1, 2, 3]  spread=2.41e+01 kcal/mol  subspace=0.028-0.694
-  lassqd   carryover_eps=0 lucj_optimize=True shots=1000    seeds=[1, 2, 3]  spread=2.41e+01 kcal/mol  subspace=0.028-0.694
-  lassqd   carryover_eps=1e-05 lucj_optimize=True shots=10000   seeds=[1, 2, 3]  spread=1.83e-08 kcal/mol  subspace=1.000-1.000
-  lassqd   carryover_eps=0 lucj_optimize=True shots=10000   seeds=[1, 2, 3]  spread=7.86e+00 kcal/mol  subspace=0.444-1.000
-
-== 4. Summary (mean +- std over seeds) ==
-  solver      shots   n    err_solver kcal/mol   err_vs_best kcal/mol  subspace   t3 (s)
-  lasscf          -   1                      -      -0.0418 +- 0.0000         -     31.2
-  lassqd       1000   3     +8.6933 +- 13.9324     +8.6515 +- 13.9324     0.472    457.4
-  lassqd       1000   3    +12.7445 +- 12.0688    +12.7028 +- 12.0688     0.278    458.1
-  lassqd      10000   3      +0.0000 +- 0.0000      -0.0418 +- 0.0000     1.000    631.0
-  lassqd      10000   3      +3.6122 +- 3.9657      +3.5705 +- 3.9657     0.713    953.9
-
-== Result ==
-  note: 011364a8ba80 lassqd: git tree was dirty when this ran
-  note: 58cf9c0b01aa lassqd: git tree was dirty when this ran
-  note: 5be3eb7667dd lassqd: git tree was dirty when this ran
-  note: 7d82faa65595 lasscf: git tree was dirty when this ran
-  note: b506f6e58176 lassqd: git tree was dirty when this ran
-  note: b5c57319d398 lassqd: git tree was dirty when this ran
-  note: b9c090302b1c lassqd: git tree was dirty when this ran
-  note: c9b9c598a009 lassqd: git tree was dirty when this ran
-  note: d25034cf8b0a lassqd: git tree was dirty when this ran
-  note: d3af6a6ab9e3 lassqd: git tree was dirty when this ran
-  note: d8b934e13596 lassqd: git tree was dirty when this ran
-  note: e26668381f62 lassqd: git tree was dirty when this ran
-  note: ec32da25a650 lassqd: git tree was dirty when this ran
-  CHECK PASSED
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat > benchmarks/n2_curve.json <<'EOF'
-{
-  "name": "n2_curve",
-  "defaults": {
-    "molecule": "N2", "basis": "sto-3g",
-    "active_space_method": "avas", "avas_ao_labels": ["N 2s", "N 2p"],
-    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "CASCI", "FCI"],
-    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
-    "lassqd_lucj_optimize": true, "lassqd_carryover_eps": 1e-5, "shots": 10000
-  },
-  "studies": [{
-    "name": "curve",
-    "cases": [
-      {"geometry": "N 0 0 0; N 0 0 1.0",  "tag_R": 1.0},
-      {"geometry": "N 0 0 0; N 0 0 1.1",  "tag_R": 1.1},
-      {"geometry": "N 0 0 0; N 0 0 1.2",  "tag_R": 1.2},
-      {"geometry": "N 0 0 0; N 0 0 1.4",  "tag_R": 1.4},
-python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --dry-run | head -3
-h4_lucj_pairs.json  h4_smoke.json  h8_lucj_opt.json  h8_smoke.json  n2_curve.json  scf_quick.json
-[benchmark] n2_curve: 99 runs over 9 system(s); this shard: 99  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-  d090c9ff46de  sys=c32fa618bbbc  sqd     shots=10000   seed=1    {"tag_R": 1.0}
-  3702b4284998  sys=c32fa618bbbc  sqd     shots=10000   seed=2    {"tag_R": 1.0}
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1005, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 990, in main
-    print(f"  {r['run_id']}  sys={r['system_id']}  {p['solver']:<7} "
-BrokenPipeError: [Errno 32] Broken pipe
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat > benchmarks/n2_curve.json <<'EOF'
-{
-  "name": "n2_curve",
-  "defaults": {
-    "molecule": "N2", "basis": "sto-3g",
-    "active_space_method": "avas", "avas_ao_labels": ["N 2s", "N 2p"],
-    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "CASCI", "FCI"],
-    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
-    "lassqd_lucj_optimize": true, "lassqd_carryover_eps": 1e-5, "shots": 10000
-  },
-  "studies": [{
-    "name": "curve",
-    "cases": [
-      {"geometry": "N 0 0 0; N 0 0 1.0",  "tag_R": 1.0},
-      {"geometry": "N 0 0 0; N 0 0 1.1",  "tag_R": 1.1},
-      {"geometry": "N 0 0 0; N 0 0 1.2",  "tag_R": 1.2},
-      {"geometry": "N 0 0 0; N 0 0 1.4",  "tag_R": 1.4},
-^CF]} "seed": [1, 2, 3][["0:4:4,1:3", "1:4:1,4:3"], ["0:4:3,2:1", "1:4:2,3:1"]],
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat > benchmarks/n2_curve.json <<'EOF'
-{
-  "name": "n2_curve",
-  "defaults": {
-    "molecule": "N2", "basis": "sto-3g",
-    "active_space_method": "avas", "avas_ao_labels": ["N 2s", "N 2p"],
-    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "CASCI", "FCI"],
-    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
-    "lassqd_lucj_optimize": true, "lassqd_carryover_eps": 1e-5, "shots": 10000
-  },
-  "studies": [{
-    "name": "curve",
-    "cases": [
-      {"geometry": "N 0 0 0; N 0 0 1.0",  "tag_R": 1.0},
-      {"geometry": "N 0 0 0; N 0 0 1.1",  "tag_R": 1.1},
-      {"geometry": "N 0 0 0; N 0 0 1.2",  "tag_R": 1.2},
-      {"geometry": "N 0 0 0; N 0 0 1.4",  "tag_R": 1.4},
-EOF]} "seed": [1, 2, 3][["0:4:4,1:3", "1:4:1,4:3"], ["0:4:3,2:1", "1:4:2,3:1"]],
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat > benchmarks/n2_curve.json <<'EOF'
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat > benchmarks/n2_curve.json <<'EOF'
-{                
-                                                                                                     cat > benchmarks/n2_curve.json <<'EOF'
-{                                                                                                    python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat > benchmarks/n2_curve.json <<'EOF'
-{                                                                                                    python tools/run_benchmark.py --out $B/scf --check
-                                                                                                     cat > benchmarks/n2_curve.json <<'EOF'
-{                                                                                                    ls benchmarks/
-                                                                                                                  ^C
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat > benchmarks/n2_curve.json <<'EOF'
-{                                                                                                    python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ ls benchmarks/
-h4_lucj_pairs.json  h4_smoke.json  h8_lucj_opt.json  h8_smoke.json  n2_curve.json  scf_quick.json
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat > benchmarks/n2_curve.json <<'EOF'
-{                                                                                                    python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --dry-run | head -3
-[benchmark] n2_curve: 99 runs over 9 system(s); this shard: 99  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-  d090c9ff46de  sys=c32fa618bbbc  sqd     shots=10000   seed=1    {"tag_R": 1.0}
-  3702b4284998  sys=c32fa618bbbc  sqd     shots=10000   seed=2    {"tag_R": 1.0}
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1005, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 990, in main
-    print(f"  {r['run_id']}  sys={r['system_id']}  {p['solver']:<7} "
-BrokenPipeError: [Errno 32] Broken pipe
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python -m json.tool benchmarks/n2_curve.json > /dev/null && echo "n2_curve.json Ok"
+n2_curve.json Ok
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git add benchmarks/*.json && gut commit -m "Add ScF and N2 grids" && git push
+bash: gut: command not found
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git add benchmarks/*.json && git commit -m "Add ScF and N2 grids" && git pu
+sh
+[main 2a030cc] Add ScF and N2 grids
+ 2 files changed, 45 insertions(+)
+ create mode 100644 benchmarks/n2_curve.json
+ create mode 100644 benchmarks/scf_quick.json
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 96 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (5/5), 1.15 KiB | 235.00 KiB/s, done.
+Total 5 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/AwadhootVijayLoharkar/Quenais-Project.git
+   a03cc76..2a030cc  main -> main
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git status --short
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve > $B/n2_curve.log 2>&1 &
+[1] 9692
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ sleep 60 ; tail -5 $B/n2_curve.log
+  [system c32fa618bbbc] ready (20 s)
+  [system c32fa618bbbc] step 2 (casci) ...
+[1/99] d090c9ff46de sqd     shots=10000 seed=1  ok   35.9 s  E=-107.52557576  err_solver=+14.8878 kcal/mol  subspace=0.455625
+[2/99] 3702b4284998 sqd     shots=10000 seed=2  ok   11.7 s  E=-107.52653950  err_solver=+14.2830 kcal/mol  subspace=0.5017361111111112
+[3/99] 982f4bb18af6 sqd     shots=10000 seed=3  ok   11.8 s  E=-107.53757261  err_solver=+7.3597 kcal/mol  subspace=0.5136111111111111
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -5 $B/n2_curve.log
+  [system c32fa618bbbc] ready (20 s)
+  [system c32fa618bbbc] step 2 (casci) ...
+[1/99] d090c9ff46de sqd     shots=10000 seed=1  ok   35.9 s  E=-107.52557576  err_solver=+14.8878 kcal/mol  subspace=0.455625
+[2/99] 3702b4284998 sqd     shots=10000 seed=2  ok   11.7 s  E=-107.52653950  err_solver=+14.2830 kcal/mol  subspace=0.5017361111111112
+[3/99] 982f4bb18af6 sqd     shots=10000 seed=3  ok   11.8 s  E=-107.53757261  err_solver=+7.3597 kcal/mol  subspace=0.5136111111111111
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
-
-
-
