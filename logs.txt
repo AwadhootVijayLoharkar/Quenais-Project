@@ -1,59 +1,17 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python -m json.tool benchmarks/n2_curve.json > /dev/null && echo "n2_curve.json Ok"
-n2_curve.json Ok
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git add benchmarks/*.json && gut commit -m "Add ScF and N2 grids" && git push
-bash: gut: command not found
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git add benchmarks/*.json && git commit -m "Add ScF and N2 grids" && git pu
-sh
-[main 2a030cc] Add ScF and N2 grids
- 2 files changed, 45 insertions(+)
- create mode 100644 benchmarks/n2_curve.json
- create mode 100644 benchmarks/scf_quick.json
-Enumerating objects: 7, done.
-Counting objects: 100% (7/7), done.
-Delta compression using up to 96 threads
-Compressing objects: 100% (5/5), done.
-Writing objects: 100% (5/5), 1.15 KiB | 235.00 KiB/s, done.
-Total 5 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
-To https://github.com/AwadhootVijayLoharkar/Quenais-Project.git
-   a03cc76..2a030cc  main -> main
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git status --short
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve > $B/n2_curve.log 2>&1 &
-[1] 9692
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ sleep 60 ; tail -5 $B/n2_curve.log
-  [system c32fa618bbbc] ready (20 s)
-  [system c32fa618bbbc] step 2 (casci) ...
-[1/99] d090c9ff46de sqd     shots=10000 seed=1  ok   35.9 s  E=-107.52557576  err_solver=+14.8878 kcal/mol  subspace=0.455625
-[2/99] 3702b4284998 sqd     shots=10000 seed=2  ok   11.7 s  E=-107.52653950  err_solver=+14.2830 kcal/mol  subspace=0.5017361111111112
-[3/99] 982f4bb18af6 sqd     shots=10000 seed=3  ok   11.8 s  E=-107.53757261  err_solver=+7.3597 kcal/mol  subspace=0.5136111111111111
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -5 $B/n2_curve.log
-  [system c32fa618bbbc] ready (20 s)
-  [system c32fa618bbbc] step 2 (casci) ...
-[1/99] d090c9ff46de sqd     shots=10000 seed=1  ok   35.9 s  E=-107.52557576  err_solver=+14.8878 kcal/mol  subspace=0.455625
-[2/99] 3702b4284998 sqd     shots=10000 seed=2  ok   11.7 s  E=-107.52653950  err_solver=+14.2830 kcal/mol  subspace=0.5017361111111112
-[3/99] 982f4bb18af6 sqd     shots=10000 seed=3  ok   11.8 s  E=-107.53757261  err_solver=+7.3597 kcal/mol  subspace=0.5136111111111111
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat $B/h8_smoke/figures/summary.md 
-Error = `err_solver_kcal` (kcal/mol), mean ± std over seeds.
+git pull
+B=/home/loharkar/quenais-standalone/benchmark_results
+python tools/run_benchmark.py benchmarks/scf_carryover.json --out $B/scf --dry-run 2>/dev/null | head -1
 
-| molecule | R | method | shots | n | error | subspace | qubits | wall (s) |
-|---|---|---|---|---|---|---|---|---|
-| H8 | – | DMET+SQD | 1000 | 3 | +17.570 ± 1.599 | 0.597 | 16 | 7.4 |
-| H8 | – | DMET+SQD | 10000 | 3 | +1.628 ± 2.767 | 0.963 | 16 | 7.8 |
-| H8 | – | DMET+SKQD | 1000 | 3 | +1.787 ± 0.238 | 0.332 | 16 | 1468.3 |
-| H8 | – | DMET+SKQD | 10000 | 3 | +0.999 ± 0.335 | 0.458 | 16 | 1471.0 |
-| H8 | – | LASSCF | – | 1 | – | – | – | 44.6 |
-| H8 | – | LASSQD (no opt) | 1000 | 3 | +42.544 ± 10.784 | 0.250 | 16 | 31.2 |
-| H8 | – | LASSQD (no opt) | 10000 | 3 | +7.417 ± 6.954 | 0.500 | 16 | 47.6 |
-| H8 | – | LASSQD (opt) | 1000 | 3 | +0.000 ± 0.000 | 1.000 | 16 | 56.6 |
-| H8 | – | LASSQD (opt) | 10000 | 3 | +0.000 ± 0.000 | 1.000 | 16 | 58.3 |
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ cat $B/scf/figures/summary.md 
-Error = `err_solver_kcal` (kcal/mol), mean ± std over seeds.
 
-| molecule | R | method | shots | n | error | subspace | qubits | wall (s) |
-|---|---|---|---|---|---|---|---|---|
-| ScF | – | LASSCF | – | 1 | – | – | – | 31.2 |
-| ScF | – | LASSQD (eps=0) | 1000 | 3 | +12.745 ± 12.069 | 0.278 | 18 | 458.1 |
-| ScF | – | LASSQD (eps=0) | 10000 | 3 | +3.612 ± 3.966 | 0.713 | 18 | 953.9 |
-| ScF | – | LASSQD (eps=1e-05) | 1000 | 3 | +8.693 ± 13.932 | 0.472 | 18 | 457.4 |
-| ScF | – | LASSQD (eps=1e-05) | 10000 | 3 | +0.000 ± 0.000 | 1.000 | 18 | 631.0 |
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+for i in 0 1 2 3; do
+  nohup python tools/run_benchmark.py benchmarks/scf_carryover.json --out $B/scf --shard $i/4 > $B/scf_carryover_$i.log 2>&1 &
+done
+sleep 30; tail -2 $B/scf_carryover_*.log
+
+grep -c " ok " $B/scf_carryover_*.log
+
+When all four logs end with [collect], merge, check and plot:
+
+bash
+python tools/run_benchmark.py --out $B/scf --check
+python tools/plot_benchmark.py $B/scf
