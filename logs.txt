@@ -1,62 +1,44 @@
-git pull
-B=/home/loharkar/quenais-standalone/benchmark_results
-python tools/run_benchmark.py benchmarks/scf_carryover.json --out $B/scf --dry-run 2>/dev/null | head -1
-
-
-for i in 0 1 2 3; do
-  nohup python tools/run_benchmark.py benchmarks/scf_carryover.json --out $B/scf --shard $i/4 > $B/scf_carryover_$i.log 2>&1 &
-done
-sleep 30; tail -2 $B/scf_carryover_*.log
-
-grep -c " ok " $B/scf_carryover_*.log
-
-When all four logs end with [collect], merge, check and plot:
-
-bash
-python tools/run_benchmark.py --out $B/scf --check
-python tools/plot_benchmark.py $B/scf
-
-
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
-remote: Enumerating objects: 8, done.
-remote: Counting objects: 100% (8/8), done.
-remote: Compressing objects: 100% (3/3), done.
-remote: Total 5 (delta 2), reused 5 (delta 2), pack-reused 0 (from 0)
-Unpacking objects: 100% (5/5), 1.07 KiB | 24.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   45bc82f..efed890  main       -> origin/main
-Updating 45bc82f..efed890
-Fast-forward
- benchmarks/scf_carryover.json | 18 ++++++++++++++++++
- logs.txt                      | 72 +++++++++++++++---------------------------------------------------------
- 2 files changed, 33 insertions(+), 57 deletions(-)
- create mode 100644 benchmarks/scf_carryover.json
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
-B=/home/loharkar/quenais-standalone/benchmark_results
-python tools/run_benchmark.py benchmarks/scf_carryover.json --out $B/scf --dry-run 2>/dev/null | head -1
-Already up to date.
-[benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 81  -> /home/loharkar/quenais-standalone/benchmark_results/scf
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ for i in 0 1 2 3; do
-  nohup python tools/run_benchmark.py benchmarks/scf_carryover.json --out $B/scf --shard $i/4 > $B/scf_carryover_$i.log 2>&1 &
-done
-[2] 75432
-[3] 75433
-[4] 75434
-[5] 75435
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ sleep 30; tail -2 $B/scf_carryover_*.log
-tail: option used in invalid context -- 2
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -2 $B/scf_carryover_*.log
-tail: option used in invalid context -- 2
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep lassqd $B/n2_curve.log | head -3 
+[4/99] ee15d7cdbad7 lassqd  shots=10000 seed=1  ok  108.5 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[5/99] 797ea2f83f01 lassqd  shots=10000 seed=2  ok  107.3 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[6/99] 1c3d82c0340f lassqd  shots=10000 seed=3  ok  106.6 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep lassqd $B/n2_curve.log | head -10
+[4/99] ee15d7cdbad7 lassqd  shots=10000 seed=1  ok  108.5 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[5/99] 797ea2f83f01 lassqd  shots=10000 seed=2  ok  107.3 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[6/99] 1c3d82c0340f lassqd  shots=10000 seed=3  ok  106.6 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -f $B/n2_curve.log
+[benchmark] n2_curve: 99 runs over 9 system(s); this shard: 99  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+  [system c32fa618bbbc] steps 1, 0 ...
+  [system c32fa618bbbc] ready (20 s)
+  [system c32fa618bbbc] step 2 (casci) ...
+[1/99] d090c9ff46de sqd     shots=10000 seed=1  ok   35.9 s  E=-107.52557576  err_solver=+14.8878 kcal/mol  subspace=0.455625
+[2/99] 3702b4284998 sqd     shots=10000 seed=2  ok   11.7 s  E=-107.52653950  err_solver=+14.2830 kcal/mol  subspace=0.5017361111111112
+[3/99] 982f4bb18af6 sqd     shots=10000 seed=3  ok   11.8 s  E=-107.53757261  err_solver=+7.3597 kcal/mol  subspace=0.5136111111111111
+[4/99] ee15d7cdbad7 lassqd  shots=10000 seed=1  ok  108.5 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[5/99] 797ea2f83f01 lassqd  shots=10000 seed=2  ok  107.3 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[6/99] 1c3d82c0340f lassqd  shots=10000 seed=3  ok  106.6 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[7/99] 0585c526c8e7 lassqd  shots=10000 seed=1  ok 1343.7 s  E=-107.11779993  err_solver=- kcal/mol  subspace=1.0
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep -c " ok " $B/scf_carryover_*.log
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_0.log:1
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_1.log:1
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_2.log:0
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_3.log:0
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -f $B/scf_carryover__*.log
+tail: cannot open '/home/loharkar/quenais-standalone/benchmark_results/scf_carryover__*.log' for reading: No such file or directory
+tail: no files remaining
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -f $B/scf_carryover_*.log
 ==> /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_0.log <==
 nohup: ignoring input
 [benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 21  -> /home/loharkar/quenais-standalone/benchmark_results/scf
 [1/21] c9b9c598a009 lassqd  shots=1000 seed=1  skip (done)
+[2/21] 8d48bec91dbc lassqd  shots=1000 seed=5  ok  810.3 s  E=-850.27184589  err_solver=- kcal/mol  subspace=0.25
 
 ==> /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_1.log <==
 nohup: ignoring input
 [benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 20  -> /home/loharkar/quenais-standalone/benchmark_results/scf
 [1/20] d25034cf8b0a lassqd  shots=1000 seed=2  skip (done)
+[2/20] 70af8eab8503 lassqd  shots=3000 seed=1  ok  611.9 s  E=-850.28438702  err_solver=- kcal/mol  subspace=0.4444444444444444
 
 ==> /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_2.log <==
 nohup: ignoring input
@@ -67,10 +49,13 @@ nohup: ignoring input
 nohup: ignoring input
 [benchmark] scf_carryover: 81 runs over 1 system(s); this shard: 20  -> /home/loharkar/quenais-standalone/benchmark_results/scf
 ^C
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
-grep -c " ok " $B/scf_carryover_*.log
-/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_0.log:0
-/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_1.log:0
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep lassqd $B/n2_curve.log | head -3
+[4/99] ee15d7cdbad7 lassqd  shots=10000 seed=1  ok  108.5 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[5/99] 797ea2f83f01 lassqd  shots=10000 seed=2  ok  107.3 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+[6/99] 1c3d82c0340f lassqd  shots=10000 seed=3  ok  106.6 s  E=-105.43297004  err_solver=- kcal/mol  subspace=0.25
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep -c " ok " $B/scf_carryover_*.log
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_0.log:1
+/home/loharkar/quenais-standalone/benchmark_results/scf_carryover_1.log:1
 /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_2.log:0
 /home/loharkar/quenais-standalone/benchmark_results/scf_carryover_3.log:0
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
