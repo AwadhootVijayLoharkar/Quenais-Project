@@ -70,6 +70,10 @@ def build_env(cfg, repo, base_env=None):
     env.update(cfg.gqe.env_overlay())
 
     env.setdefault("GQE_QSCI_REPO_PATH", str(repo))
+    # train.py's stdout is a pipe, so Python block-buffers it: nothing
+    # reaches the log until ~8 KB pile up, and a run that is training looks
+    # identical to one that is hung. Line-buffer it.
+    env.setdefault("PYTHONUNBUFFERED", "1")
     return env
 
 

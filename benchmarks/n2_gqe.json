@@ -1,0 +1,26 @@
+{
+  "name": "n2_gqe",
+  "description": "DMET+GQE along the N2 curve, 3 seeds per point, including the thesis headline point R = 2.1 A. Same defaults as n2_curve.json, so with --out pointing at the n2_curve folder the systems are reused and the rows join the curve.",
+  "defaults": {
+    "molecule": "N2", "basis": "sto-3g",
+    "active_space_method": "avas", "avas_ao_labels": ["N 2s", "N 2p"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASSCF", "CASCI", "FCI"],
+    "dmet_reference": "casci", "ansatz": "lucj", "mapping": "jw", "backend": "mps",
+    "lassqd_lucj_optimize": true, "lassqd_carryover_eps": 1e-5, "shots": 10000,
+    "cudaq_target": "nvidia"
+  },
+  "studies": [
+    {"name": "gqe_curve",
+     "cases": [
+       {"geometry": "N 0 0 0; N 0 0 1.1", "tag_R": 1.1},
+       {"geometry": "N 0 0 0; N 0 0 1.4", "tag_R": 1.4},
+       {"geometry": "N 0 0 0; N 0 0 1.8", "tag_R": 1.8},
+       {"geometry": "N 0 0 0; N 0 0 2.1", "tag_R": 2.1},
+       {"geometry": "N 0 0 0; N 0 0 2.5", "tag_R": 2.5}
+     ],
+     "sweep": {"solver": ["gqe"], "seed": [1, 2, 3]}},
+    {"name": "sqd_at_2.1",
+     "cases": [{"geometry": "N 0 0 0; N 0 0 2.1", "tag_R": 2.1}],
+     "sweep": {"solver": ["sqd"], "seed": [1, 2, 3]}}
+  ]
+}

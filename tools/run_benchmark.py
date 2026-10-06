@@ -363,29 +363,46 @@ def child_prep_dmet(out, sid, ref):
                                      "timings_s": {"step2": time.perf_counter() - t0}})
 
 
-def child_run(out, rid):
-    """Step 3 in runs/<rid>/, then row.json."""
+#: Columns a rebuilt row keeps from the original run: they describe WHEN and
+#: WITH WHAT the energy was computed, which a rebuild does not change.
+KEEP_ON_REBUILD = ("quenais_version", "git_sha", "git_dirty", "timestamp_utc",
+                   "hostname", "python", "platform", "cpu_count",
+                   "slurm_job_id", "slurm_array_task_id", "versions_json",
+                   "threads_json", "t_step3_s")
+
+
+def child_run(out, rid, rebuild=False):
+    """Step 3 in runs/<rid>/, then row.json.
+
+    rebuild=True re-derives row.json from the step-3 results already on disk
+    (no solver run), keeping the original provenance columns. Used to add
+    columns introduced after a run finished.
+    """
     import pickle
 
     from quenais.cli import run_step
 
     rdir = run_dir(out, rid)
     spec = _read_json(rdir / "run.json")
+    old_row = _read_json(rdir / "row.json") if rebuild else None
     params, solver = spec["params"], spec["params"]["solver"]
     sdir = system_dir(out, spec["system_id"])
     res = rdir / "results"
     res.mkdir(parents=True, exist_ok=True)
-    for name in ("step0_classical.pkl", "step1_asf.pkl"):
+    for name in (() if rebuild else ("step0_classical.pkl", "step1_asf.pkl")):
         shutil.copy2(sdir / "results" / name, res / name)
-    if solver in DMET_SOLVERS:
+    if solver in DMET_SOLVERS and not rebuild:
         ref = params.get("dmet_reference", "casci")
         shutil.copy2(dmet_dir(out, spec["system_id"], ref) / "results"
                      / "step2_hamiltonian.pkl", res / "step2_hamiltonian.pkl")
 
     cfg, args = _cfg_for(params, rdir)
-    t0 = time.perf_counter()
-    run_step(3, cfg, args)
-    t_step3 = time.perf_counter() - t0
+    if rebuild:
+        t_step3 = (old_row or {}).get("t_step3_s")
+    else:
+        t0 = time.perf_counter()
+        run_step(3, cfg, args)
+        t_step3 = time.perf_counter() - t0
 
     def load(path):
         with open(path, "rb") as fh:
@@ -395,6 +412,11 @@ def child_run(out, rid):
     step1 = load(res / "step1_asf.pkl")
     step2 = load(res / "step2_hamiltonian.pkl") if solver in DMET_SOLVERS else None
     row = build_row(spec, cfg, step0, step1, step2, rdir, t_step3, load)
+    if rebuild and old_row:
+        for k in KEEP_ON_REBUILD:
+            if k in old_row:
+                row[k] = old_row[k]
+        row["row_rebuilt_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     _write_json(rdir / "row.json", row)
     print(f"\n[benchmark] row written: energy={row.get('energy_Ha')}  "
           f"err_vs_best_ref={row.get('err_vs_best_ref_kcal')} kcal/mol")
@@ -460,6 +482,9 @@ def build_row(spec, cfg, step0, step1, step2, rdir, t_step3, load):
 
     if route == "dmet":
         row.update(_dmet_part(params, cfg, step2, rdir, load))
+        t0 = time.perf_counter()
+        row.update(selection_metrics(cfg, row.get("subspace_dim")))
+        row["t_selection_s"] = time.perf_counter() - t0
     else:
         row.update(_las_part(params, cfg, load))
 
@@ -470,6 +495,9 @@ def build_row(spec, cfg, step0, step1, step2, rdir, t_step3, load):
     if row.get("solver_ref_energy_Ha") is not None:
         row["err_solver_kcal"] = _kcal(E, row["solver_ref_energy_Ha"])
         row["variational_ok"] = bool(E >= row["solver_ref_energy_Ha"] - 1e-6)
+    if row.get("err_cipsi_kcal") is not None and row.get("err_solver_kcal") is not None:
+        # > 0: the solver beat classical selection at the same budget
+        row["advantage_vs_cipsi_kcal"] = row["err_cipsi_kcal"] - row["err_solver_kcal"]
     sf = row.get("subspace_fraction")
     row["subspace_fraction"] = sf
     row["t_step3_s"] = t_step3
@@ -499,6 +527,57 @@ def build_row(spec, cfg, step0, step1, step2, rdir, t_step3, load):
         "run_dir": str(rdir),
     })
     return row
+
+
+def selection_metrics(cfg, budget, max_det=2_000_000):
+    """
+    The thesis' reference points for a DMET-route run, on the embedding
+    Hamiltonian of THIS run (step 2 pickle):
+
+      w1            weight |c0|^2 of the largest exact CI amplitude
+      oracle        best variational energy from ANY `budget` determinants
+                    (top-|c| ranking of the exact vector, re-diagonalised)
+      cipsi         classical perturbative selection grown to the same budget
+
+    budget = the solver's diagonalised subspace dimension, so the three are
+    compared at an identical determinant count. Never raises: a failure is
+    recorded in `selection_error` and the row still writes.
+    """
+    out = {}
+    try:
+        from quenais.quantum.det_analysis import (
+            casci_vector, n_for_weight, projected_energy, weight_curve)
+        from quenais.quantum.det_expansion import cipsi_from_scratch
+        from quenais.quantum.gqe_adapter import load_from_dmet_pickle
+
+        mol = load_from_dmet_pickle(cfg.step2_file)
+        e_exact, flat, space = casci_vector(mol)
+        out["ndet_full"] = int(space.ndet)
+        if space.ndet > max_det:
+            out["selection_error"] = f"space of {space.ndet} determinants > {max_det}"
+            return out
+        order, cum = weight_curve(flat)
+        out["w1"] = float(cum[0])
+        nw = n_for_weight(cum, (0.99, 0.999))
+        out["n_det_99pct"], out["n_det_999pct"] = nw[0.99], nw[0.999]
+        if not budget:
+            return out
+        n = int(min(int(budget), space.ndet))
+        out["n_det_budget"] = n
+        if n >= space.ndet:
+            out.update(E_oracle_Ha=e_exact, E_cipsi_Ha=e_exact,
+                       err_oracle_kcal=0.0, err_cipsi_kcal=0.0)
+            return out
+        e_or = projected_energy(mol, order[:n], space=space)
+        sel, _hist = cipsi_from_scratch(mol, n, space=space, verbose=False)
+        e_ci = projected_energy(mol, sel, space=space)
+        out.update(E_oracle_Ha=e_or, E_cipsi_Ha=e_ci,
+                   n_det_cipsi=int(len(sel)),
+                   err_oracle_kcal=(e_or - e_exact) * HARTREE_TO_KCAL,
+                   err_cipsi_kcal=(e_ci - e_exact) * HARTREE_TO_KCAL)
+    except Exception as exc:     # a reference point must never kill a row
+        out["selection_error"] = repr(exc)[:300]
+    return out
 
 
 def _dmet_part(params, cfg, step2, rdir, load):
@@ -850,7 +929,8 @@ def _fail_row(spec, error):
             "study": spec["study"], "solver": spec["params"]["solver"],
             "molecule": spec["params"].get("molecule"),
             "basis": spec["params"].get("basis"),
-            "seed": spec["params"].get("seed", spec["params"].get("lassqd_seed")),
+            "seed": spec["params"].get("seed", spec["params"].get(
+                "lassqd_seed", spec["params"].get("gqe_seed"))),
             "shots_per_circuit": spec["params"].get(
                 "shots", spec["params"].get("lassqd_shots")),
             **spec["tags"], "error": error,
@@ -903,7 +983,7 @@ def execute(out, runs, retry_failed, timeout):
         prior = _read_json(rdir / "row.json")
         label = (f"[{i}/{n}] {run['run_id']} {run['params']['solver']:<7} "
                  f"shots={run['params'].get('shots', run['params'].get('lassqd_shots', '-'))} "
-                 f"seed={run['params'].get('seed', run['params'].get('lassqd_seed', '-'))}")
+                 f"seed={run['params'].get('seed', run['params'].get('lassqd_seed', run['params'].get('gqe_seed', '-')))}")
         if prior and prior.get("status") == "ok":
             print(f"{label}  skip (done)")
             continue
@@ -948,6 +1028,10 @@ def main(argv=None):
     ap.add_argument("--_prep-system", nargs=2, dest="prep_system", help=argparse.SUPPRESS)
     ap.add_argument("--_prep-dmet", nargs=3, dest="prep_dmet", help=argparse.SUPPRESS)
     ap.add_argument("--_run", nargs=2, dest="child_run", help=argparse.SUPPRESS)
+    ap.add_argument("--_row", nargs=2, dest="child_row", help=argparse.SUPPRESS)
+    ap.add_argument("--rebuild-rows", action="store_true",
+                    help="re-derive every ok row.json from results on disk "
+                         "(adds new columns; no solver is re-run)")
     a = ap.parse_args(argv)
 
     try:
@@ -960,6 +1044,9 @@ def main(argv=None):
         if a.child_run:
             child_run(*a.child_run)
             return 0
+        if a.child_row:
+            child_run(*a.child_row, rebuild=True)
+            return 0
     except Exception:
         traceback.print_exc()
         return 1
@@ -968,6 +1055,17 @@ def main(argv=None):
         ap.error("--out is required")
     out = Path(os.path.expanduser(a.out)).resolve()
     if a.collect_only:
+        collect(out)
+        return 0
+    if a.rebuild_rows:
+        done = sorted(p.parent.name for p in (out / "runs").glob("*/row.json")
+                      if (_read_json(p) or {}).get("status") == "ok")
+        print(f"[rebuild] {len(done)} ok runs")
+        for i, rid in enumerate(done, 1):
+            rc, dt = _spawn(["--_row", str(out), rid],
+                            run_dir(out, rid) / "rebuild.log", a.timeout)
+            print(f"  [{i}/{len(done)}] {rid}  {'ok' if rc == 0 else f'FAILED rc={rc}'}"
+                  f"  ({dt:.0f} s)")
         collect(out)
         return 0
     if a.check:

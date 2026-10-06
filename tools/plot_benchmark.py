@@ -367,12 +367,16 @@ def tables(rows, labels, out, key, npe):
         e, es = ms(key)
         sf, _ = ms("subspace_fraction")
         t, _ = ms("t_step3_s")
+        w1, _ = ms("w1")
+        eo, _ = ms("err_oracle_kcal")
+        ec, _ = ms("err_cipsi_kcal")
         lines.append({
             "method": labels[cid], "molecule": rs[0]["molecule"], "R": R,
             "shots": shots, "n": len(rs),
             "error_mean_kcal": e, "error_std_kcal": es,
             "subspace_fraction": sf, "qubits": rs[0].get("n_qubits") or "",
             "wall_s": t, "solver": rs[0]["solver"],
+            "w1": w1, "oracle_kcal": eo, "cipsi_kcal": ec,
         })
     lines.sort(key=lambda d: (d["molecule"], _num(d["R"]) or 0,
                               SOLVER_ORDER.index(d["solver"])
@@ -380,7 +384,8 @@ def tables(rows, labels, out, key, npe):
                               d["method"], _num(d["shots"]) or 0))
     out.mkdir(parents=True, exist_ok=True)
     keys = ["molecule", "R", "method", "shots", "n", "error_mean_kcal",
-            "error_std_kcal", "subspace_fraction", "qubits", "wall_s"]
+            "error_std_kcal", "oracle_kcal", "cipsi_kcal", "w1",
+            "subspace_fraction", "qubits", "wall_s"]
     with open(out / "summary.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=keys, extrasaction="ignore")
         w.writeheader()
@@ -389,13 +394,16 @@ def tables(rows, labels, out, key, npe):
     def f(x, p=3):
         return "–" if x is None else f"{x:.{p}f}"
     md = [f"Error = `{key}` (kcal/mol), mean ± std over seeds.\n",
-          "| molecule | R | method | shots | n | error | subspace | qubits | wall (s) |",
-          "|---|---|---|---|---|---|---|---|---|"]
+          "Oracle / CIPSI = best possible / classical selection with the SAME "
+          "number of determinants (DMET route only).\n",
+          "| molecule | R | method | shots | n | error | oracle | CIPSI | w1 | subspace | qubits | wall (s) |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for d in lines:
         err = ("–" if d["error_mean_kcal"] is None else
                f"{d['error_mean_kcal']:+.3f} ± {d['error_std_kcal']:.3f}")
         md.append(f"| {d['molecule']} | {d['R'] or '–'} | {d['method']} | "
                   f"{d['shots'] or '–'} | {d['n']} | {err} | "
+                  f"{f(d['oracle_kcal'])} | {f(d['cipsi_kcal'])} | {f(d['w1'])} | "
                   f"{f(d['subspace_fraction'])} | {d['qubits'] or '–'} | "
                   f"{f(d['wall_s'], 1)} |")
     if npe:

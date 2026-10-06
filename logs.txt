@@ -1,89 +1,9 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ tail -2 $B/gqe_h8.log 
-[collect] 28 runs (28 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results.csv
-[collect] 10 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results_agg.csv
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py --out $B/h8_smoke --check
-[collect] 28 runs (28 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results.csv
-[collect] 10 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results_agg.csv
+B=/home/loharkar/quenais-standalone/benchmark_results
+python tools/run_benchmark.py --out $B/h8_smoke --rebuild-rows
+python tools/plot_benchmark.py $B/h8_smoke
+cat $B/h8_smoke/figures/summary.md
 
-== 1. Required columns ==
-  gqe        3 rows  PASS
-  lasscf     1 rows  PASS
-  lassqd    12 rows  PASS
-  skqd       6 rows  PASS
-  sqd        6 rows  PASS
 
-== 2. Sanity ==
 
-== 3. Seed repeats ==
-  gqe                                         shots=None    seeds=[1, 2, 3]  spread=7.44e-02 kcal/mol  subspace=0.382-0.410
-  lassqd   carryover_eps=1e-05 lucj_optimize=True shots=1000    seeds=[1, 2, 3]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
-  lassqd   carryover_eps=1e-05                shots=1000    seeds=[1, 2, 3]  spread=1.87e+01 kcal/mol  subspace=0.250-0.250
-  lassqd   carryover_eps=1e-05                shots=10000   seeds=[1, 2, 3]  spread=1.38e+01 kcal/mol  subspace=0.250-1.000
-  lassqd   carryover_eps=1e-05 lucj_optimize=True shots=10000   seeds=[1, 2, 3]  spread=0.00e+00 kcal/mol  subspace=1.000-1.000
-  skqd                                        shots=1000    seeds=[1, 2, 3]  spread=4.63e-01 kcal/mol  subspace=0.310-0.360
-  skqd                                        shots=10000   seeds=[1, 2, 3]  spread=6.16e-01 kcal/mol  subspace=0.413-0.490
-  sqd                                         shots=1000    seeds=[1, 2, 3]  spread=3.15e+00 kcal/mol  subspace=0.552-0.687
-  sqd                                         shots=10000   seeds=[1, 2, 3]  spread=4.82e+00 kcal/mol  subspace=0.916-1.000
-
-== 4. Summary (mean +- std over seeds) ==
-  solver      shots   n    err_solver kcal/mol   err_vs_best kcal/mol  subspace   t3 (s)
-  gqe             -   3      +0.0717 +- 0.0402      +0.0717 +- 0.0402     0.394    858.3
-  lasscf          -   1                      -     +28.5888 +- 0.0000         -     44.6
-  lassqd       1000   3      +0.0001 +- 0.0000     +28.5889 +- 0.0000     1.000     56.6
-  lassqd       1000   3    +42.5441 +- 10.7842    +71.1329 +- 10.7842     0.250     31.2
-  lassqd      10000   3      +7.4174 +- 6.9545     +36.0062 +- 6.9545     0.500     47.6
-  lassqd      10000   3      +0.0001 +- 0.0000     +28.5889 +- 0.0000     1.000     58.3
-  skqd         1000   3      +1.7868 +- 0.2382      +1.7868 +- 0.2382     0.332   1468.3
-  skqd        10000   3      +0.9985 +- 0.3350      +0.9985 +- 0.3350     0.458   1471.0
-  sqd          1000   3     +17.5700 +- 1.5994     +17.5700 +- 1.5994     0.597      7.4
-  sqd         10000   3      +1.6282 +- 2.7670      +1.6282 +- 2.7670     0.963      7.8
-
-== Result ==
-  note: 091608e2e059 sqd: git tree was dirty when this ran
-  note: 0b2f133585e3 lassqd: git tree was dirty when this ran
-  note: 226e03b411b4 sqd: git tree was dirty when this ran
-  note: 29bd3030b004 lassqd: git tree was dirty when this ran
-  note: 3e90e9db4be4 skqd: git tree was dirty when this ran
-  note: 449835098a6e lassqd: git tree was dirty when this ran
-  note: 58a24bd6ed7f lassqd: git tree was dirty when this ran
-  note: 5aa99bd35e06 sqd: git tree was dirty when this ran
-  note: 5adaf3920585 skqd: git tree was dirty when this ran
-  note: 5cdb58455164 sqd: git tree was dirty when this ran
-  note: 73c5450d45df lassqd: git tree was dirty when this ran
-  note: 7d5475928f48 lassqd: git tree was dirty when this ran
-  note: 81ee048810ac skqd: git tree was dirty when this ran
-  note: 832ae8142a7e skqd: git tree was dirty when this ran
-  note: 83fbcc176ba0 sqd: git tree was dirty when this ran
-  note: 8aca9cc998ca lassqd: git tree was dirty when this ran
-  note: abb700d10dbb lassqd: git tree was dirty when this ran
-  note: c25993d5db59 lassqd: git tree was dirty when this ran
-  note: d10f2e4497f0 lasscf: git tree was dirty when this ran
-  note: d5ee15057527 lassqd: git tree was dirty when this ran
-  note: d6a815f97dd7 sqd: git tree was dirty when this ran
-  note: e22fc31c00ff lassqd: git tree was dirty when this ran
-  note: e4d799007244 skqd: git tree was dirty when this ran
-  note: f29a794a84f9 lassqd: git tree was dirty when this ran
-  note: fcd4e9483e14 skqd: git tree was dirty when this ran
-  CHECK PASSED
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/plot_benchmark.py  $B/h8_smoke 
-[plot] 28 runs, 6 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures
-  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/error_vs_shots.png/.pdf
-  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/subspace_vs_error.png/.pdf
-  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/las_convergence.png/.pdf
-  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/summary.md and summary.csv (10 rows)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ cat $B/h8_smoke/figures/summary.md 
-Error = `err_solver_kcal` (kcal/mol), mean ± std over seeds.
-
-| molecule | R | method | shots | n | error | subspace | qubits | wall (s) |
-|---|---|---|---|---|---|---|---|---|
-| H8 | – | DMET+SQD | 1000 | 3 | +17.570 ± 1.599 | 0.597 | 16 | 7.4 |
-| H8 | – | DMET+SQD | 10000 | 3 | +1.628 ± 2.767 | 0.963 | 16 | 7.8 |
-| H8 | – | DMET+SKQD | 1000 | 3 | +1.787 ± 0.238 | 0.332 | 16 | 1468.3 |
-| H8 | – | DMET+SKQD | 10000 | 3 | +0.999 ± 0.335 | 0.458 | 16 | 1471.0 |
-| H8 | – | DMET+GQE | – | 3 | +0.072 ± 0.040 | 0.394 | 16 | 858.3 |
-| H8 | – | LASSCF | – | 1 | – | – | – | 44.6 |
-| H8 | – | LASSQD (no opt) | 1000 | 3 | +42.544 ± 10.784 | 0.250 | 16 | 31.2 |
-| H8 | – | LASSQD (no opt) | 10000 | 3 | +7.417 ± 6.954 | 0.500 | 16 | 47.6 |
-| H8 | – | LASSQD (opt) | 1000 | 3 | +0.000 ± 0.000 | 1.000 | 16 | 56.6 |
-| H8 | – | LASSQD (opt) | 10000 | 3 | +0.000 ± 0.000 | 1.000 | 16 | 58.3 |
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ 
+python tools/run_benchmark.py benchmarks/n2_gqe.json --out $B/n2_curve --dry-run 2>/dev/null | head -1
+nohup python tools/run_benchmark.py benchmarks/n2_gqe.json --out $B/n2_curve > $B/n2_gqe.log 2>&1 &
