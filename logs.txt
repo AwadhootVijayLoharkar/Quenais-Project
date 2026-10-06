@@ -1,117 +1,36 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ export OMPI_MCA_pml=ob1
-export OMPI_MCA_btl=self,vader,tcp
-export OMPI_MCA_osc=^ucx
-export UCX_NET_DEVICES=lo
-timeout 30 python -c "from mpi4py import MPI; print('MPI OK:', MPI.COMM_WORLD.Get_size())"
-MPI OK: 1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ cat >> ~/.bashrc <<'EOF'
-export OMPI_MCA_pml=ob1
-export OMPI_MCA_btl=self,vader,tcp
-export OMPI_MCA_osc=^ucx
-export UCX_NET_DEVICES=lo
-export PYTHONUNBUFFERED=1
-EOF
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ quenais-doctor
-B=/home/loharkar/quenais-standalone/benchmark_results
-nohup python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed > $B/gqe_smoke.log 2>&1 &
-sleep 120; grep -c "^\[epoch" $B/gqe_smoke/runs/8d80a341c68c/run.log
-quenais-doctor  --  python 3.11.15 on Linux-5.15.0-198-generic-x86_64-with-glibc2.41
-
-[  ok  ] CPU AVX-512                            absent, but PySCF was built from source
-[  ok  ] GPU                                    NVIDIA GeForce RTX 4070 Ti SUPER (cc 8.9)
-[  ok  ] setuptools                             81.0.0, pkg_resources importable
-[  ok  ] CUDAQ_DEFAULT_SIMULATOR                nvidia
-[  ok  ] WANDB_MODE                             disabled
-[  ok  ] MPI ABI                                both link libmpi.so.40.40.7
-^CTraceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/quenais-doctor", line 6, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 524, in main
-    rep = run_checks(repo)
-          ^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 497, in run_checks
-    fn(rep)
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/env_check.py", line 332, in check_imports
-    importlib.import_module(mod)
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/importlib/__init__.py", line 126, in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
-  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
-  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/openfermion/__init__.py", line 46, in <module>
-    from openfermion.hamiltonians import (
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/openfermion/hamiltonians/__init__.py", line 13, in <module>
-    from .general_hubbard import (
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/openfermion/hamiltonians/general_hubbard.py", line 17, in <module>
-    from openfermion.utils import SpinPairs, Spin
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/openfermion/utils/__init__.py", line 20, in <module>
-    from .commutators import (
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/openfermion/utils/commutators.py", line 17, in <module>
-    from openfermion.transforms.opconversions.term_reordering import normal_ordered
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/openfermion/transforms/__init__.py", line 13, in <module>
-    from .opconversions import (
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/openfermion/transforms/opconversions/__init__.py", line 55, in <module>
-    from .qubitoperator_to_paulisum import qubit_operator_to_pauli_sum
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/openfermion/transforms/opconversions/qubitoperator_to_paulisum.py", line 13, in <module>
-    import cirq
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/cirq/__init__.py", line 21, in <module>
-    from cirq._compat import __cirq_debug__ as __cirq_debug__, with_debug as with_debug
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/cirq/_compat.py", line 35, in <module>
-    import pandas as pd
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pandas/__init__.py", line 116, in <module>
-    from pandas.core.computation.api import eval
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pandas/core/computation/api.py", line 2, in <module>
-    from pandas.core.computation.eval import eval
-  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
-  File "<frozen importlib._bootstrap_external>", line 1032, in get_code
-  File "<frozen importlib._bootstrap_external>", line 1131, in get_data
-KeyboardInterrupt
-
-[1] 22145
-^C
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ quenais-doctor
-quenais-doctor  --  python 3.11.15 on Linux-5.15.0-198-generic-x86_64-with-glibc2.41
-
-[  ok  ] CPU AVX-512                            absent, but PySCF was built from source
-[  ok  ] GPU                                    NVIDIA GeForce RTX 4070 Ti SUPER (cc 8.9)
-[  ok  ] setuptools                             81.0.0, pkg_resources importable
-[  ok  ] CUDAQ_DEFAULT_SIMULATOR                nvidia
-[  ok  ] WANDB_MODE                             disabled
-[  ok  ] MPI ABI                                both link libmpi.so.40.40.7
-[  ok  ] required packages                      all 13 importable
-[  ok  ] numpy/pyscf einsum                     pyscf 2.14.0 / numpy 2.4.6
-[  ok  ] torch/cudaq coexistence                torch -> pytorch_lightning -> gqe_qsci -> cudaq
-[  ok  ] GQE shims                              dmet_excitation_pool, dmet_molecule_adapter
-[  ok  ] shipped patch                          /home/loharkar/quenais-standalone/Quenais-Project/quenais/patches/gqe_dmet_source.patch
-[  ok  ] gqe-for-qsci checkout                  patched at /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
-
-12 ok, 0 warnings, 0 failures
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed > $B/gqe_smoke.log 2>&1 &
-[2] 22909
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ sleep 120; grep -c "^\[epoch" $B/gqe_smoke/runs/8d80a341c68c/run.log
-19
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ grep -c "^\[epoch" $B/gqe_smoke/runs/8d80a341c68c/run.lo
-g
-20
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ tail -3 $B/gqe_smoke.log 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ pgrep -af run_benchmark
+[2]+  Done                    nohup python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed > $B/gqe_smoke.log 2>&1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failedDDDDD^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ pgrep -af run_benchmark
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed
 [benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
-[1/2] 8d80a341c68c gqe     shots=- seed=-  ok  144.1 s  E=-2.16638745  err_solver=-0.0000 kcal/mol  subspace=0.5555555555555556
-runs/8d80a341c68c/run.log
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ tail -20 $B/gqe_smoke.log 
-[1]-  Done                    nohup python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed > $B/gqe_smoke.log 2>&1
-nohup: ignoring input
-[benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
-[1/2] 8d80a341c68c gqe     shots=- seed=-  ok  144.1 s  E=-2.16638745  err_solver=-0.0000 kcal/mol  subspace=0.5555555555555556
-runs/8d80a341c68c/run.log
-[2/2] e8f58c6f4dc1 gqe     shots=- seed=-  FAILED rc=1 (136 s) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/runs/e8f58c6f4dc1/run.log
-[collect] 2 runs (1 ok, 1 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
+[1/2] 8d80a341c68c gqe     shots=- seed=-  skip (done)
+[2/2] e8f58c6f4dc1 gqe     shots=- seed=-  skip (done)
+[collect] 2 runs (2 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
 [collect] 1 configurations -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results_agg.csv
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed
+[benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
+[1/2] 8d80a341c68c gqe     shots=- seed=-  skip (done)
+[2/2] e8f58c6f4dc1 gqe     shots=- seed=-  skip (done)
+[collect] 2 runs (2 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
+[collect] 1 configurations -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results_agg.csv
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py --out $B/gqe_smoke --check
+[collect] 2 runs (2 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
+[collect] 1 configurations -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results_agg.csv
+
+== 1. Required columns ==
+  gqe        2 rows  PASS
+
+== 2. Sanity ==
+
+== 3. Seed repeats ==
+  gqe                                         shots=None    seeds=[1, 2]  spread=8.36e-13 kcal/mol  subspace=0.556-0.556
+
+== 4. Summary (mean +- std over seeds) ==
+  solver      shots   n    err_solver kcal/mol   err_vs_best kcal/mol  subspace   t3 (s)
+  gqe             -   2      -0.0000 +- 0.0000      +0.0000 +- 0.0000     0.556    132.7
+
+== Result ==
+  note: CCSD_T below FCI on 1 system(s) -- not variational; expected at stretched geometry, and itself a result
+  CHECK PASSED
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ 
