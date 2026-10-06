@@ -1,21 +1,82 @@
-nvidia-smi --query-gpu=name --format=csv,noheader
-python -c "import cudaq; print(cudaq.__version__)"
-B=/home/loharkar/quenais-standalone/benchmark_results
-python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke
-
-
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ nvidia-smi --query-gpu=name --format=csv,noheader
-python -c "import cudaq; print(cudaq.__version__)"
-B=/home/loharkar/quenais-standalone/benchmark_results
-python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke
-NVIDIA GeForce RTX 4070 Ti SUPER
-CUDA-Q Version 0.15.1 (https://github.com/NVIDIA/cuda-quantum aca5853a76d499ecc3d5f97c2e06163ae99d9c75)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ echo "repo path: $GQE_QSCI_REPO_PATH"
+repo path: 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ export GQE_QSCI_REPO_PATH=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke
+ --retry-failed
 [benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
-  [system 5844585e34c1] steps 1, 0 ...
-  [system 5844585e34c1] ready (5 s)
-  [system 5844585e34c1] step 2 (casci) ...
-[1/2] 8d80a341c68c gqe     shots=- seed=-  FAILED rc=1 (1 s) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/runs/8d80a341c68c/run.log
-[2/2] e8f58c6f4dc1 gqe     shots=- seed=-  FAILED rc=1 (1 s) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/runs/e8f58c6f4dc1/run.log
-[collect] 2 runs (0 ok, 2 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
-[collect] 1 configurations -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results_agg.csv
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ 
+^CTraceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1005, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 999, in main
+    execute(out, mine, a.retry_failed, a.timeout)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 923, in execute
+    rc, dt = _spawn(["--_run", str(out), run["run_id"]], rdir / "run.log", timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 309, in _spawn
+    proc = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 2053, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 2011, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed
+[benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
+^CTraceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1005, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 999, in main
+    execute(out, mine, a.retry_failed, a.timeout)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 923, in execute
+    rc, dt = _spawn(["--_run", str(out), run["run_id"]], rdir / "run.log", timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 309, in _spawn
+    proc = subprocess.run(cmd, stdout=log, stderr=subprocess.STDOUT,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 2053, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/subprocess.py", line 2011, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ tail -15 $B/gqe_smoke/runs/8d80a341c68c/run.log 
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 961, in main
+    child_run(*a.child_run)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 387, in child_run
+    run_step(3, cfg, args)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/cli.py", line 501, in run_step
+    return dispatch(cfg, force=args.force)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/__init__.py", line 58, in dispatch
+    return gqe_runner.main(cfg, force=force, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/gqe_runner.py", line 211, in main
+    for line in proc.stdout:
+  File "<frozen codecs>", line 319, in decode
+KeyboardInterrupt
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke --retry-failed
+[benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
