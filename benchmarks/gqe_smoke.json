@@ -1,0 +1,13 @@
+{
+  "name": "gqe_smoke",
+  "description": "First GQE run through the benchmark driver. H4/sto-3g, full space (36 determinants), so the exact answer is known and the pipeline is what is being tested. 20 epochs only. Run on the A100 node.",
+  "defaults": {
+    "molecule": "H4", "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0",
+    "active_space_method": "avas", "avas_ao_labels": ["H 1s"],
+    "classical_methods": ["HF", "MP2", "CCSD", "CCSD_T", "CASCI", "FCI"],
+    "dmet_reference": "casci",
+    "solver": "gqe", "cudaq_target": "nvidia", "gqe_max_iters": 20
+  },
+  "studies": [{"name": "smoke", "sweep": {"seed": [1, 2]}}]
+}
