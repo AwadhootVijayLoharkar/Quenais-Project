@@ -716,8 +716,10 @@ def _isnan(x):
 # Check: does the CSV carry what the figures need, and is it sane?
 # ═════════════════════════════════════════════════════════════════════════
 
+# E_FCI_Ha / E_CASCI_Ha are not required individually: FCI is impossible
+# past ~16 orbitals (ScF), so "some exact reference exists" is the check.
 REQUIRED_ALL = ["energy_Ha", "err_vs_best_ref_kcal", "best_ref_name",
-                "E_FCI_Ha", "E_CASCI_Ha", "n_active_el", "n_active_orb",
+                "E_best_ref_Ha", "n_active_el", "n_active_orb",
                 "t_step3_s", "git_sha", "rerun_cmd", "settings_json",
                 "params_json", "versions_json", "reproducibility"]
 REQUIRED_BY_SOLVER = {
@@ -801,7 +803,11 @@ def check(out):
         seeds = sorted(r.get("seed") for r in rs)
         spread = (max(es) - min(es)) * HARTREE_TO_KCAL if es else 0
         sfs = [r.get("subspace_fraction") or 0 for r in rs]
-        msg = (f"  {rs[0]['solver']:<8} shots={rs[0].get('shots_per_circuit')!s:<7} "
+        p0 = json.loads(rs[0].get("params_json") or "{}")
+        var = " ".join(f"{k.replace('lassqd_', '')}={p0[k]}" for k in
+                       ("lassqd_carryover_eps", "lassqd_lucj_optimize",
+                        "lassqd_lucj_pairs") if k in p0)
+        msg = (f"  {rs[0]['solver']:<8} {var:<34} shots={rs[0].get('shots_per_circuit')!s:<7} "
                f"seeds={seeds}  spread={spread:.2e} kcal/mol  "
                f"subspace={min(sfs):.3f}-{max(sfs):.3f}")
         print(msg)
