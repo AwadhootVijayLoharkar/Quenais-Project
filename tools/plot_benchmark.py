@@ -59,6 +59,9 @@ INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
 CHEM_ACC = 1.0          # kcal/mol
 LOG_FLOOR = 1e-4        # kcal/mol: exact-to-print errors are drawn here
 
+#: the axes figures sweep over; never part of a variant's identity
+AXES = {"seed", "lassqd_seed", "gqe_seed", "shots", "lassqd_shots",
+        "geometry", "xyz"}
 #: params that never distinguish a "variant" (they are axes or identity)
 NOT_VARIANT = {"seed", "lassqd_seed", "gqe_seed", "shots", "lassqd_shots",
                "geometry", "solver", "molecule", "basis"}
@@ -103,6 +106,13 @@ def load(dirs):
             for r in csv.DictReader(fh):
                 if r.get("status") == "ok":
                     r["_params"] = json.loads(r.get("params_json") or "{}")
+                    # A "variant" is a method configuration independent of the
+                    # axes the figures sweep (seed, shots, geometry). The
+                    # driver's config_id still contains shots and geometry,
+                    # so it cannot be used to draw a line across them.
+                    ident = {k: v for k, v in r["_params"].items()
+                             if k not in AXES}
+                    r["_variant"] = json.dumps(ident, sort_keys=True)
                     rows.append(r)
     return rows
 
@@ -112,7 +122,7 @@ def variant_labels(rows):
     the solver's other configurations."""
     by_solver = defaultdict(dict)
     for r in rows:
-        by_solver[r["solver"]][r["config_id"]] = r["_params"]
+        by_solver[r["solver"]][r["_variant"]] = r["_params"]
     out = {}
     for solver, cfgs in by_solver.items():
         keys = set().union(*[p.keys() for p in cfgs.values()]) - NOT_VARIANT
@@ -146,9 +156,9 @@ def _variant_index(rows):
     idx, seen = {}, defaultdict(list)
     for r in rows:
         lst = seen[r["solver"]]
-        if r["config_id"] not in lst:
-            lst.append(r["config_id"])
-        idx[r["config_id"]] = lst.index(r["config_id"])
+        if r["_variant"] not in lst:
+            lst.append(r["_variant"])
+        idx[r["_variant"]] = lst.index(r["_variant"])
     return idx
 
 
@@ -171,12 +181,12 @@ def fig_error_vs_shots(plt, rows, labels, vidx, out, key, mol):
     for r in rows:
         s, e = _num(r.get("shots_per_circuit")), _err(r, key)
         if s and e is not None and r["solver"] != "lasscf":
-            groups[r["config_id"]][s].append(max(e, LOG_FLOOR))
+            groups[r["_variant"]][s].append(max(e, LOG_FLOOR))
     groups = {c: g for c, g in groups.items() if len(g) >= 2}
     if not groups:
         return
     fig, ax = plt.subplots(figsize=(5.2, 3.6))
-    solver_of = {r["config_id"]: r["solver"] for r in rows}
+    solver_of = {r["_variant"]: r["solver"] for r in rows}
     for cid in sorted(groups, key=lambda c: (SOLVER_ORDER.index(solver_of[c])
                                              if solver_of[c] in SOLVER_ORDER else 9,
                                              vidx[c])):
@@ -210,7 +220,7 @@ def fig_subspace_vs_error(plt, rows, labels, vidx, out, key, mol):
     done = set()
     for r, x, y in sorted(pts, key=lambda t: SOLVER_ORDER.index(t[0]["solver"])
                           if t[0]["solver"] in SOLVER_ORDER else 9):
-        cid = r["config_id"]
+        cid = r["_variant"]
         lab = labels[cid] if cid not in done else None
         done.add(cid)
         ax.scatter(x, max(y, LOG_FLOOR), s=28, marker=VARIANT_MARKERS[vidx[cid] % 6],
@@ -245,8 +255,8 @@ def fig_curve(plt, rows, labels, vidx, out, mol):
     for r in cr:
         e = _num(r.get("energy_Ha"))
         if e is not None:
-            meth[r["config_id"]][_num(r["tag_R"])].append(e)
-    solver_of = {r["config_id"]: r["solver"] for r in cr}
+            meth[r["_variant"]][_num(r["tag_R"])].append(e)
+    solver_of = {r["_variant"]: r["solver"] for r in cr}
 
     fig, (a1, a2) = plt.subplots(2, 1, figsize=(5.4, 5.6), sharex=True,
                                  gridspec_kw={"height_ratios": [3, 2]})
@@ -306,7 +316,7 @@ def fig_las_convergence(plt, rows, labels, vidx, out, mol):
     from matplotlib.ticker import MaxNLocator
 
     # one panel per (variant, shots); one line per seed
-    cfgs = sorted({(r["config_id"], _num(r.get("shots_per_circuit")) or 0)
+    cfgs = sorted({(r["_variant"], _num(r.get("shots_per_circuit")) or 0)
                    for r in las}, key=lambda c: (vidx[c[0]], c[1]))[:8]
     ncol = min(4, len(cfgs))
     nrow = math.ceil(len(cfgs) / ncol)
@@ -316,7 +326,7 @@ def fig_las_convergence(plt, rows, labels, vidx, out, mol):
         ax.set_visible(False)
     for ax, (cid, shots) in zip(axes.flat, cfgs):
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        for r in [r for r in las if r["config_id"] == cid
+        for r in [r for r in las if r["_variant"] == cid
                   and (_num(r.get("shots_per_circuit")) or 0) == shots]:
             tr = [e for e in json.loads(r["energy_trace_json"]) if e is not None]
             e0 = ref.get(r["system_id"])
@@ -344,7 +354,7 @@ def fig_las_convergence(plt, rows, labels, vidx, out, mol):
 def tables(rows, labels, out, key, npe):
     groups = defaultdict(list)
     for r in rows:
-        groups[(r["config_id"], r.get("shots_per_circuit") or "", r.get("tag_R") or "")
+        groups[(r["_variant"], r.get("shots_per_circuit") or "", r.get("tag_R") or "")
                ].append(r)
     lines = []
     for (cid, shots, R), rs in groups.items():

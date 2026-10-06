@@ -1,33 +1,17 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ B=/home/loharkar/quenais-standalone/benchmark_results/
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -2 $B/scf.log
-[collect] 13 runs (13 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/scf/results.csv
-[collect] 5 configurations -> /home/loharkar/quenais-standalone/benchmark_results/scf/results_agg.csv
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -15  $B/scf/runs/$(ls -t $B/scf/runs | head -1)/run.log
-[Step 3] LASSCF -- ScF
-============================================================
-  fragment Sc         atoms [0]  (6o, 1a+1b, 2S=0)  localisation: min singular value 0.955
-  fragment F          atoms [1]  (3o, 3a+3b, 2S=0)  localisation: min singular value 0.975
-  LAS cycle   0  E = -849.8998551942  |g_orb| = 1.24e+00
-  LAS cycle   1  E = -850.2855088726  dE = -3.86e-01  |g_orb| = 3.58e-02
-  LAS cycle   2  E = -850.2864839011  dE = -9.75e-04  |g_orb| = 2.20e-03
-  LAS cycle   3  E = -850.2864864897  dE = -2.59e-06  |g_orb| = 2.74e-04
-  LAS cycle   4  E = -850.2864865096  dE = -1.99e-08  |g_orb| = 4.03e-05
-  LAS cycle   5  E = -850.2864865100  dE = -3.76e-10  |g_orb| = 5.73e-06
+python tools/run_benchmark.py --out $B/scf --check
+grep -E "^(status|E_CASSCF)" -m1 $B/scf/results.csv >/dev/null; python -c "
+import csv; r=[x for x in csv.DictReader(open('$B/scf/results.csv')) if x['solver']=='lasscf'][0]
+print('CASSCF', r['E_CASSCF_Ha']); print('CASCI ', r['E_CASCI_Ha']); print('LASSCF', r['energy_Ha'])"
 
-  LASSCF converged after 6 cycles: E = -850.2864865100 Ha  |g_orb| = 5.73e-06
-[Step 3] Saved -> /home/loharkar/quenais-standalone/benchmark_results/scf/runs/7d82faa65595/results/step3_lasscf.pkl
 
-[benchmark] row written: energy=-850.2864865100231  err_vs_best_ref=-0.04177516219445032 kcal/mol
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ B=/home/loharkar/quenais-standalone/benchmark_results/^C
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/plot_benchmark.py $B/h8_smoke
-[plot] 25 runs, 9 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures
-  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/subspace_vs_error.png/.pdf
-  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/las_convergence.png/.pdf
-  wrote /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/figures/summary.md and summary.csv (9 rows)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ ls $B/h8_smoke/figures
-las_convergence.pdf  las_convergence.png  subspace_vs_error.pdf  subspace_vs_error.png  summary.csv  summary.md
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve > $B/n2_curve.log 2>&1 &
-[1] 4557
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve > $B/n2_curve.log 2>&1 &^C
-[1]+  Exit 1                  nohup python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve > $B/n2_curve.log 2>&1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+
+python tools/plot_benchmark.py $B/h8_smoke
+python tools/plot_benchmark.py $B/scf
+
+cat $B/n2_curve.log
+ls benchmarks/
+
+
+python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --dry-run | head -3
+
+python tools/run_benchmark.py benchmarks/n2_curve.json --out $B/n2_curve --dry-run | head -3
