@@ -2,3 +2,20 @@ nvidia-smi --query-gpu=name --format=csv,noheader
 python -c "import cudaq; print(cudaq.__version__)"
 B=/home/loharkar/quenais-standalone/benchmark_results
 python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke
+
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ nvidia-smi --query-gpu=name --format=csv,noheader
+python -c "import cudaq; print(cudaq.__version__)"
+B=/home/loharkar/quenais-standalone/benchmark_results
+python tools/run_benchmark.py benchmarks/gqe_smoke.json --out $B/gqe_smoke
+NVIDIA GeForce RTX 4070 Ti SUPER
+CUDA-Q Version 0.15.1 (https://github.com/NVIDIA/cuda-quantum aca5853a76d499ecc3d5f97c2e06163ae99d9c75)
+[benchmark] gqe_smoke: 2 runs over 1 system(s); this shard: 2  -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke
+  [system 5844585e34c1] steps 1, 0 ...
+  [system 5844585e34c1] ready (5 s)
+  [system 5844585e34c1] step 2 (casci) ...
+[1/2] 8d80a341c68c gqe     shots=- seed=-  FAILED rc=1 (1 s) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/runs/8d80a341c68c/run.log
+[2/2] e8f58c6f4dc1 gqe     shots=- seed=-  FAILED rc=1 (1 s) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/runs/e8f58c6f4dc1/run.log
+[collect] 2 runs (0 ok, 2 failed) -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results.csv
+[collect] 1 configurations -> /home/loharkar/quenais-standalone/benchmark_results/gqe_smoke/results_agg.csv
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria11:Quenais-Project]$ 
