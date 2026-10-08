@@ -367,3 +367,25 @@ pip uninstall triton
 
 GQE training does not use `torch.compile`, so nothing in this pipeline
 needs triton.
+
+## Hang at import on the erebos nodes (October 2026)
+
+Symptom: `quenais-doctor` or GQE training stops forever at
+`from mpi4py import MPI`, sometimes printing
+`UCX ERROR failed to get netlink message size`. GPU stays at 0 %.
+
+Cause: Open MPI's UCX transport probes the network and stalls. GQE runs on one
+GPU and needs no inter-node transport.
+
+Fix (put in `~/.bashrc`):
+
+```bash
+export OMPI_MCA_pml=ob1
+export OMPI_MCA_btl=self,vader,tcp
+export OMPI_MCA_osc=^ucx
+export UCX_NET_DEVICES=lo
+```
+
+Test: `timeout 30 python -c "from mpi4py import MPI; print(MPI.COMM_WORLD.Get_size())"`
+must print `1` within seconds. Also set `PYTHONUNBUFFERED=1` (now done by
+`gqe_runner` itself) so training output appears in the log as it happens.

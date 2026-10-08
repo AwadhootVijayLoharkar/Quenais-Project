@@ -546,3 +546,13 @@ LASSQD authors' repository (unlicensed), and neither is a dependency;
 
 Full matrix, including what must not be redistributed as a bundle:
 **[docs/licensing.md](docs/licensing.md)**.
+
+
+## Benchmarking and results (October 2026)
+
+- [docs/benchmarking.md](docs/benchmarking.md) — benchmark driver, grid files,
+  CSV columns, plotting, cluster setup and pitfalls.
+- [docs/results_log.md](docs/results_log.md) — what was run, the numbers, and
+  what they mean.
+- [docs/reproducibility.md](docs/reproducibility.md) — tiers, seeds,
+  provenance, reporting checklist.

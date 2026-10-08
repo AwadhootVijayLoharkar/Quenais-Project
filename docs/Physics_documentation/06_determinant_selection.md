@@ -208,24 +208,36 @@ simple structure.
 
 ## 7. Result 3 — the one geometry where quantum wins
 
-At 2.1 Å, same 200-determinant budget:
+At 2.1 Å, plain CAS(10e,8o) Hamiltonian (no DMET bath; `tools/export_cas_hamiltonian.py`), same 200-determinant budget.
 
-| method | error vs exact CASCI | note |
-|---|---|---|
-| oracle bound | 0.110 mHa | ceiling, not achievable |
-| **DMET + GQE** | **0.153 mHa** | this pipeline |
-| CIPSI (1973) | 1.640 mHa | classical baseline |
+> **Updated October 2026 — the original number was one run.** The first
+> version of this section reported a single GQE run (trainer seed pinned to 32,
+> see `docs/reproducibility.md` §3). The identical setup was re-run with five
+> independent `--gqe-seed` values:
 
-GQE beats the classical baseline **10×** at equal cost, and lands 0.04 mHa from
-the theoretical best possible answer.
+| method | error vs exact CASCI (mHa) |
+|---|---|
+| oracle bound | 0.110 (ceiling, not achievable) |
+| CIPSI (1973) | 1.640 |
+| GQE (plain CAS), seed 1 | 47.372 |
+| GQE (plain CAS), seed 2 | 5.283 |
+| GQE (plain CAS), seed 3 | 5.106 |
+| GQE (plain CAS), seed 4 | 5.267 |
+| GQE (plain CAS), seed 5 | **0.155** |
+| GQE mean ± std (median) | 12.6 ± 19.5 (5.27) |
 
-Caveats to state out loud whenever quoting this:
+What this supports:
 
-1. **One geometry.** Of the eight scanned, this is the only one past the
-   threshold where GQE has been run.
-2. **Seed count.** Check how many independent `--gqe-seed` values back it before
-   quoting a spread — see `docs/reproducibility.md` §5.
-3. **The oracle is pessimistic**, so the headroom is a conservative bound.
+1. GQE **can** find a near-optimal set: the best run is 0.045 mHa from the
+   oracle and 10× below CIPSI at equal budget.
+2. Training is unreliable: 1 run in 5 beats CIPSI; the median is ~3× worse.
+3. QSCI energies are variational, so "k seeds, keep the lowest" is a valid
+   protocol at k× training cost and unchanged determinant budget.
+4. On the DMET-embedded N₂ Hamiltonian (18–20 qubits, default settings), GQE
+   never approached CIPSI (46–95 kcal/mol vs ≤ 0.3); see
+   `docs/results_log.md`.
+
+Do not quote "GQE beats CIPSI 10×" without the success rate.
 
 ## 8. The dissociation curve
 
