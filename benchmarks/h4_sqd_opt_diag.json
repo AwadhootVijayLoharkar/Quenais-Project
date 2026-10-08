@@ -1,0 +1,61 @@
+{
+  "name": "h4_sqd_opt_diag",
+  "description": "Task 3a diagnosis: the optimised LUCJ on H4 kept err_lucj = 23.5 kcal/mol and failed at 1k shots. Sweep the LUCJ optimisation: linear-method iterations (null = 10, 50), interaction pairs (null = heavy_hex, all), repetitions (null = 1, 2). 1k shots, seed 1. The all-null run is the finished h4_sqd_opt run (skipped). --out $B/h4_smoke.",
+  "defaults": {
+    "molecule": "H4",
+    "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "H 1s"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "las_fragments": [
+      "0+1:2:1,1",
+      "2+3:2:1,1"
+    ],
+    "lassqd_carryover_eps": 1e-05
+  },
+  "studies": [
+    {
+      "name": "lucj_diag",
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "shots": [
+          1000
+        ],
+        "seed": [
+          1
+        ],
+        "sqd_lucj_maxiter": [
+          null,
+          50
+        ],
+        "sqd_lucj_pairs": [
+          null,
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          null,
+          2
+        ]
+      }
+    }
+  ]
+}
