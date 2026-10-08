@@ -1,4 +1,7 @@
-nohup bash -c '
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep -c "^\[epoch" /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s1/run.log
+120
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ pgrep -af train.py | head -1
+[1]+  Done                    nohup bash -c '
 export GQE_QSCI_REPO_PATH=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
 export OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader,tcp OMPI_MCA_osc=^ucx UCX_NET_DEVICES=lo
 export PYTHONUNBUFFERED=1 WANDB_MODE=disabled CUDAQ_DEFAULT_SIMULATOR=nvidia
@@ -7,4 +10,15 @@ for s in 1 2 3 4 5; do
   D=$R/r2.1_s$s
   quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 --project-dir $D \
     --gqe-qsci-max-dim 200 --gqe-seed $s --cudaq-target nvidia --force > $D/run.log 2>&1
-done' > /home/loharkar/quenais-standalone/benchmark_results/headline.log 2>&1 &
+done' > /home/loharkar/quenais-standalone/benchmark_results/headline.log 2>&1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/gqe_vs_cipsi.py /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s*
+run                         N      of     w1 epochs    GQE mHa    oracle     CIPSI
+r2.1_s1                   200    3136  0.192    120     47.372     0.110     1.640
+r2.1_s2                   200    3136  0.192    120      5.283     0.110     1.640
+r2.1_s3                   200    3136  0.192    120      5.106     0.110     1.640
+r2.1_s4                   200    3136  0.192    120      5.267     0.110     1.640
+r2.1_s5                   200    3136  0.192    120      0.155     0.110     1.640
+
+mean over 5 runs (mHa):  GQE 12.637 +- 19.541   oracle 0.110 +- 0.000   CIPSI 1.640 +- 0.000
+GQE beat CIPSI in 1 of 5 runs
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
