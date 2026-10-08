@@ -1,10 +1,43 @@
-git pull
-nohup python tools/run_benchmark.py benchmarks/h8_sqd_opt.json --out $B/h8_smoke > $B/h8_sqd_opt.log 2>&1 &
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ echo $GQE_QSCI_REPO_PATH 
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ echo $OMPI_MCA_
 
-python tools/show_rows.py $B/h8_smoke --cols sqd_lucj_pairs shots_per_circuit seed err_lucj_kcal err_solver_kcal subspace_fraction n_2q_gates t_step3_s
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ echo $OMPI_MCA_pml 
+ob1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/n2_gqe_tune.json --out $B/n2_curve > $B/n2_gqe_tune.log 2>&1 &
+[1] 320357
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ tail -5 $B/n2_gqe_tune.log 
+nohup: ignoring input
+[benchmark] n2_gqe_tune: 24 runs over 2 system(s); this shard: 24  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+[1/24] 1500df60ffc3 gqe     shots=- seed=1  skip (done)
+[2/24] fda7bd226413 gqe     shots=- seed=2  skip (done)
+[3/24] a49dc952a186 gqe     shots=- seed=3  skip (done)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ tail -f $B/n2_gqe_tune.log 
+nohup: ignoring input
+[benchmark] n2_gqe_tune: 24 runs over 2 system(s); this shard: 24  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+[1/24] 1500df60ffc3 gqe     shots=- seed=1  skip (done)
+[2/24] fda7bd226413 gqe     shots=- seed=2  skip (done)
+[3/24] a49dc952a186 gqe     shots=- seed=3  skip (done)
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ 
 
 
-nvidia-smi
-nohup python tools/run_benchmark.py benchmarks/n2_gqe_tune.json --out $B/n2_curve > $B/n2_gqe_tune.log 2>&1 &
+second node 
 
-nohup python tools/run_benchmark.py benchmarks/n2_sqd_opt.json --out $B/n2_curve > $B/n2_sqd_opt.log 2>&1 &
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/h8_sqd_opt.json --out $B/h8_smoke > $B/h8_sqd_opt.log 2>&1 &
+[1] 1350229
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -f $B/h8_sqd_opt.log 
+nohup: ignoring input
+[benchmark] h8_sqd_opt: 12 runs over 1 system(s); this shard: 12  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ head -5 $B/h8_sqd_opt.log 
+nohup: ignoring input
+[benchmark] h8_sqd_opt: 12 runs over 1 system(s); this shard: 12  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -f $B/h8_sqd_opt.log 
+nohup: ignoring input
+[benchmark] h8_sqd_opt: 12 runs over 1 system(s); this shard: 12  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+[1/12] 0cbd809dce19 sqd     shots=1000 seed=1  ok  279.5 s  E=-4.25480230  err_solver=+33.1132 kcal/mol  subspace=0.05897959183673469
+[2/12] a01c77ff2c35 sqd     shots=1000 seed=2  ok  286.7 s  E=-4.28069793  err_solver=+16.8635 kcal/mol  subspace=0.08163265306122448
+^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
