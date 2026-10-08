@@ -1,57 +1,10 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
-remote: Enumerating objects: 8, done.
-remote: Counting objects: 100% (8/8), done.
-remote: Compressing objects: 100% (3/3), done.
-remote: Total 5 (delta 2), reused 5 (delta 2), pack-reused 0 (from 0)
-Unpacking objects: 100% (5/5), 1.23 KiB | 33.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   44e48ef..cfb0d7f  main       -> origin/main
-Updating 44e48ef..cfb0d7f
-Fast-forward
- benchmarks/h4_sqd_opt_diag.json | 61 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- logs.txt                        | 22 ++++++----------------
- 2 files changed, 67 insertions(+), 16 deletions(-)
- create mode 100644 benchmarks/h4_sqd_opt_diag.json
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep -E "LUCJ|mean field|UCCSD|failed" $B/h4_smoke/runs/9f3af98fc946/run.log
-python tools/show_rows.py $B/h4_smoke --cols seed shots_per_circuit E_HF_Ha E_FCI_Ha lucj_energy_Ha energy_Ha
-  Ansatz       : LUCJ_OPT
-── SQD (optimised LUCJ, LASSQD machinery) ─────────────────────────
-  LUCJ (optimised): pairs=heavy_hex, reps=1, linear-method iterations=10
-      LUCJ linear method: E = 1.88075961 (10 it)
-  LUCJ state: E = -2.12891419 Ha, weight off HF = 0.0422
-  Solver  : SQD + LUCJ_OPT + JW
-  LUCJ state    : -2.12891419 Ha   error +23.5148 kcal/mol  (circuit alone, no SQD)
-seed  shots_per_circuit  E_HF_Ha  E_FCI_Ha  lucj_energy_Ha  energy_Ha
-   1               1000  -2.0985   -2.1664         -2.1289    -2.1264
-   1              10000  -2.0985   -2.1664         -2.1289    -2.1664
-   2               1000  -2.0985   -2.1664         -2.1289    -2.1521
-   2              10000  -2.0985   -2.1664         -2.1289    -2.1664
+git pull
+nohup python tools/run_benchmark.py benchmarks/h8_sqd_opt.json --out $B/h8_smoke > $B/h8_sqd_opt.log 2>&1 &
 
-4 ok rows
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
-Already up to date.
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/run_benchmark.py benchmarks/h4_sqd_opt_diag.json --out $B/h4_smoke
-python tools/show_rows.py $B/h4_smoke --where solver=sqd ansatz=lucj_opt shots_per_circuit=1000 seed=1 --cols sqd_lucj_maxiter sqd_lucj_pairs sqd_lucj_reps err_lucj_kcal err_solver_kcal subspace_fraction t_step3_s
-[benchmark] h4_sqd_opt_diag: 8 runs over 1 system(s); this shard: 8  -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke
-[1/8] 9f3af98fc946 sqd     shots=1000 seed=1  skip (done)
-[2/8] cd89542188be sqd     shots=1000 seed=1  ok   51.2 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[3/8] ad50ccdd9693 sqd     shots=1000 seed=1  ok   40.4 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[4/8] a7c1cafc8976 sqd     shots=1000 seed=1  ok   71.1 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[5/8] 9d8618b9a799 sqd     shots=1000 seed=1  ok   74.6 s  E=-2.12635951  err_solver=+25.1179 kcal/mol  subspace=0.25
-[6/8] 2ec85c64cd46 sqd     shots=1000 seed=1  ok   61.6 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[7/8] 0567e1e23f1b sqd     shots=1000 seed=1  ok   55.0 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[8/8] 5e32abe216f8 sqd     shots=1000 seed=1  ok  104.5 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
-[collect] 24 runs (24 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/results.csv
-[collect] 16 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/results_agg.csv
-sqd_lucj_maxiter  sqd_lucj_pairs  sqd_lucj_reps  err_lucj_kcal  err_solver_kcal  subspace_fraction  t_step3_s
-               -               -              -        23.5148          25.1179             0.2500    22.4960
-               -               -              2         1.9121           0.0000                  1    49.5683
-               -             all              -         1.0206           0.0000                  1    37.4270
-               -             all              2         0.0054           0.0000                  1    68.2230
-              50               -              -        23.2586          25.1179             0.2500    72.7506
-              50               -              2         1.9119           0.0000                  1    60.1479
-              50             all              -         0.6678           0.0000                  1    53.1615
-              50             all              2         0.0000           0.0000                  1   101.9463
+python tools/show_rows.py $B/h8_smoke --cols sqd_lucj_pairs shots_per_circuit seed err_lucj_kcal err_solver_kcal subspace_fraction n_2q_gates t_step3_s
 
-8 ok rows
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+
+nvidia-smi
+nohup python tools/run_benchmark.py benchmarks/n2_gqe_tune.json --out $B/n2_curve > $B/n2_gqe_tune.log 2>&1 &
+
+nohup python tools/run_benchmark.py benchmarks/n2_sqd_opt.json --out $B/n2_curve > $B/n2_sqd_opt.log 2>&1 &
