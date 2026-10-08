@@ -1,40 +1,5 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ nohup bash -c '
 R=/home/loharkar/quenais-standalone/benchmark_results/headline
-for s in 1 2 3 4 5; do
-  D=$R/r2.1_s$s
-  python tools/export_cas_hamiltonian.py --r 2.1 --project-dir $D
-  quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 --project-dir $D \
-    --gqe-qsci-max-dim 200 --gqe-seed $s --cudaq-target nvidia > $D/run.log 2>&1
-done' > /home/loharkar/quenais-standalone/benchmark_results/headline.log 2>&1 &
-[1] 1276192
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ pgrep -af "train.py" | head -2
-ls /home/loharkar/quenais-standalone/benchmark_results/headline/
-grep -c "^\[epoch" /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s1/run.log
-[1]+  Exit 1                  nohup bash -c '
-R=/home/loharkar/quenais-standalone/benchmark_results/headline
-for s in 1 2 3 4 5; do
-  D=$R/r2.1_s$s
-  python tools/export_cas_hamiltonian.py --r 2.1 --project-dir $D
-  quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 --project-dir $D \
-    --gqe-qsci-max-dim 200 --gqe-seed $s --cudaq-target nvidia > $D/run.log 2>&1
-done' > /home/loharkar/quenais-standalone/benchmark_results/headline.log 2>&1
-r2.1_s1  r2.1_s2  r2.1_s3  r2.1_s4  r2.1_s5
-0
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ pgrep -af "train.py" | head -2
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep -c "^\[epoch" /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s1/run.log
-0
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ ls /home/loharkar/quenais-standalone/benchmark_results/headline/
-r2.1_s1  r2.1_s2  r2.1_s3  r2.1_s4  r2.1_s5
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/gqe_vs_cipsi.py /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s*
-run                         N      of     w1 epochs    GQE mHa    oracle     CIPSI
-  [skip] GQE log: /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s1/results/gqe_train.log not found (run the GQE solver first)
-r2.1_s1                 no finished GQE log
-  [skip] GQE log: /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s2/results/gqe_train.log not found (run the GQE solver first)
-r2.1_s2                 no finished GQE log
-  [skip] GQE log: /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s3/results/gqe_train.log not found (run the GQE solver first)
-r2.1_s3                 no finished GQE log
-  [skip] GQE log: /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s4/results/gqe_train.log not found (run the GQE solver first)
-r2.1_s4                 no finished GQE log
-  [skip] GQE log: /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s5/results/gqe_train.log not found (run the GQE solver first)
-r2.1_s5                 no finished GQE log
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git
+tail -20 $R/r2.1_s1/run.log
+ls $R/r2.1_s1/results/
+tail -5 /home/loharkar/quenais-standalone/benchmark_results/headline.log
+echo "GQE=$GQE_QSCI_REPO_PATH  MPI=$OMPI_MCA_pml"
