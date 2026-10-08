@@ -34,6 +34,9 @@ how to run: `docs/benchmarking.md`.
    `seed: 32`. Fixed with `--gqe-seed`.
 8. Cluster: CUDA-Q/mpi4py hung at import (UCX network layer); fixed with
    OpenMPI settings disabling UCX. Not a thesis point, just methods detail.
+9. Task 3a: `--ansatz lucj_opt` for DMET+SQD -- the LASSQD circuit and SQD
+   (UCCSD-initialised LUCJ, linear-method optimisation, K x d batches,
+   carryover) on the embedding Hamiltonian as one fragment. Results: (pending).
 
 
 ## Results (all with seed repeats unless stated)

@@ -147,6 +147,7 @@ def main(cfg, force=False):
              "transpiled_depths": [], "valid_shot_fraction": None,
              "unique_valid_bitstrings": None, "n_circuits": 0,
              "shots_per_circuit": None}
+    extra = {}     # ansatz="lucj_opt" diagnostics (quenais.quantum.sqd_opt)
 
     for path, name in [(cfg.step1_file, "finder.main"),
                        (cfg.step2_file, "hamiltonian.main")]:
@@ -480,8 +481,30 @@ def main(cfg, force=False):
         print(f"  {'─'*84}")
         return energy, spin_sq, iterations
 
+    # ── SQD with the optimised LUCJ (LASSQD machinery, one fragment) ─────────
+    def run_sqd_lucj_opt():
+        from quenais.quantum.sqd_opt import run_lucj_opt_sqd
+
+        print(f"\n── SQD (optimised LUCJ, LASSQD machinery) {'─'*25}")
+        r = run_lucj_opt_sqd(step2, q, log=print)
+        timings.update(r["timings"])
+        stats.update(r["stats"])
+        extra.update(r["lucj_opt"])
+        print_iteration_header()
+        prev = None
+        for it in r["iterations"]:
+            it["vs_uhf"] = float(it["energy"] - uhf_energy)
+            it["vs_mp2"] = float(it["energy"] - mp2_energy)
+            print_iteration(f"{it['iter']:02d}", it["energy"],
+                            it["subspace_dim"], prev)
+            prev = it["energy"]
+        print(f"  {'─'*84}  (configs column = subspace dimension)")
+        return r["energy"], None, r["iterations"]
+
     # ── SQD ───────────────────────────────────────────────────────────────────
     def run_sqd():
+        if q.ansatz.lower() == "lucj_opt":
+            return run_sqd_lucj_opt()
         print(f"\n── SQD ({q.ansatz.upper()} ansatz) {'─'*40}")
         t0         = time.perf_counter()
         circ       = build_ansatz_circuit()
@@ -725,6 +748,10 @@ def main(cfg, force=False):
                 f"{cfg.quantum_solver} energy {energy:.8f} is BELOW the exact "
                 f"embedding energy {e_exact:.8f}: variational violation, "
                 f"something is wrong.", RuntimeWarning)
+    if e_exact is not None and extra.get("lucj_energy") is not None:
+        print(f"  LUCJ state    : {extra['lucj_energy']:.8f} Ha   error "
+              f"{(extra['lucj_energy'] - e_exact) * hartree_to_kcal:+.4f} kcal/mol"
+              f"  (circuit alone, no SQD)")
     if final_dim is not None:
         print(f"  Subspace      : {final_dim} / {full_dim} determinants "
               f"({100. * final_dim / full_dim:.1f}%)")
@@ -761,6 +788,7 @@ def main(cfg, force=False):
         "timings_s" : {**timings, "solver_total": t_solver,
                        "exact_embedding_fci": t_exact},
         "settings"  : dict(q.__dict__),
+        "lucj_opt"  : extra or None,
         "reproducibility": "stochastic",
         "mol_info"  : mol_info,
         "provenance": cfg.provenance(),

@@ -1,0 +1,85 @@
+{
+  "name": "n2_sqd_opt",
+  "description": "Task 3a production: DMET+SQD with the optimised LUCJ along the N2 curve, 1.1-2.5 A, 1k/10k shots, 3 seeds (48 runs). Same defaults as n2_curve.json: --out $B/n2_curve reuses steps 0-2 and the rows join the curve next to the old random-angle SQD (12-42 kcal/mol).",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000
+  },
+  "studies": [
+    {
+      "name": "sqd_opt_curve",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.2",
+          "tag_R": 1.2
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.4",
+          "tag_R": 1.4
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.6",
+          "tag_R": 1.6
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.8",
+          "tag_R": 1.8
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.0",
+          "tag_R": 2.0
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.25",
+          "tag_R": 2.25
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.5",
+          "tag_R": 2.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "shots": [
+          1000,
+          10000
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ]
+}

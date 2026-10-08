@@ -148,6 +148,10 @@ def normalise_params(raw):
 
     if solver not in LAS_SOLVERS:
         drop(("las_", "lassqd_"))
+    # --sqd-* configure only the optimised-LUCJ SQD; anywhere else they
+    # would only split identical runs into different run_ids.
+    if not (solver == "sqd" and params.get("ansatz") == "lucj_opt"):
+        drop(("sqd_",))
     if solver == "lasscf":
         drop(("lassqd_",))
     if solver != "gqe":
@@ -616,6 +620,24 @@ def _dmet_part(params, cfg, step2, rdir, load):
             "energy_trace_json": json.dumps([it.get("energy") for it in r.get("iterations", [])]),
             "subspace_trace_json": json.dumps([it.get("subspace_dim") for it in r.get("iterations", [])]),
         })
+        lo = r.get("lucj_opt") or {}
+        if lo:
+            e_exact = r.get("e_exact_embedding")
+            e_lucj = lo.get("lucj_energy")
+            part.update({
+                "lucj_energy_Ha": e_lucj,
+                "err_lucj_kcal": _kcal(e_lucj, e_exact),
+                "lucj_off_hf_weight": lo.get("lucj_off_hf_weight"),
+                "n_2q_gates": lo.get("n_2q_gates"),
+                "lucj_pairs": lo.get("lucj_pairs"),
+                "lucj_n_reps": lo.get("lucj_n_reps"),
+                "lucj_opt_maxiter": lo.get("lucj_opt_maxiter"),
+                "sqd_batches": lo.get("sqd_batches"),
+                "sqd_samples_per_batch": lo.get("sqd_samples_per_batch"),
+                "sqd_iterations": lo.get("sqd_iterations"),
+                "carryover_eps": lo.get("carryover_eps"),
+                "t_lucj_prepare_s": lo.get("t_prepare_s"),
+            })
     else:   # gqe
         from quenais.visualization.plots import parse_gqe_log
 

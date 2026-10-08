@@ -16,3 +16,4 @@ outputs/
 gqe_train.log
 .cache/
 /Results
+*:Zone.Identifier

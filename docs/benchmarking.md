@@ -58,7 +58,22 @@ Keep the output folder **outside** the repo, otherwise every row is marked
   `n2_curve/`).
 
 Shipped grids: `h4_smoke`, `h4_lucj_pairs`, `h8_smoke`, `h8_lucj_opt`,
-`gqe_smoke`, `gqe_h8`, `scf_quick`, `scf_carryover`, `n2_curve`, `n2_gqe`.
+`gqe_smoke`, `gqe_h8`, `scf_quick`, `scf_carryover`, `n2_curve`, `n2_gqe`,
+`h4_sqd_opt`, `h8_sqd_opt`, `n2_sqd_opt` (task 3a), `n2_gqe_tune` (task 3b).
+
+**DMET+SQD with the optimised LUCJ** (`"solver": "sqd", "ansatz":
+"lucj_opt"`): the step-2 embedding Hamiltonian is solved by the LASSQD
+fragment solver as one fragment (`quenais/quantum/sqd_opt.py`). Tuning flags
+(LASSQD defaults): `sqd_lucj_maxiter` 10, `sqd_lucj_pairs` heavy_hex,
+`sqd_lucj_reps` 1, `sqd_batches` 15, `sqd_samples_per_batch` 170,
+`sqd_iterations` 6, `sqd_carryover_eps` 1e-5. They are dropped for every
+other solver/ansatz. Extra CSV columns: `lucj_energy_Ha`, `err_lucj_kcal`
+(the circuit alone, no SQD), `lucj_off_hf_weight`, `n_2q_gates`;
+`circuit_depth_max` is the depth in the {cx, rz, sx, x} basis.
+
+A `null` in a sweep means "flag not given" (the default), so the run has the
+same identity as a run in a grid that never mentioned the flag
+(`n2_gqe_tune` reuses the finished default-setting runs of `n2_gqe`).
 
 ## 3. What the driver guarantees
 

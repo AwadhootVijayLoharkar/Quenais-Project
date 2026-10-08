@@ -336,7 +336,9 @@ class LassqdFragmentSolver:
                 self.log(f"    fragment {ham.index}: UCCSD failed ({exc})")
         op = _lucj_operator(0.5 * (h1_mo[0] + h1_mo[1]), eri_mo, n, (na, nb),
                             amps, self.s, self.rng, self.log)
-        return {"u": u, "h1_mo": h1_mo, "eri_mo": eri_mo,
+        # "op" is not used by LASSQD itself; DMET+SQD (quenais.quantum.
+        # sqd_opt) reads it to report the LUCJ state's own energy.
+        return {"u": u, "h1_mo": h1_mo, "eri_mo": eri_mo, "op": op,
                 "circuit": _fragment_circuit(n, (na, nb), op)}
 
     # ── SQD with carryover for one fragment ──────────────────────────────

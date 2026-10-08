@@ -28,7 +28,7 @@ import os
 import sys
 
 __all__ = ["run_pipeline", "build_parser", "build_config", "build_asf_settings",
-           "build_las_settings", "build_ref_settings"]
+           "build_las_settings", "build_ref_settings", "build_qiskit_settings"]
 
 STEP_NAMES = {
     0: "Classical",
@@ -221,6 +221,29 @@ def build_parser():
         help="keep block2's scratch files after the run (GB-sized).",
     )
 
+    # ── DMET+SQD with the optimised LUCJ (--ansatz lucj_opt) ─────────────
+    sqo = parser.add_argument_group(
+        "SQD with optimised LUCJ",
+        "Only used with --solver sqd --ansatz lucj_opt. Defaults are the "
+        "LASSQD defaults (K=15, d=170, 6 iterations, eps=1e-5, heavy-hex "
+        "pairs, 1 rep, 10 linear-method iterations).",
+    )
+    sqo.add_argument("--sqd-lucj-maxiter", type=int, default=None,
+                     help="linear-method iterations for the LUCJ (default 10)")
+    sqo.add_argument("--sqd-lucj-pairs", default=None,
+                     choices=["heavy_hex", "all"],
+                     help="LUCJ interaction pairs (default heavy_hex)")
+    sqo.add_argument("--sqd-lucj-reps", type=int, default=None,
+                     help="LUCJ repetitions (default 1)")
+    sqo.add_argument("--sqd-batches", type=int, default=None,
+                     help="SQD batches K (default 15)")
+    sqo.add_argument("--sqd-samples-per-batch", type=int, default=None,
+                     help="SQD samples per batch d (default 170)")
+    sqo.add_argument("--sqd-iterations", type=int, default=None,
+                     help="configuration-recovery iterations (default 6)")
+    sqo.add_argument("--sqd-carryover-eps", type=float, default=None,
+                     help="carryover threshold on |c| (default 1e-5; 0 = off)")
+
     # ── GQE solver (--solver gqe) ────────────────────────────────────────
     gqe = parser.add_argument_group(
         "GQE solver",
@@ -352,6 +375,37 @@ def build_gqe_settings(args):
     return GqeSettings(**kwargs)
 
 
+def build_qiskit_settings(args):
+    """QiskitSolverSettings from the generic flags plus --sqd-* (lucj_opt)."""
+    from quenais.settings import QiskitSolverSettings
+
+    kwargs = dict(
+        ansatz=args.ansatz,
+        fermion_to_qubit=args.mapping,
+        backend=args.backend,
+        # --shots used to set n_shots only, so SKQD and SqDRIFT silently
+        # ran at their 8192 default whatever was asked for.
+        n_shots=args.shots,
+        skqd_shots=args.shots,
+        sqdrift_shots=args.shots,
+        seed=getattr(args, "seed", None),
+    )
+    simple = {
+        "sqd_lucj_maxiter": "lucj_opt_maxiter",
+        "sqd_lucj_pairs": "lucj_opt_pairs",
+        "sqd_lucj_reps": "lucj_opt_n_reps",
+        "sqd_batches": "sqd_batches",
+        "sqd_samples_per_batch": "sqd_samples_per_batch",
+        "sqd_iterations": "sqd_opt_iterations",
+        "sqd_carryover_eps": "sqd_carryover_eps",
+    }
+    for arg, field_name in simple.items():
+        value = getattr(args, arg, None)
+        if value is not None:
+            kwargs[field_name] = value
+    return QiskitSolverSettings(**kwargs)
+
+
 def build_ref_settings(args):
     """ReferenceSettings from the --fci-*/--casci-*/--dmrg-* flags."""
     from quenais.settings import ReferenceSettings
@@ -460,7 +514,7 @@ def build_asf_settings(args):
 
 def build_config(args):
     from quenais.config import Config
-    from quenais.settings import DmetSettings, QiskitSolverSettings
+    from quenais.settings import DmetSettings
 
     cfg = Config(
         molecule=args.molecule,
@@ -476,17 +530,7 @@ def build_config(args):
         ref=build_ref_settings(args),
         asf=build_asf_settings(args),
         dmet=DmetSettings(reference=args.dmet_reference),
-        # --shots used to set n_shots only, so SKQD and SqDRIFT silently
-        # ran at their 8192 default whatever was asked for.
-        qiskit=QiskitSolverSettings(
-            ansatz=args.ansatz,
-            fermion_to_qubit=args.mapping,
-            backend=args.backend,
-            n_shots=args.shots,
-            skqd_shots=args.shots,
-            sqdrift_shots=args.shots,
-            seed=getattr(args, "seed", None),
-        ),
+        qiskit=build_qiskit_settings(args),
         gqe=build_gqe_settings(args),
         las=build_las_settings(args),
     )

@@ -1,0 +1,54 @@
+{
+  "name": "h8_sqd_opt",
+  "description": "Task 3a validation on H8 (16 qubits, 4 900 determinants). Same defaults as h8_smoke.json: --out $B/h8_smoke. Old random-angle SQD: 17.6 (1k) / 1.6 (10k) kcal/mol. Pass: err_solver_kcal = 0.0000 at 10k shots; 1k shots ~0.",
+  "defaults": {
+    "molecule": "H8",
+    "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "H 1s"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "las_fragments": [
+      "0+1:2:1,1",
+      "2+3:2:1,1",
+      "4+5:2:1,1",
+      "6+7:2:1,1"
+    ],
+    "lassqd_carryover_eps": 1e-05
+  },
+  "studies": [
+    {
+      "name": "sqd_opt",
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "shots": [
+          1000,
+          10000
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ]
+}

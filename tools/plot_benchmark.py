@@ -67,7 +67,9 @@ NOT_VARIANT = {"seed", "lassqd_seed", "gqe_seed", "shots", "lassqd_shots",
                "geometry", "solver", "molecule", "basis"}
 SHORT = {"lassqd_lucj_optimize": "opt", "lassqd_carryover_eps": "eps",
          "las_fragments": "frag", "lassqd_lucj_pairs": "pairs",
-         "dmet_reference": "ref", "las_no_orbital_opt": "LASCI"}
+         "dmet_reference": "ref", "las_no_orbital_opt": "LASCI",
+         "sqd_lucj_maxiter": "maxiter", "sqd_carryover_eps": "eps",
+         "sqd_lucj_pairs": "pairs"}
 
 
 def _style():
