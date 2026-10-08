@@ -1,6 +1,6 @@
 {
   "name": "h8_sqd_opt",
-  "description": "Task 3a validation on H8 (16 qubits, 4 900 determinants). Same defaults as h8_smoke.json: --out $B/h8_smoke. Old random-angle SQD: 17.6 (1k) / 1.6 (10k) kcal/mol. Pass: err_solver_kcal = 0.0000 at 10k shots; 1k shots ~0.",
+  "description": "Task 3a validation on H8 (16 qubits, 4 900 determinants). Same defaults as h8_smoke.json: --out $B/h8_smoke. Two circuits: the heavy-hex default (null) and all pairs + 2 reps (the setting H4 showed is needed: err_lucj 23.5 -> 0.005 kcal/mol). Old random-angle SQD: 17.6 (1k) / 1.6 (10k) kcal/mol. Pass: all-pairs rows err_solver_kcal = 0.0000.",
   "defaults": {
     "molecule": "H8",
     "basis": "sto-3g",
@@ -31,13 +31,39 @@
   },
   "studies": [
     {
-      "name": "sqd_opt",
+      "name": "sqd_opt_heavyhex",
       "sweep": {
         "solver": [
           "sqd"
         ],
         "ansatz": [
           "lucj_opt"
+        ],
+        "shots": [
+          1000,
+          10000
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "name": "sqd_opt_all2",
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "sqd_lucj_pairs": [
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          2
         ],
         "shots": [
           1000,

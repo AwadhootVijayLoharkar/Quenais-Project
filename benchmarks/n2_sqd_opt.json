@@ -1,6 +1,6 @@
 {
   "name": "n2_sqd_opt",
-  "description": "Task 3a production: DMET+SQD with the optimised LUCJ along the N2 curve, 1.1-2.5 A, 1k/10k shots, 3 seeds (48 runs). Same defaults as n2_curve.json: --out $B/n2_curve reuses steps 0-2 and the rows join the curve next to the old random-angle SQD (12-42 kcal/mol).",
+  "description": "Task 3a production: DMET+SQD with the optimised LUCJ (all pairs, 2 reps -- see H4 diagnosis) along the N2 curve, 1.1-2.5 A, 1k/10k shots, 3 seeds (48 runs). Same defaults as n2_curve.json: --out $B/n2_curve reuses steps 0-2; rows join the curve next to the old random-angle SQD (12-42 kcal/mol).",
   "defaults": {
     "molecule": "N2",
     "basis": "sto-3g",
@@ -69,6 +69,12 @@
         ],
         "ansatz": [
           "lucj_opt"
+        ],
+        "sqd_lucj_pairs": [
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          2
         ],
         "shots": [
           1000,
