@@ -1,5 +1,33 @@
-R=/home/loharkar/quenais-standalone/benchmark_results/headline
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ R=/home/loharkar/quenais-standalone/benchmark_results/headline
 tail -20 $R/r2.1_s1/run.log
 ls $R/r2.1_s1/results/
 tail -5 /home/loharkar/quenais-standalone/benchmark_results/headline.log
 echo "GQE=$GQE_QSCI_REPO_PATH  MPI=$OMPI_MCA_pml"
+  Step 3: Quantum solver
+============================================================
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/quenais-run", line 6, in <module>
+    sys.exit(run_pipeline())
+             ^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/cli.py", line 532, in run_pipeline
+    run_step(step, cfg, args)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/cli.py", line 501, in run_step
+    return dispatch(cfg, force=args.force)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/__init__.py", line 58, in dispatch
+    return gqe_runner.main(cfg, force=force, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/gqe_runner.py", line 189, in main
+    repo = resolve_repo(cfg=cfg)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/gqe_setup.py", line 115, in resolve_repo
+    raise FileNotFoundError(
+FileNotFoundError: The gqe-for-qsci checkout was not found. Pass --repo, set cfg.gqe.repo_path, or export GQE_QSCI_REPO_PATH.
+plots  step2_hamiltonian.pkl
+  wrote /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s5/results/step2_hamiltonian.pkl
+
+  next:
+    quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 4 \
+                --project-dir /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s5
+GQE=  MPI=
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
