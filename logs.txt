@@ -1,24 +1,17 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep -c "^\[epoch" /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s1/run.log
-120
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ pgrep -af train.py | head -1
-[1]+  Done                    nohup bash -c '
-export GQE_QSCI_REPO_PATH=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
-export OMPI_MCA_pml=ob1 OMPI_MCA_btl=self,vader,tcp OMPI_MCA_osc=^ucx UCX_NET_DEVICES=lo
-export PYTHONUNBUFFERED=1 WANDB_MODE=disabled CUDAQ_DEFAULT_SIMULATOR=nvidia
-R=/home/loharkar/quenais-standalone/benchmark_results/headline
-for s in 1 2 3 4 5; do
-  D=$R/r2.1_s$s
-  quenais-run --molecule N2 --basis sto-3g --solver gqe --steps 3 --project-dir $D \
-    --gqe-qsci-max-dim 200 --gqe-seed $s --cudaq-target nvidia --force > $D/run.log 2>&1
-done' > /home/loharkar/quenais-standalone/benchmark_results/headline.log 2>&1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/gqe_vs_cipsi.py /home/loharkar/quenais-standalone/benchmark_results/headline/r2.1_s*
-run                         N      of     w1 epochs    GQE mHa    oracle     CIPSI
-r2.1_s1                   200    3136  0.192    120     47.372     0.110     1.640
-r2.1_s2                   200    3136  0.192    120      5.283     0.110     1.640
-r2.1_s3                   200    3136  0.192    120      5.106     0.110     1.640
-r2.1_s4                   200    3136  0.192    120      5.267     0.110     1.640
-r2.1_s5                   200    3136  0.192    120      0.155     0.110     1.640
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/run_benchmark.py benchmarks/h4_sqd_opt.json --out $B/h4_smoke
+[benchmark] h4_sqd_opt: 4 runs over 1 system(s); this shard: 4  -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke
+[1/4] 9f3af98fc946 sqd     shots=1000 seed=1  ok   24.1 s  E=-2.12635951  err_solver=+25.1179 kcal/mol  subspace=0.25
+[2/4] fa8a13f3934e sqd     shots=1000 seed=2  ok   29.0 s  E=-2.15207144  err_solver=+8.9834 kcal/mol  subspace=0.6944444444444444
+[3/4] 0e7956592ca9 sqd     shots=10000 seed=1  ok   30.4 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
+[4/4] f3555d00a96c sqd     shots=10000 seed=2  ok   35.6 s  E=-2.16638745  err_solver=+0.0000 kcal/mol  subspace=1.0
+[collect] 17 runs (17 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/results.csv
+[collect] 9 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h4_smoke/results_agg.csv
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ python tools/show_rows.py $B/h4_smoke
+tag_R  shots_per_circuit  seed  err_solver_kcal  err_lucj_kcal  subspace_fraction  valid_shot_fraction  n_qubits  circuit_depth_max  t_step3_s
+    -               1000     1          25.1179        23.5148             0.2500                    1         8                 74    22.4960
+    -               1000     2           8.9834        23.5148             0.6944                    1         8                 74    27.1874
+    -              10000     1           0.0000        23.5148                  1                    1         8                 74    28.9713
+    -              10000     2           0.0000        23.5148                  1                    1         8                 74    33.3598
 
-mean over 5 runs (mHa):  GQE 12.637 +- 19.541   oracle 0.110 +- 0.000   CIPSI 1.640 +- 0.000
-GQE beat CIPSI in 1 of 5 runs
+4 ok rows
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
