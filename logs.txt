@@ -1,97 +1,19 @@
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
-remote: Enumerating objects: 20, done.
-remote: Counting objects: 100% (20/20), done.
-remote: Compressing objects: 100% (2/2), done.
-remote: Total 11 (delta 9), reused 11 (delta 9), pack-reused 0 (from 0)
-Unpacking objects: 100% (11/11), 3.66 KiB | 45.00 KiB/s, done.
+remote: Enumerating objects: 7, done.
+remote: Counting objects: 100% (7/7), done.
+remote: Compressing objects: 100% (1/1), done.
+remote: Total 4 (delta 3), reused 4 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 630 bytes | 7.00 KiB/s, done.
 From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   53d634b..860e536  main       -> origin/main
-Updating 53d634b..860e536
+   ac42f44..bc71b8e  main       -> origin/main
+Updating ac42f44..bc71b8e
 Fast-forward
- benchmarks/h8_sqd_opt_d.json | 121 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- quenais/quantum/sqd_opt.py   |  93 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- tests/test_sqd_opt.py        |  57 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- tools/run_benchmark.py       |   1 +
- 4 files changed, 271 insertions(+), 1 deletion(-)
- create mode 100644 benchmarks/h8_sqd_opt_d.json
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
-remote: Enumerating objects: 5, done.
-remote: Counting objects: 100% (5/5), done.
-remote: Compressing objects: 100% (2/2), done.
-remote: Total 3 (delta 1), reused 3 (delta 1), pack-reused 0 (from 0)
-Unpacking objects: 100% (3/3), 465 bytes | 33.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   860e536..b47f8da  main       -> origin/main
-Updating 860e536..b47f8da
-Fast-forward
- logs.txt | 67 +++----------------------------------------------------------------
- 1 file changed, 3 insertions(+), 64 deletions(-)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull && pytest -q -m "not slow"
-nohup bash -c "python tools/run_benchmark.py benchmarks/h8_sqd_opt_d.json --out $B/h8_smoke; python tools/run_benchmark.py benchmarks/n2_sqd_opt.json --out $B/n2_curve" > $B/sqd_opt_batch.log 2>&1 &
-Already up to date.
-...................................................................................................................................................... [ 38%]
-........................................................................................ss............................................................ [ 77%]
-.........................................................................................                                                              [100%]
-====================================================================== warnings summary ======================================================================
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
-tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
-  /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
-    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-387 passed, 2 skipped, 26 deselected, 3 warnings in 139.05s (0:02:19)
-[1] 1492943
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
-python tools/show_rows.py $B/n2_curve --where solver=gqe --cols tag_R gqe_ngates gqe_max_iters seed err_solver_kcal subspace_fraction t_step3_s
- tag_R  gqe_ngates  gqe_max_iters  seed  err_solver_kcal  subspace_fraction  t_step3_s
-1.1000           -              -     3          46.5288             0.0456   716.5499
-1.1000           -              -     1          45.0540             0.0449   719.9109
-1.1000           -              -     2          46.2710             0.0474   731.5134
-1.4000           -              -     2          82.2477             0.0553   751.9999
-1.4000           -              -     3          81.6264             0.0563   743.1654
-1.4000           -              -     1          82.5269             0.0564   749.0521
-1.8000           -              -     1          82.3456             0.0524   756.7817
-1.8000           -              -     3          81.9742             0.0510   736.6849
-1.8000           -              -     2          82.5654             0.0478   739.8962
-1.8000           -            300     2          81.9580             0.0543  1854.8473
-1.8000           -            300     3          82.3966             0.0548  1858.3239
-1.8000           -            300     1          83.5582             0.0482  1925.6724
-1.8000          80              -     3          80.9636             0.0734  1004.5095
-1.8000          80              -     1          81.0658             0.0674  1012.1441
-1.8000          80              -     2          81.6827             0.0656   971.6012
-1.8000          80            300     2          80.9289             0.0669  2502.2377
-1.8000          80            300     1          82.0653             0.0688  2471.6294
-1.8000          80            300     3          81.1602             0.0708  2515.8362
-2.1000           -              -     2          95.1073             0.0747   720.0493
-2.1000           -              -     3          95.1774             0.0747   705.8262
-2.1000           -              -     1          95.1547             0.0772   707.4191
-2.1000           -            300     1          94.9007             0.0852  1796.0036
-2.1000           -            300     2          40.4598             0.0845  1867.9889
-2.1000           -            300     3          40.4598             0.0889  1869.0486
-2.1000          80              -     1          40.4598             0.0843   960.2674
-2.1000          80              -     2          40.4598             0.0969   963.0360
-2.1000          80              -     3          40.4598             0.0951   952.8459
-2.1000          80            300     1          40.4598             0.0944  2403.0313
-2.1000          80            300     3          40.4598             0.0889  2332.4787
-2.1000          80            300     2          40.4598             0.0914  2386.3935
-2.5000           -              -     2          78.5797             0.0621   702.7458
-2.5000           -              -     3          78.1188             0.0588   720.8565
-2.5000           -              -     1          77.3932             0.0605   720.7210
-
-33 ok rows
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git add logs.txt 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git commit -m 'gqe cache'
-[main e21b342] gqe cache
- 1 file changed, 80 insertions(+), 2 deletions(-)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git push
-Enumerating objects: 5, done.
-Counting objects: 100% (5/5), done.
-Delta compression using up to 96 threads
-Compressing objects: 100% (3/3), done.
-Writing objects: 100% (3/3), 1.91 KiB | 976.00 KiB/s, done.
-Total 3 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (1/1), completed with 1 local object.
-To https://github.com/AwadhootVijayLoharkar/Quenais-Project.git
-   b47f8da..e21b342  main -> main
+ benchmarks/n2_sqd_opt.json | 72 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 69 insertions(+), 3 deletions(-)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep -c sqd_samples_per_batch benchmarks/n2_sqd_opt.json 
+1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -3 $B/sqd_opt_batch.log
+[5/18] 830805f67f5d sqd     shots=10000 seed=2  skip (done)
+[6/18] f32566468d18 sqd     shots=10000 seed=3  skip (done)
+[7/18] 9798c4ea4dbc sqd     shots=1000 seed=1  ok  931.2 s  E=-4.29654935  err_solver=+6.9166 kcal/mol  subspace=0.09
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
