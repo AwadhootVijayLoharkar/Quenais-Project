@@ -111,3 +111,60 @@ def test_driver_keeps_sqd_flags_only_for_lucj_opt():
     assert "sqd_batches" not in p
     p, _ = d.normalise_params({"solver": "gqe", "sqd_batches": 5})
     assert "sqd_batches" not in p
+
+
+def test_lucj_cache_reused_across_seeds(tmp_path):
+    """Second run with another seed must reuse the optimised circuit (no
+    second _prepare) and still give the exact energy."""
+    import os
+
+    from quenais.las import sqd_solver
+    from quenais.quantum import sqd_opt
+    from tests import test_las_sqd_logic as lsl
+
+    os.environ["QUENAIS_LUCJ_CACHE"] = str(tmp_path / "cache")
+    calls = []
+
+    def counting_prepare(self, ham):
+        calls.append(1)
+        prep = lsl._fake_prepare(self, ham)
+        prep["op"] = prep["circuit"]     # stand-in: the "operator" IS the circuit
+        return prep
+
+    orig_fc = sqd_solver._fragment_circuit
+    sqd_solver._fragment_circuit = lambda n, nelec, op: op
+    try:
+        step2 = _toy_step2(seed=4)
+        energies = []
+        for seed in (1, 2):
+            q = QiskitSolverSettings(ansatz="lucj_opt", n_shots=20000, seed=seed,
+                                     sqd_batches=3, sqd_opt_iterations=2,
+                                     sqd_samples_per_batch=60)
+
+            def go():
+                sqd_solver.LassqdFragmentSolver._prepare = counting_prepare
+                return sqd_opt.run_lucj_opt_sqd(step2, q, log=lambda *_: None)
+            r = lsl._patched(go)
+            energies.append(r["energy"])
+            assert r["lucj_opt"]["lucj_cache_hit"] is (seed == 2)
+    finally:
+        sqd_solver._fragment_circuit = orig_fc
+        os.environ.pop("QUENAIS_LUCJ_CACHE", None)
+    assert len(calls) == 1
+    for e in energies:
+        assert abs(e - _exact(step2)) < 1e-8
+
+
+def test_cache_key_depends_on_hamiltonian_and_settings():
+    from quenais.quantum.sqd_opt import (embedding_fragment, las_settings_from_qiskit,
+                                         lucj_cache_key)
+
+    a, b = _toy_step2(seed=1), _toy_step2(seed=2)
+    s1 = las_settings_from_qiskit(QiskitSolverSettings(ansatz="lucj_opt", seed=1))
+    s2 = las_settings_from_qiskit(QiskitSolverSettings(ansatz="lucj_opt", seed=7))
+    s3 = las_settings_from_qiskit(QiskitSolverSettings(ansatz="lucj_opt",
+                                                       lucj_opt_pairs="all"))
+    ka = lucj_cache_key(embedding_fragment(a), s1)
+    assert ka == lucj_cache_key(embedding_fragment(a), s2)      # seed-independent
+    assert ka != lucj_cache_key(embedding_fragment(b), s1)
+    assert ka != lucj_cache_key(embedding_fragment(a), s3)

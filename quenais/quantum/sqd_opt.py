@@ -42,10 +42,26 @@ cx_depth, n_2q     depth and two-qubit gate count after transpiling to
 If lucj_energy is already within 1 kcal/mol of the embedding FCI, the
 circuit alone (a VQE) is accurate and SQD is not doing the work: report
 both numbers.
+
+CACHE
+-----
+Mean field, UCCSD and the LUCJ optimisation depend only on the embedding
+Hamiltonian and the LUCJ settings -- not on shots or seed. On H8 with
+all pairs they took most of ~930 s per run, and every seed/shot repeat
+redid them. The optimised operator is therefore cached on disk, keyed on
+a hash of (h1e, h2e, nelec, LUCJ settings, ffsim version):
+
+    $QUENAIS_LUCJ_CACHE  (default ~/.cache/quenais/lucj)
+
+A seed repeat then resamples the SAME circuit, which is the intended
+meaning of a seed (see solver.py). Delete the folder to force
+re-optimisation. result["lucj_opt"]["lucj_cache_hit"] records which
+happened.
 """
 
 from __future__ import annotations
 
+import os
 import time
 
 import numpy as np
@@ -96,6 +112,80 @@ def embedding_fragment(step2):
     return FragmentHamiltonian(index=0, h1s=np.stack([h1, h1]), eri=eri,
                                const=float(step2["ecore"]), nelec=(na, nb),
                                spin2s=na - nb)
+
+
+def _cache_dir():
+    import os
+
+    return os.path.expanduser(os.environ.get("QUENAIS_LUCJ_CACHE",
+                                             "~/.cache/quenais/lucj"))
+
+
+def lucj_cache_key(ham, s):
+    """Hash of everything the LUCJ preparation depends on."""
+    import hashlib
+
+    try:
+        import ffsim
+        ver = getattr(ffsim, "__version__", "?")
+    except ImportError:
+        ver = "none"
+    h = hashlib.sha256()
+    for arr in (ham.h1s, ham.eri):
+        a = np.ascontiguousarray(np.round(np.asarray(arr, dtype=float), 12))
+        h.update(a.tobytes())
+        h.update(str(a.shape).encode())
+    h.update(repr((tuple(ham.nelec), int(ham.spin2s), s.lucj_pairs,
+                   int(s.lucj_n_reps), bool(s.lucj_optimize),
+                   int(s.lucj_opt_maxiter), ver, "v1")).encode())
+    return h.hexdigest()[:24]
+
+
+def load_cached_prep(key):
+    import pickle
+
+    path = os.path.join(_cache_dir(), f"{key}.pkl")
+    try:
+        with open(path, "rb") as fh:
+            return pickle.load(fh)
+    except Exception:            # missing, partial or unreadable: recompute
+        return None
+
+
+def save_cached_prep(key, prep):
+    """Store everything but the circuit (rebuilt from 'op'). Never raises."""
+    import pickle
+
+    try:
+        d = _cache_dir()
+        os.makedirs(d, exist_ok=True)
+        tmp = os.path.join(d, f".{key}.{os.getpid()}.tmp")
+        with open(tmp, "wb") as fh:
+            pickle.dump({k: v for k, v in prep.items() if k != "circuit"}, fh)
+        os.replace(tmp, os.path.join(d, f"{key}.pkl"))
+        return True
+    except Exception:
+        return False
+
+
+def _prepare_cached(solver, ham, s, log):
+    """solver._prepare(ham), reusing a cached optimised LUCJ if present."""
+    from quenais.las import sqd_solver
+
+    key = lucj_cache_key(ham, s)
+    cached = load_cached_prep(key)
+    if cached is not None and cached.get("op") is not None:
+        try:
+            cached["circuit"] = sqd_solver._fragment_circuit(
+                ham.norb, ham.nelec, cached["op"])
+            log(f"  LUCJ: reusing cached optimised circuit ({key})")
+            return cached, True
+        except Exception as exc:
+            log(f"  LUCJ cache unusable ({exc}); re-optimising")
+    prep = solver._prepare(ham)
+    if prep.get("op") is not None and save_cached_prep(key, prep):
+        log(f"  LUCJ: optimised circuit cached ({key})")
+    return prep, False
 
 
 def _lucj_diagnostics(prep, n, nelec):
@@ -157,7 +247,7 @@ def run_lucj_opt_sqd(step2, q, log=print):
         f"shots={s.shots}, sampler={s.backend}, seed={s.seed}")
 
     t0 = time.perf_counter()
-    prep = solver._prepare(ham)
+    prep, cache_hit = _prepare_cached(solver, ham, s, log)
     t_build = time.perf_counter() - t0
 
     e_lucj, w_off = _lucj_diagnostics(prep, n, nelec)
@@ -229,5 +319,6 @@ def run_lucj_opt_sqd(step2, q, log=print):
             "carryover_eps": s.carryover_eps,
             "seed": s.seed,
             "t_prepare_s": t_build,
+            "lucj_cache_hit": cache_hit,
         },
     }

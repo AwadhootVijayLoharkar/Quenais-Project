@@ -637,6 +637,7 @@ def _dmet_part(params, cfg, step2, rdir, load):
                 "sqd_iterations": lo.get("sqd_iterations"),
                 "carryover_eps": lo.get("carryover_eps"),
                 "t_lucj_prepare_s": lo.get("t_prepare_s"),
+                "lucj_cache_hit": lo.get("lucj_cache_hit"),
             })
     else:   # gqe
         from quenais.visualization.plots import parse_gqe_log
