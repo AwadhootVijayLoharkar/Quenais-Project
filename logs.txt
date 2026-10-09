@@ -1,19 +1,8 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git pull
-remote: Enumerating objects: 7, done.
-remote: Counting objects: 100% (7/7), done.
-remote: Compressing objects: 100% (1/1), done.
-remote: Total 4 (delta 3), reused 4 (delta 3), pack-reused 0 (from 0)
-Unpacking objects: 100% (4/4), 630 bytes | 7.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   ac42f44..bc71b8e  main       -> origin/main
-Updating ac42f44..bc71b8e
-Fast-forward
- benchmarks/n2_sqd_opt.json | 72 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 69 insertions(+), 3 deletions(-)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ grep -c sqd_samples_per_batch benchmarks/n2_sqd_opt.json 
-1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ tail -3 $B/sqd_opt_batch.log
-[5/18] 830805f67f5d sqd     shots=10000 seed=2  skip (done)
-[6/18] f32566468d18 sqd     shots=10000 seed=3  skip (done)
-[7/18] 9798c4ea4dbc sqd     shots=1000 seed=1  ok  931.2 s  E=-4.29654935  err_solver=+6.9166 kcal/mol  subspace=0.09
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
+ssh erebos01
+cd ~/quenais-standalone/Quenais-Project
+conda activate /home/loharkar/quenais-standalone/Quenais-Project/quenais-env
+git pull
+mkdir -p $B/probe_n2_dz
+quenais-run --molecule N2 --basis cc-pvdz --geometry 'N 0 0 0; N 0 0 1.1' --active-space-method avas --avas-ao-labels 'N 2s' 'N 2p' --classical-methods HF CCSD CASCI --dmet-reference casci --mapping jw --project-dir $B/probe_n2_dz --steps 1
+quenais-run --molecule N2 --basis cc-pvdz --geometry 'N 0 0 0; N 0 0 1.1' --active-space-method avas --avas-ao-labels 'N 2s' 'N 2p' --classical-methods HF CCSD CASCI --dmet-reference casci --mapping jw --project-dir $B/probe_n2_dz --steps 0 2 > $B/probe_n2_dz.log 2>&1
+grep -iE "n_emb|qubits|bath|imp|ecore|active" $B/probe_n2_dz.log | head -20
