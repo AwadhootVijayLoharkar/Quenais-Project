@@ -1,1 +1,23 @@
-python tools/show_rows.py $B/h8_smoke --where solver=sqd ansatz=lucj_opt sqd_lucj_pairs=all --cols sqd_samples_per_batch sqd_batches shots_per_circuit seed unique_valid_bitstrings subspace_fraction err_solver_kcal lucj_cache_hit t_step3_s
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ python tools/show_rows.py $B/h8_smoke --where solver=sqd ansatz=lucj_opt sqd_lucj_pairs=all --cols sqd_samples_per_batch sqd_batches shots_per_circuit seed unique_valid_bitstrings subspace_fraction err_solver_kcal lucj_cache_hit t_step3_s
+sqd_samples_per_batch  sqd_batches  shots_per_circuit  seed  unique_valid_bitstrings  subspace_fraction  err_solver_kcal  lucj_cache_hit  t_step3_s
+                  170           15               1000     3                       49             0.1176           9.7994               -   933.8589
+                  170           15               1000     2                       46             0.1176           6.7006               -   934.7476
+                  170           15               1000     1                       45             0.0900           6.9166               -   925.5527
+                  170           15              10000     1                      153             0.3773           1.9910               -   976.6196
+                  170           15              10000     2                      156             0.4133           1.4778               -   982.6965
+                  170           15              10000     3                      154             0.3600           2.0724               -   973.1247
+                 1000           15               1000     1                       45             0.0900           6.9166           False   929.1118
+                 1000           15               1000     2                       46             0.1176           6.7006            True    84.6269
+                 1000           15               1000     3                       49             0.1176           9.7994            True    90.3414
+                 1000           15              10000     2                      156             0.4133           1.4778            True   133.6091
+                 1000           15              10000     3                      154             0.3600           2.0724            True   125.6878
+                 1000           15              10000     1                      153             0.3773           1.9910            True   132.5511
+              1000000            1               1000     2                       46             0.1176           6.7006            True    44.3710
+              1000000            1               1000     3                       49             0.1176           9.7994            True    40.5554
+              1000000            1               1000     1                       45             0.0900           6.9166            True    39.2545
+              1000000            1              10000     3                      154             0.3600           2.0724            True    49.1616
+              1000000            1              10000     1                      153             0.3773           1.9910            True    51.4849
+              1000000            1              10000     2                      156             0.4133           1.4778            True    50.4705
+
+18 ok rows
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$
