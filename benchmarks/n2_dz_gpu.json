@@ -1,0 +1,61 @@
+{
+  "name": "n2_dz_gpu",
+  "description": "Week 2: N2 in cc-pVDZ, AVAS N 2s2p (10e,8o); DMET embedding 13 orbitals = 26 qubits, 2.94M determinants (probe at 1.1 A). No full-space FCI (28 orbitals); solver error is vs embedding FCI; LAS vs LASSCF. Both cc-pVDZ grids share defaults -> one set of systems in $B/n2_dz. GPU part: DMET+GQE, 80 gates (best in 3b), 120 epochs, seed 1.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "cc-pvdz",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj_opt",
+    "mapping": "jw",
+    "backend": "mps",
+    "sqd_lucj_pairs": "all",
+    "sqd_lucj_reps": 2,
+    "sqd_samples_per_batch": 1000000,
+    "sqd_batches": 1,
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80
+  },
+  "studies": [
+    {
+      "name": "gqe",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.6",
+          "tag_R": 1.6
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "seed": [
+          1
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "name": "n2_dz_cpu",
+  "description": "Week 2: N2 in cc-pVDZ, AVAS N 2s2p (10e,8o); DMET embedding 13 orbitals = 26 qubits, 2.94M determinants (probe at 1.1 A). No full-space FCI (28 orbitals); solver error is vs embedding FCI; LAS vs LASSCF. Both cc-pVDZ grids share defaults -> one set of systems in $B/n2_dz. CPU part: LASSCF + LASSQD (both fragment spins), then one DMET+SQD timing probe at 1.1 A (26-qubit LUCJ optimisation; may take hours).",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "cc-pvdz",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj_opt",
+    "mapping": "jw",
+    "backend": "mps",
+    "sqd_lucj_pairs": "all",
+    "sqd_lucj_reps": 2,
+    "sqd_samples_per_batch": 1000000,
+    "sqd_batches": 1,
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80
+  },
+  "studies": [
+    {
+      "name": "las",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.6",
+          "tag_R": 1.6
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "lasscf",
+          "lassqd"
+        ],
+        "las_fragments": [
+          [
+            "0:4:4,1:3",
+            "1:4:1,4:3"
+          ],
+          [
+            "0:4:3,2:1",
+            "1:4:2,3:1"
+          ]
+        ],
+        "seed": [
+          1
+        ]
+      }
+    },
+    {
+      "name": "sqd_probe",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "seed": [
+          1
+        ]
+      }
+    }
+  ]
+}
