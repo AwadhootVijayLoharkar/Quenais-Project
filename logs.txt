@@ -80,4 +80,18 @@ python tools/show_rows.py $B/n2_curve --where solver=gqe --cols tag_R gqe_ngates
 2.5000           -              -     1          77.3932             0.0605   720.7210
 
 33 ok rows
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git add logs.txt 
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git commit -m 'gqe cache'
+[main e21b342] gqe cache
+ 1 file changed, 80 insertions(+), 2 deletions(-)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ git push
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 96 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 1.91 KiB | 976.00 KiB/s, done.
+Total 3 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To https://github.com/AwadhootVijayLoharkar/Quenais-Project.git
+   b47f8da..e21b342  main -> main
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos05:Quenais-Project]$ 
