@@ -1,6 +1,6 @@
 {
   "name": "n2_sqd_opt",
-  "description": "Task 3a production: DMET+SQD with the optimised LUCJ (all pairs, 2 reps -- see H4 diagnosis) along the N2 curve, 1.1-2.5 A, 1k/10k shots, 3 seeds (48 runs). Same defaults as n2_curve.json: --out $B/n2_curve reuses steps 0-2; rows join the curve next to the old random-angle SQD (12-42 kcal/mol).",
+  "description": "Task 3a production: DMET+SQD with the optimised LUCJ (all pairs, 2 reps) along the N2 curve 1.1-2.5 A, 1k/10k shots, 3 seeds. Two batch sizes run together because the optimised circuit is cached per geometry (8 optimisations for all 96 runs): d = all samples in one batch (first) and the LASSQD default d=170 x K=15. --out $B/n2_curve.",
   "defaults": {
     "molecule": "N2",
     "basis": "sto-3g",
@@ -28,7 +28,73 @@
   },
   "studies": [
     {
-      "name": "sqd_opt_curve",
+      "name": "sqd_opt_d_all",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.2",
+          "tag_R": 1.2
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.4",
+          "tag_R": 1.4
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.6",
+          "tag_R": 1.6
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.8",
+          "tag_R": 1.8
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.0",
+          "tag_R": 2.0
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.25",
+          "tag_R": 2.25
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.5",
+          "tag_R": 2.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "sqd_lucj_pairs": [
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          2
+        ],
+        "shots": [
+          1000,
+          10000
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ],
+        "sqd_samples_per_batch": [
+          1000000
+        ],
+        "sqd_batches": [
+          1
+        ]
+      }
+    },
+    {
+      "name": "sqd_opt_d170",
       "cases": [
         {
           "geometry": "N 0 0 0; N 0 0 1.1",
