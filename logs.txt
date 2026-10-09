@@ -1,8 +1,73 @@
-ssh erebos01
-cd ~/quenais-standalone/Quenais-Project
-conda activate /home/loharkar/quenais-standalone/Quenais-Project/quenais-env
-git pull
-mkdir -p $B/probe_n2_dz
-quenais-run --molecule N2 --basis cc-pvdz --geometry 'N 0 0 0; N 0 0 1.1' --active-space-method avas --avas-ao-labels 'N 2s' 'N 2p' --classical-methods HF CCSD CASCI --dmet-reference casci --mapping jw --project-dir $B/probe_n2_dz --steps 1
-quenais-run --molecule N2 --basis cc-pvdz --geometry 'N 0 0 0; N 0 0 1.1' --active-space-method avas --avas-ao-labels 'N 2s' 'N 2p' --classical-methods HF CCSD CASCI --dmet-reference casci --mapping jw --project-dir $B/probe_n2_dz --steps 0 2 > $B/probe_n2_dz.log 2>&1
-grep -iE "n_emb|qubits|bath|imp|ecore|active" $B/probe_n2_dz.log | head -20
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ echo $B
+/home/loharkar/quenais-standalone/benchmark_results
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ mkdir -p $B/probe_n2_dz
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ quenais-run --molecule N2 --basis cc-pvdz --geometry '^C
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ git pull
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 3 (delta 1), reused 3 (delta 1), pack-reused 0 (from 0)
+Unpacking objects: 100% (3/3), 561 bytes | 46.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+   229cfd6..a291e1c  main       -> origin/main
+Updating 229cfd6..a291e1c
+Fast-forward
+ logs.txt | 27 ++++++++-------------------
+ 1 file changed, 8 insertions(+), 19 deletions(-)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ quenais-run --molecule N2 --basis cc-pvdz --geometry 'N 0 0 0; N 0 0 1.1' --active-space-method avas --avas-ao-labels 'N 2s' 'N 2p' --classical-methods HF CCSD CASCI --dmet-reference casci --mapping jw --project-dir $B/probe_n2_dz --steps 1
+
+============================================================
+  Step 1: Active space
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- N2
+         Selector: avas
+============================================================
+  Atoms     : 2 ['N', 'N']  Basis: cc-pvdz
+  Electrons : 14  AOs: 28
+
+-- Phase A: UHF + Classification --
+  UHF energy = -108.95379624 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=21.2685 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -0.311285 Ha
+  Selector: avas (PySCF) -- skipping ASF/DMRG.
+  AVAS labels    : ['N 2s', 'N 2p']
+  AVAS threshold : 0.2  minao=minao
+  AVAS selected 8 orbitals [2, 3, 4, 5, 6, 7, 8, 9] with 10 electrons.
+  Phase C skipped: it can only shrink a selection, and these orbitals were chosen deliberately.
+
+  Active electrons from AVAS: 10 (not recomputed -- mo_list is in the selector's basis)
+
+-- Phase D: Loewdin Population --
+
+     MO    Atom  Symbol    Weight
+  ---------------------------------
+      2       1       N    0.5000
+      3       1       N    0.5000
+      4       0       N    0.5000
+      5       1       N    0.5000
+      6       1       N    0.5000
+      7       0       N    0.5000
+      8       0       N    0.5000
+      9       0       N    0.5000
+
+============================================================
+[Step 1] Summary -- N2
+  Tier: 1  Active space: (10e, 8orb)  Orbitals: [2, 3, 4, 5, 6, 7, 8, 9]
+  Selection: automatic (AVAS, PySCF)
+  Selector settings: {'selector': 'avas', 'ao_labels': ['N 2s', 'N 2p'], 'threshold': 0.2, 'minao': 'minao', 'openshell_option': 2, 'ncas': 8, 'nelecas': 10}
+  Correlation strength: 0.0452
+============================================================
+
+[Step 1] Saved -> /home/loharkar/quenais-standalone/benchmark_results/probe_n2_dz/results/step1_asf.pkl
+
+[QuEnAIS] Pipeline complete.
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ quenais-run --molecule N2 --basis cc-pvdz --geometry 'N 0 0 0; N 0 0 1.1' --active-space-method avas --avas-ao-labels 'N 2s' 'N 2p' --classical-methods HF CCSD CASCI --dmet-reference casci --mapping jw --project-dir $B/probe_n2_dz --steps 0 2 > $B/probe_n2_dz.log 2>&1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ quenais-run --molecule N2 --basis cc-pvdz --geometry 'N 0 0 0; N 0 0 1.1' --active-space-method avas --avas-ao-labels 'N 2s' 'N 2p' --classical-methods HF CCSD CASCI --dmet-reference casci --mapping jw --project-dir $B/probe_n2_dz --steps 0 2 > $B/probe_n2_dz.log 2>&1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ grep -iE "n_emb|qubits|bath|imp|ecore|active" $B/probe_n2_dz.log | head -20
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos01:Quenais-Project]$ 
