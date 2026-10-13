@@ -1,0 +1,101 @@
+{
+  "name": "n2_dz_sqd",
+  "description": "N2 cc-pVDZ, DMET embedding 26 qubits, 2.94 M determinants. The optimised LUCJ runs out of memory here, so: CCSD-initialised LUCJ WITHOUT optimisation (sqd_lucj_maxiter 0), all pairs, 2 reps, d = all samples; 10k/100k shots, with and without 50% exploration (scale 1.0); seed 1. The first test of SQD where full coverage of the space is impossible. Run with QUENAIS_SELECTION_MAX_DET=4000000 so CIPSI/oracle/w1 are computed. --out $B/n2_dz.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "cc-pvdz",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj_opt",
+    "mapping": "jw",
+    "backend": "mps",
+    "sqd_lucj_pairs": "all",
+    "sqd_lucj_reps": 2,
+    "sqd_samples_per_batch": 1000000,
+    "sqd_batches": 1,
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80,
+    "sqd_lucj_maxiter": 0
+  },
+  "studies": [
+    {
+      "name": "plain",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.6",
+          "tag_R": 1.6
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "shots": [
+          10000,
+          100000
+        ],
+        "seed": [
+          1
+        ]
+      }
+    },
+    {
+      "name": "explore",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.6",
+          "tag_R": 1.6
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "shots": [
+          10000,
+          100000
+        ],
+        "seed": [
+          1
+        ],
+        "sqd_explore_fraction": [
+          0.5
+        ],
+        "sqd_explore_scale": [
+          1.0
+        ]
+      }
+    }
+  ]
+}

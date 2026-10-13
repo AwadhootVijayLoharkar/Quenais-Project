@@ -530,3 +530,47 @@ def test_gqe_ensemble_merge_is_a_union():
     spec.loader.exec_module(m)
     sa, sb = m.merge_sets([([3, 5], [3]), ([5, 6], [3, 9])])
     assert list(sa) == [3, 5, 6] and list(sb) == [3, 9]
+
+
+def test_gqe_ensemble_coverage_by_level():
+    """2 orbitals, 1 alpha + 1 beta: strings 1 (orb 0) and 2 (orb 1).
+    Dominant det (1,1); (2,1),(1,2) singles; (2,2) double."""
+    import importlib.util
+    from pathlib import Path
+
+    import numpy as np
+
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("gqe_ensemble",
+                                                  root / "tools" / "gqe_ensemble.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    astrs = bstrs = np.array([1, 2])
+    flat = np.sqrt(np.array([0.7, 0.1, 0.1, 0.1]))   # index = ia*2 + ib
+    table, cap = m.coverage_by_level(flat, astrs, bstrs, sa=[1, 2], sb=[1])
+    assert abs(cap - 0.8) < 1e-12                       # (1,1) + (2,1)
+    assert table[0][0] == 1 and abs(table[0][1] - 0.7) < 1e-12 and abs(table[0][2] - 0.7) < 1e-12
+    assert abs(table[1][1] - 0.2) < 1e-12 and abs(table[1][2] - 0.1) < 1e-12
+    assert abs(table[2][1] - 0.1) < 1e-12 and table[2][2] == 0.0
+
+
+
+def test_pool_angles_and_threshold_reach_hydra(tmp_path):
+    args = cli.build_parser().parse_args([
+        "--molecule", "LiH", "--solver", "gqe", "--project-dir", str(tmp_path),
+        "--gqe-pool-angles", "-0.4", "0.1", "0.4", "--gqe-pool-threshold", "0.01"])
+    g = cli.build_gqe_settings(args)
+    over = g.hydra_overrides()
+    assert "operator_pool.params=[-0.4,0.1,0.4]" in over
+    assert "operator_pool.ccsd_threshold=0.01" in over
+    assert not any(o.startswith("operator_pool.params") for o in
+                   cli.build_gqe_settings(cli.build_parser().parse_args(
+                       ["--project-dir", str(tmp_path)])).hydra_overrides())
+
+
+def test_dmet_excitation_pool_passes_its_threshold():
+    """It used to call super().__init__(molecule, params), dropping it."""
+    src = (Path(__file__).resolve().parents[1] / "quenais" / "quantum"
+           / "gqe_pools.py").read_text()
+    assert "super().__init__(molecule, params)\n" not in src
+    assert "threshold=1e-8 if threshold is None else threshold" in src

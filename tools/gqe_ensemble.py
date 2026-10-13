@@ -26,6 +26,10 @@ OUTPUT, per system
                 logged energy) -- dim, error vs embedding FCI
   union         all seeds' alpha strings x all seeds' beta strings
   CIPSI/oracle  at the union's dimension (skipped above 2 M determinants)
+  coverage      weight of the EXACT wavefunction inside the best single
+                set and inside the union, split by excitation level
+                relative to the dominant determinant -- shows WHICH kind of
+                determinants GQE never reaches (e.g. all quadruples)
 """
 
 from __future__ import annotations
@@ -67,15 +71,64 @@ def diagonalise(step2, sa, sb):
     return float(e) + float(step2["ecore"])
 
 
-def references(step2_path, budget, max_det=2_000_000):
-    """(E_exact, E_oracle, E_cipsi) at `budget` determinants, or Nones."""
-    from quenais.quantum.det_analysis import (casci_vector, projected_energy,
-                                              weight_curve)
-    from quenais.quantum.det_expansion import cipsi_from_scratch
+def _popcount(x):
+    x = np.asarray(x, dtype=np.int64)
+    out = np.zeros(x.shape, dtype=np.int64)
+    while np.any(x):
+        out += x & 1
+        x = x >> 1
+    return out
+
+
+def coverage_by_level(flat, astrs, bstrs, sa, sb):
+    """
+    Exact-wavefunction weight per excitation level (relative to the
+    largest-|c| determinant), total and inside span{sa x sb}.
+
+    flat: exact CI vector, index = addr_alpha * len(bstrs) + addr_beta.
+    Returns {level: (n_dets, weight_total, weight_in_set, n_in_set)} and
+    the total weight captured.
+    """
+    na, nb = len(astrs), len(bstrs)
+    c2 = np.abs(np.asarray(flat).reshape(na, nb)) ** 2
+    ia0, ib0 = np.unravel_index(int(np.argmax(c2)), c2.shape)
+    la = _popcount(np.asarray(astrs) ^ astrs[ia0])
+    lb = _popcount(np.asarray(bstrs) ^ bstrs[ib0])
+    level = (la[:, None] + lb[None, :]) // 2
+    inside = (np.isin(astrs, np.asarray(sa))[:, None]
+              & np.isin(bstrs, np.asarray(sb))[None, :])
+    table = {}
+    for lv in np.unique(level):
+        m = level == lv
+        table[int(lv)] = (int(m.sum()), float(c2[m].sum()),
+                          float(c2[m & inside].sum()), int((m & inside).sum()))
+    return table, float(c2[inside].sum())
+
+
+def print_coverage(name, table, captured):
+    print(f"  {name}: captures {100 * captured:.2f}% of the exact wavefunction")
+    print(f"    {'level':>5} {'exact weight':>13} {'captured':>9} {'dets in set':>18}")
+    for lv, (n, w, wi, ni) in table.items():
+        if w < 1e-6 and ni == 0:
+            continue
+        print(f"    {lv:>5} {100 * w:>12.3f}% {100 * wi:>8.3f}% {ni:>8} / {n:<8}")
+
+
+def exact_vector(step2_path):
+    from quenais.quantum.det_analysis import casci_vector
     from quenais.quantum.gqe_adapter import load_from_dmet_pickle
 
     mol = load_from_dmet_pickle(str(step2_path))
     e_exact, flat, space = casci_vector(mol)
+    return mol, e_exact, flat, space
+
+
+def references(step2_path, budget, max_det=2_000_000, cached=None):
+    """(E_exact, E_oracle, E_cipsi) at `budget` determinants, or Nones."""
+    from quenais.quantum.det_analysis import projected_energy, weight_curve
+    from quenais.quantum.det_expansion import cipsi_from_scratch
+
+    mol, e_exact, flat, space = cached or exact_vector(step2_path)
     if space.ndet > max_det:
         return e_exact, None, None
     n = int(min(budget, space.ndet))
@@ -133,7 +186,7 @@ def main(argv=None):
                 continue
             sa, sb = d["strs_a"], d["strs_b"]
             e = diagonalise(step2, sa, sb)
-            sets.append((sa, sb))
+            sets.append((sa, sb, e))
             print(f"{fmt(value(r, 'seed')):>4} {fmt(value(r, 'gqe_ngates')):>5} "
                   f"{fmt(value(r, 'gqe_max_iters')):>6} {len(sa) * len(sb):>8} "
                   f"{float(r['err_solver_kcal']):>11.4f} "
@@ -143,14 +196,28 @@ def main(argv=None):
         if len(sets) < 2:
             print("  fewer than 2 dumps: nothing to merge")
             continue
-        sa, sb = merge_sets(sets)
+        sa, sb = merge_sets([(x, y) for x, y, _ in sets])
         dim = len(sa) * len(sb)
         e_u = diagonalise(step2, sa, sb)
         print(f"union of {len(sets)}: dim {dim} ({100 * dim / full:.1f}%), "
               f"err {(e_u - e_ref) * HARTREE_TO_KCAL:.4f} kcal/mol")
+        step2_path = rdir0 / "results" / "step2_hamiltonian.pkl"
+        cached = None
+        if full <= 2_000_000:
+            try:
+                cached = exact_vector(step2_path)
+                _mol, _e, flat, space = cached
+                best = min(sets, key=lambda t: t[2])
+                print_coverage("best single seed",
+                               *coverage_by_level(flat, space.astrs, space.bstrs,
+                                                  best[0], best[1]))
+                print_coverage("union", *coverage_by_level(
+                    flat, space.astrs, space.bstrs, sa, sb))
+            except Exception as exc:
+                print(f"  coverage analysis failed: {exc!r}"[:300])
         if not a.no_cipsi:
             try:
-                _ex, e_or, e_ci = references(rdir0 / "results" / "step2_hamiltonian.pkl", dim)
+                _ex, e_or, e_ci = references(step2_path, dim, cached=cached)
                 if e_ci is None:
                     print("  CIPSI/oracle skipped: space > 2 M determinants")
                 else:

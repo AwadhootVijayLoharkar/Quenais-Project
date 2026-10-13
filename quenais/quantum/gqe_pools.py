@@ -271,7 +271,11 @@ def _build_classes():
         """
 
         def __init__(self, molecule, params, threshold=1e-8):
-            super().__init__(molecule, params)
+            # The threshold used to be dropped here, so
+            # operator_pool.ccsd_threshold had no effect on this (default)
+            # pool. None (unset in the yaml) keeps the old 1e-8.
+            super().__init__(molecule, params,
+                             threshold=1e-8 if threshold is None else threshold)
 
         def get_vocab_size(self):
             return len(self.pool)

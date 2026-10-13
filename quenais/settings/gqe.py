@@ -122,6 +122,13 @@ class GqeSettings:
     #: is a property of the full sum, never of a single Pauli word.
     operator_pool_spec: str = "dmet_excitation"
     operator_pool_ccsd_threshold: float | None = None
+    #: Rotation angles offered for EVERY excitation (pool size x len).
+    #: None = the repo default, where each excitation gets ONE fixed angle,
+    #: 2 x its CCSD amplitude -- GQE can then pick gates but never tune how
+    #: far they rotate, and at stretched geometry those CCSD angles are
+    #: unreliable (max |t2| = 0.84 at N2 2.1 A). CCSD then only decides
+    #: which excitations exist (|t| > ccsd_threshold).
+    operator_pool_params: list | None = None
 
     #: The Jordan-Wigner Z-ladder encodes fermionic anticommutation.
     #: Removing it makes exp(i*theta*P) no longer particle-number conserving,
@@ -201,6 +208,7 @@ class GqeSettings:
             "sampler.shots": self.sampler_shots,
             "operator_pool.spec": self.operator_pool_spec,
             "operator_pool.ccsd_threshold": self.operator_pool_ccsd_threshold,
+            "operator_pool.params": self.operator_pool_params,
             "operator_pool.remove_z_ladder": self.operator_pool_remove_z_ladder,
             "operator_pool.only_use_first_pauli": self.operator_pool_only_first_pauli,
             "qsci.max_dim": self.qsci_max_dim,

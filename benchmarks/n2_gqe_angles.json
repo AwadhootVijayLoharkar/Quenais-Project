@@ -1,0 +1,70 @@
+{
+  "name": "n2_gqe_angles",
+  "description": "GQE on DMET N2 with amplitude-FREE rotation angles. Default pool: every excitation has ONE fixed angle = 2 x CCSD amplitude, so GQE can choose gates but not how far they rotate; at stretch the CCSD amplitudes are unreliable and every seed plateaus (2.1 A: 40.4598 kcal/mol in 8/8 runs). Here every excitation is offered at angles +-0.1, +-0.4, +-1.0 (CCSD only selects which excitations exist), alone and with a 0.01 amplitude threshold to keep the vocabulary small. 80 gates, 120 epochs, seeds 4-6 (determinant dumps on). Compare with n2_gqe_ens (same seeds, CCSD angles). --out $B/n2_curve.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80
+  },
+  "studies": [
+    {
+      "name": "angles",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.8",
+          "tag_R": 1.8
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_pool_angles": [
+          [
+            -1.0,
+            -0.4,
+            -0.1,
+            0.1,
+            0.4,
+            1.0
+          ]
+        ],
+        "gqe_pool_threshold": [
+          null,
+          0.01
+        ],
+        "seed": [
+          4,
+          5,
+          6
+        ]
+      }
+    }
+  ]
+}

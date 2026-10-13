@@ -42,7 +42,9 @@ class QiskitSolverSettings:
     lucj_regularization: float = 1e-2
 
     # ── ansatz="lucj_opt" only (defaults = the LASSQD defaults) ──────────
-    #: linear-method iterations for the LUCJ parameters
+    #: linear-method iterations for the LUCJ parameters. 0 = no
+    #: optimisation (CCSD-initialised LUCJ as is): the linear method keeps
+    #: one state vector per parameter and runs out of memory at ~26 qubits.
     lucj_opt_maxiter: int = 10
     lucj_opt_pairs: str = "heavy_hex"
     lucj_opt_n_reps: int = 1
@@ -106,7 +108,7 @@ class QiskitSolverSettings:
                      "ansatz_reps", "skqd_krylov_dim", "skqd_trotter_reps",
                      "sqdrift_num_circuits", "sqdrift_num_groups", "sqdrift_iters",
                      "mps_max_bond_dim", "lucj_num_layers",
-                     "lucj_opt_maxiter", "lucj_opt_n_reps", "sqd_batches",
+                     "lucj_opt_n_reps", "sqd_batches",
                      "sqd_samples_per_batch", "sqd_opt_iterations"):
             if getattr(self, name) <= 0:
                 raise ValueError(f"{name} must be > 0, got {getattr(self, name)}")
@@ -120,6 +122,8 @@ class QiskitSolverSettings:
             raise ValueError("sqd_explore_fraction must lie in [0, 1)")
         if self.sqd_explore_scale <= 0:
             raise ValueError("sqd_explore_scale must be > 0")
+        if self.lucj_opt_maxiter < 0:
+            raise ValueError("lucj_opt_maxiter must be >= 0 (0 = no optimisation)")
         if self.sqd_carryover_eps < 0:
             raise ValueError("sqd_carryover_eps must be >= 0 (0 disables carryover)")
         if self.mps_trunc_thresh <= 0:

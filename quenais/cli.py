@@ -229,7 +229,8 @@ def build_parser():
         "pairs, 1 rep, 10 linear-method iterations).",
     )
     sqo.add_argument("--sqd-lucj-maxiter", type=int, default=None,
-                     help="linear-method iterations for the LUCJ (default 10)")
+                     help="linear-method iterations for the LUCJ (default 10; "
+                          "0 = no optimisation, for >~24 qubits)")
     sqo.add_argument("--sqd-lucj-pairs", default=None,
                      choices=["heavy_hex", "all"],
                      help="LUCJ interaction pairs (default heavy_hex)")
@@ -288,6 +289,14 @@ def build_parser():
                      help="QSCI subspace cap (default 10000). The upstream "
                           "default of 2000 became the binding constraint "
                           "on ScH.")
+    gqe.add_argument("--gqe-pool-angles", type=float, nargs="+", default=None,
+                     metavar="ANGLE",
+                     help="rotation angles offered for every excitation, e.g. "
+                          "-1.0 -0.4 -0.1 0.1 0.4 1.0. Default: one angle per "
+                          "excitation, 2 x its CCSD amplitude.")
+    gqe.add_argument("--gqe-pool-threshold", type=float, default=None,
+                     help="keep only excitations with |CCSD amplitude| above "
+                          "this (default 1e-8 = all non-zero)")
     gqe.add_argument("--gqe-seed", type=int, default=None,
                      help="trainer seed. The external repo's "
                           "configs/trainer/default.yaml pins seed=32, so runs "
@@ -378,6 +387,10 @@ def build_gqe_settings(args):
         kwargs["qsci_max_dim"] = args.gqe_qsci_max_dim
     if args.gqe_seed is not None:
         kwargs["seed"] = args.gqe_seed
+    if getattr(args, "gqe_pool_angles", None):
+        kwargs["operator_pool_params"] = list(args.gqe_pool_angles)
+    if getattr(args, "gqe_pool_threshold", None) is not None:
+        kwargs["operator_pool_ccsd_threshold"] = args.gqe_pool_threshold
     return GqeSettings(**kwargs)
 
 

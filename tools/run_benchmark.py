@@ -533,7 +533,7 @@ def build_row(spec, cfg, step0, step1, step2, rdir, t_step3, load):
     return row
 
 
-def selection_metrics(cfg, budget, max_det=2_000_000):
+def selection_metrics(cfg, budget, max_det=None):
     """
     The thesis' reference points for a DMET-route run, on the embedding
     Hamiltonian of THIS run (step 2 pickle):
@@ -548,6 +548,10 @@ def selection_metrics(cfg, budget, max_det=2_000_000):
     recorded in `selection_error` and the row still writes.
     """
     out = {}
+    if max_det is None:
+        # Raise for bigger embeddings (N2 cc-pVDZ: 2.94 M), e.g.
+        # QUENAIS_SELECTION_MAX_DET=4000000. CIPSI then takes longer.
+        max_det = int(os.environ.get("QUENAIS_SELECTION_MAX_DET", 2_000_000))
     try:
         from quenais.quantum.det_analysis import (
             casci_vector, n_for_weight, projected_energy, weight_curve)

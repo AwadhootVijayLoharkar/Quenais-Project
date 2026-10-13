@@ -213,3 +213,13 @@ def test_explore_flags_reach_settings(tmp_path):
         "--project-dir", str(tmp_path)])
     q = build_config(args).qiskit
     assert (q.sqd_explore_fraction, q.sqd_explore_scale) == (0.25, 1.0)
+
+
+def test_maxiter_zero_switches_optimisation_off():
+    from quenais.quantum.sqd_opt import las_settings_from_qiskit
+
+    q = QiskitSolverSettings(ansatz="lucj_opt", lucj_opt_maxiter=0).validate()
+    s = las_settings_from_qiskit(q)
+    assert s.lucj_optimize is False
+    assert las_settings_from_qiskit(
+        QiskitSolverSettings(ansatz="lucj_opt")).lucj_optimize is True
