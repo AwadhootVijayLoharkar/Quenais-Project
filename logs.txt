@@ -1,1 +1,3 @@
-python -c "import pickle,glob,os;p=max(glob.glob('$B/n2_curve/runs/*/results/gqe_determinants.pkl'),key=os.path.getmtime);d=pickle.load(open(p,'rb'));print(p);print(d['dets'].shape, d.get('subspace_dim'))"
+grep -c '"dets"' $GQE_QSCI_REPO_PATH/gqe_qsci/train_pipeline.py
+python -c "import pickle,glob,os,time;fs=sorted(glob.glob('$B/n2_curve/runs/*/results/gqe_determinants.pkl'),key=os.path.getmtime)[-4:];[print(time.ctime(os.path.getmtime(f)),f.split('/')[-3],sorted(pickle.load(open(f,'rb')).keys())) for f in fs]"
+tail -3 $B/n2_gqe_angles.log
