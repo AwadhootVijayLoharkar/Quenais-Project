@@ -1,15 +1,15 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ echo "job $SLURM_JOB_ID  gpu $CUDA_VISIBLE_DEVICES"
-nvidia-smi --query-compute-apps=pid --format=csv,noheader | wc -l
-
-export PS1="[W2 job $SLURM_JOB_ID] $PS1"
-job 57094  gpu 0
-0
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+pkill -f "benchmark_results/n2_dz "
+pkill -f "benchmarks/n2_dz_sqd"
+sleep 5
+ps -u loharkar -o pid,etime,cmd | grep "benchmarks/" | grep -v grep | awk '{print $1, $2, $5}'
 
 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ echo "job $SLURM_JOB_ID  gpu $CUDA_VISIBLE_DEVICES"
-nvidia-smi --query-compute-apps=pid --format=csv,noheader | wc -l
-job 57092  gpu 0
-1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ export PS1="[W1 job $SLURM_JOB_ID] $PS1"
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+sed -i 's/"backend": "mps"/"backend": "local"/' benchmarks/n2_dz_sqd.json
+grep -c '"backend": "local"' benchmarks/n2_dz_sqd.json
+nohup bash -c "export QUENAIS_SELECTION_MAX_DET=4000000; python tools/run_benchmark.py benchmarks/n2_dz_sqd.json --out $B/n2_dz" > $B/n2_dz_sqd.log 2>&1 &
+
+git add benchmarks/n2_dz_sqd.json && git commit -m "n2_dz_sqd: statevector sampler" && git push
+
+tail -1 $B/n2_gqe_angles.log
+
+tail -4 $(ls -td $B/n2_dz/runs/*/ | head -1)run.log
