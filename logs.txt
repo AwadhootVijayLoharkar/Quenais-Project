@@ -13,3 +13,18 @@ git add benchmarks/n2_dz_sqd.json && git commit -m "n2_dz_sqd: statevector sampl
 tail -1 $B/n2_gqe_angles.log
 
 tail -4 $(ls -td $B/n2_dz/runs/*/ | head -1)run.log
+
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pkill -f "benchmark_results/n2_dz "
+pkill -f "benchmarks/n2_dz_sqd"
+sleep 5
+ps -u loharkar -o pid,etime,cmd | grep "benchmarks/" | grep -v grep | awk '{print $1, $2, $5}'
+[2]-  Terminated              nohup bash -c "export QUENAIS_SELECTION_MAX_DET=4000000; python tools/run_benchmark.py benchmarks/n2_dz_sqd.json --out $B/n2_dz" > $B/n2_dz_sqd.log 2>&1
+60904 01:26:00 benchmarks/n2_gqe_angles.json
+81655 50:42 benchmarks/fe2bpym_las.json
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$
+
+
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u loharkar -o pid,etime,cmd | grep "benchmarks/" | grep -v grep | awk '{print $1, $2, $5}'
+12873 04:51:21 benchmarks/n2_sqd_explore.json
+52864 43:07 benchmarks/fe2bpym_las.json
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$
