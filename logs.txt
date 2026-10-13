@@ -1,5 +1,1 @@
-git pull && cd $GQE_QSCI_REPO_PATH && git checkout -- gqe_qsci/factory.py gqe_qsci/gqe/sampler.py gqe_qsci/train_pipeline.py && rm -f .quenais_patch_applied && cd ~/quenais-standalone/Quenais-Project && quenais-gqe-setup --repo $GQE_QSCI_REPO_PATH && grep -c '"dets"' $GQE_QSCI_REPO_PATH/gqe_qsci/train_pipeline.py
-
-python -c "import pickle,glob,os;p=max(glob.glob('$B/n2_curve/runs/*/results/gqe_determinants.pkl'),key=os.path.getmtime);d=pickle.load(open(p,'rb'));print(p);print(d['dets'].shape, d.get('subspace_dim'))"
-
 python -c "import pickle,glob,os;p=max(glob.glob('$B/n2_curve/runs/*/results/gqe_determinants.pkl'),key=os.path.getmtime);d=pickle.load(open(p,'rb'));print(p);print(d['dets'].shape, d.get('subspace_dim'))"
