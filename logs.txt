@@ -1,29 +1,11 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-remote: Enumerating objects: 8, done.
-remote: Counting objects: 100% (8/8), done.
-remote: Compressing objects: 100% (3/3), done.
-remote: Total 5 (delta 2), reused 5 (delta 2), pack-reused 0 (from 0)
-Unpacking objects: 100% (5/5), 1.50 KiB | 24.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   28a2252..a681301  main       -> origin/main
-Updating 28a2252..a681301
-Fast-forward
- benchmarks/n2_sqd_explore.json | 138 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- logs.txt                       | 333 +++--------------------------------------------------------------------------------------------------------------------------------------
- 2 files changed, 145 insertions(+), 326 deletions(-)
- create mode 100644 benchmarks/n2_sqd_explore.json
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-rm -rf $B/h8_explore.log
-nohup bash -c "python tools/run_benchmark.py benchmarks/h8_sqd_explore.json --out $B/h8_smoke; python tools/run_benchmark.py benchmarks/n2_sqd_explore.json --out $B/n2_curve" > $B/explore_batch.log 2>&1 &
-Already up to date.
-[2] 13915
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -f $B/explore_batch.log 
-nohup: ignoring input
-[benchmark] h8_sqd_explore: 30 runs over 1 system(s); this shard: 30  -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
-[1/30] b1a14c7f3959 sqd     shots=30000 seed=1  ok  157.4 s  E=-4.30595041  err_solver=+1.0173 kcal/mol  subspace=0.5308163265306123
-[2/30] 6bb3f958cd23 sqd     shots=100000 seed=1  ok  216.6 s  E=-4.30734234  err_solver=+0.1439 kcal/mol  subspace=0.7844897959183673
-[3/30] 2de8a50801ed sqd     shots=30000 seed=2  ok  162.1 s  E=-4.30636335  err_solver=+0.7582 kcal/mol  subspace=0.5951020408163266
-[4/30] ed90b9fb0320 sqd     shots=100000 seed=2  ok  220.4 s  E=-4.30743280  err_solver=+0.0871 kcal/mol  subspace=0.8359183673469388
-[5/30] a94723e65254 sqd     shots=30000 seed=3  ok  157.1 s  E=-4.30637186  err_solver=+0.7528 kcal/mol  subspace=0.573265306122449
-[6/30] f6dbdedf10dd sqd     shots=100000 seed=3  ok  210.6 s  E=-4.30725280  err_solver=+0.2000 kcal/mol  subspace=0.7593877551020408
-[7/30] cdb587c39637 sqd     shots=1000 seed=1  ok  199.2 s  E=-4.30571244  err_solver=+1.1666 kcal/mol  subspace=0.8889795918367347
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ jobs -l
+[1]- 11715 Running                 nohup python tools/run_benchmark.py benchmarks/n2_gqe_ens.json --out $B/n2_curve > $B/n2_gqe_ens.log 2>&1 &
+[2]+ 13915 Running                 nohup bash -c "python tools/run_benchmark.py benchmarks/h8_sqd_explore.json --out $B/h8_smoke; python tools/run_benchmark.py benchmarks/n2_sqd_explore.json --out $B/n2_curve" > $B/explore_batch.log 2>&1 &
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ kill 13915
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u loharkar -o pid,etime,cmd | grep run_benchmark | grep -v grep
+[2]+  Terminated              nohup bash -c "python tools/run_benchmark.py benchmarks/h8_sqd_explore.json --out $B/h8_smoke; python tools/run_benchmark.py benchmarks/n2_sqd_explore.json --out $B/n2_curve" > $B/explore_batch.log 2>&1
+  11715       43:14 python tools/run_benchmark.py benchmarks/n2_gqe_ens.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+  13916       36:09 python tools/run_benchmark.py benchmarks/h8_sqd_explore.json --out /home/loharkar/quenais-standalone/benchmark_results/h8_smoke
+  21705       06:44 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/n2_curve 0eb97cf57635
+  22856       03:34 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/h8_smoke d8cbd43e8905
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
