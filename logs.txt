@@ -1,4 +1,15 @@
-echo "job $SLURM_JOB_ID  gpu $CUDA_VISIBLE_DEVICES"
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ echo "job $SLURM_JOB_ID  gpu $CUDA_VISIBLE_DEVICES"
 nvidia-smi --query-compute-apps=pid --format=csv,noheader | wc -l
 
-export PS1="[W1 job $SLURM_JOB_ID] $PS1"
+export PS1="[W2 job $SLURM_JOB_ID] $PS1"
+job 57094  gpu 0
+0
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ echo "job $SLURM_JOB_ID  gpu $CUDA_VISIBLE_DEVICES"
+nvidia-smi --query-compute-apps=pid --format=csv,noheader | wc -l
+job 57092  gpu 0
+1
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ export PS1="[W1 job $SLURM_JOB_ID] $PS1"
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
