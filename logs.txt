@@ -1,13 +1,38 @@
-free -g                      # look at the "available" column, e.g. 180
-pkill -f fe2bpym; sleep 2; pgrep -af fe2bpym    # should print nothing
-export OMP_NUM_THREADS=24 MKL_NUM_THREADS=24 OPENBLAS_NUM_THREADS=24
-export PYSCF_MAX_MEMORY=100000   # MB, about 60% of "available" (180 GB → 100000)
-nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym --retry-failed > $B/fe2bpym.log 2>&1 &
-
-
-top -b -n1 | grep python | head -3     # expect ~2000% CPU, not 100%
-tail -3 $B/fe2bpym/systems/*/prep.log
-
-tail -5 $B/n2_dz_sqd.log
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/n2_dz_sqd.log
 python tools/run_benchmark.py --out $B/n2_dz --collect-only
 python tools/show_rows.py $B/n2_dz --where solver=sqd --cols tag_R shots_per_circuit explore_fraction seed subspace_fraction err_solver_kcal err_cipsi_kcal t_step3_s
+[6/12] 48cb918be383 sqd     shots=100000 seed=1  ok  336.3 s  E=-108.63747523  err_solver=+88.4921 kcal/mol  subspace=0.00029984445568861153
+[7/12] 968d2cf66360 sqd     shots=10000 seed=1  ok 10213.5 s  E=-109.11216676  err_solver=+0.0000 kcal/mol  subspace=0.9988348384327406
+[8/12] f73d676b1dc4 sqd     shots=100000 seed=1  ok 4703.9 s  E=-109.11216676  err_solver=+0.0000 kcal/mol  subspace=1.0
+[9/12] dc6ccfce0444 sqd     shots=10000 seed=1  ok 1751.5 s  E=-108.89953694  err_solver=+0.0000 kcal/mol  subspace=1.0
+[10/12] c58851874d68 sqd     shots=100000 seed=1  ok 1765.8 s  E=-108.89953694  err_solver=+0.0000 kcal/mol  subspace=1.0
+[collect] 26 runs (25 ok, 1 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_dz/results.csv
+[collect] 26 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_dz/results_agg.csv
+ tag_R  shots_per_circuit  explore_fraction  seed  subspace_fraction  err_solver_kcal  err_cipsi_kcal  t_step3_s
+1.1000              10000            0.5000     1             0.9988           0.0000         -0.0000  4707.2784
+1.1000              10000                 0     1             0.0000          28.9281          5.4053   293.6228
+1.1000             100000            0.5000     1                  1           0.0000               0  4680.4231
+1.1000             100000                 0     1             0.0001          19.6680          1.4921   327.0378
+1.6000              10000            0.5000     1                  1           0.0000               0  1740.2214
+1.6000              10000                 0     1             0.0002          70.8527          7.5355    83.9485
+1.6000             100000            0.5000     1                  1           0.0000               0  1754.5864
+1.6000             100000                 0     1             0.0007          51.4310          1.9775   100.4979
+2.1000              10000                 0     1             0.0002          94.1424         11.2431    97.1116
+2.1000             100000                 0     1             0.0003          88.4921          7.8500   101.2755
+
+10 ok rows, 1 FAILED
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ top -b -n1 | grep python | head -3     # expect ~2000% CPU, not 100%
+ 104193 loharkar  20   0   14.6g   5.8g  39876 R  2182   1.2  64:35.06 python
+ 102139 loharkar  20   0  144496  59692  13204 S   0.0   0.0   0:00.75 python
+ 104159 loharkar  20   0 1060008  21908   1324 S   0.0   0.0   0:02.42 python
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/n2_dz_sqd.log
+[6/12] 48cb918be383 sqd     shots=100000 seed=1  ok  336.3 s  E=-108.63747523  err_solver=+88.4921 kcal/mol  subspace=0.00029984445568861153
+[7/12] 968d2cf66360 sqd     shots=10000 seed=1  ok 10213.5 s  E=-109.11216676  err_solver=+0.0000 kcal/mol  subspace=0.9988348384327406
+[8/12] f73d676b1dc4 sqd     shots=100000 seed=1  ok 4703.9 s  E=-109.11216676  err_solver=+0.0000 kcal/mol  subspace=1.0
+[9/12] dc6ccfce0444 sqd     shots=10000 seed=1  ok 1751.5 s  E=-108.89953694  err_solver=+0.0000 kcal/mol  subspace=1.0
+[10/12] c58851874d68 sqd     shots=100000 seed=1  ok 1765.8 s  E=-108.89953694  err_solver=+0.0000 kcal/mol  subspace=1.0
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -3 $B/fe2bpym/systems/*/prep.log
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+OpenBLAS Warning : Detect OpenMP Loop and this application may hang. Please rebuild the library with USE_OPENMP=1 option.
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
