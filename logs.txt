@@ -1,3 +1,11 @@
-grep -c '"dets"' $GQE_QSCI_REPO_PATH/gqe_qsci/train_pipeline.py
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ grep -c '"dets"' $GQE_QSCI_REPO_PATH/gqe_qsci/train_pipeline.py
 python -c "import pickle,glob,os,time;fs=sorted(glob.glob('$B/n2_curve/runs/*/results/gqe_determinants.pkl'),key=os.path.getmtime)[-4:];[print(time.ctime(os.path.getmtime(f)),f.split('/')[-3],sorted(pickle.load(open(f,'rb')).keys())) for f in fs]"
 tail -3 $B/n2_gqe_angles.log
+1
+Tue Oct 13 13:53:28 2026 fd3c1cc9f18f ['coeffs', 'energy', 'epoch', 'result', 'strs_a', 'strs_b']
+Tue Oct 13 14:06:24 2026 d071c5e9068b ['coeffs', 'energy', 'epoch', 'result', 'strs_a', 'strs_b']
+Tue Oct 13 14:32:59 2026 a5ab5ee1cb85 ['coeffs', 'energy', 'epoch', 'result', 'strs_a', 'strs_b']
+Tue Oct 13 16:04:59 2026 4c49a37bf951 ['coeffs', 'energy', 'epoch', 'result', 'strs_a', 'strs_b']
+nohup: ignoring input
+[benchmark] n2_gqe_angles: 12 runs over 2 system(s); this shard: 12  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
