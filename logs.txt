@@ -1,11 +1,11 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ grep -c "\[epoch" $B/n2_curve/runs/4c49a37bf951/run.log
-grep -o "Global-refined(best_so_far)/energy - R-CASCI': [-0-9.e]*" $B/n2_curve/runs/4c49a37bf951/run.log | tail -3
-ps -u loharkar -o pid,etime,cmd | grep "4c49a37bf951\|n2_gqe_angles" | grep -v grep
-20
-Global-refined(best_so_far)/energy - R-CASCI': 0.11957428951963323
-Global-refined(best_so_far)/energy - R-CASCI': 0.11957428951963323
-Global-refined(best_so_far)/energy - R-CASCI': 0.11957428951963323
-  60904       12:11 python tools/run_benchmark.py benchmarks/n2_gqe_angles.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-  60945       12:10 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/n2_curve 4c49a37bf951
-  60966       12:08 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/train.py molecule=dmet_embedding trainer.seed=4 trainer.max_iters=120 trainer.num_samples=100 trainer.batch_size=100 trainer.warmup_size=100 trainer.buffer_size=100 trainer.load_checkpoint=false ngates=80 operator_pool.spec=dmet_excitation operator_pool.params=[-1.0,-0.4,-0.1,0.1,0.4,1.0] operator_pool.remove_z_ladder=false operator_pool.only_use_first_pauli=false qsci.max_dim=10000 molecule.step2_pickle_path=/home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/4c49a37bf951/results/step2_hamiltonian.pkl
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u loharkar -o pid,etime,cmd | grep run_benchmark | grep -v grep
+  60904       25:03 python tools/run_benchmark.py benchmarks/n2_gqe_angles.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+  60905       25:03 python tools/run_benchmark.py benchmarks/n2_dz_sqd.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_dz
+  60940       25:02 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/n2_dz 509951956280
+  60945       25:02 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/n2_curve 4c49a37bf951
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u loharkar -o pid,etime,cmd | grep run_benchmark | grep -v grep
+  12873    03:48:14 python tools/run_benchmark.py benchmarks/n2_sqd_explore.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+  47342       05:45 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/n2_curve c0f6a144f464
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]
