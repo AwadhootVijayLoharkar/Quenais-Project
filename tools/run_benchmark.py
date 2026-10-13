@@ -638,6 +638,10 @@ def _dmet_part(params, cfg, step2, rdir, load):
                 "carryover_eps": lo.get("carryover_eps"),
                 "t_lucj_prepare_s": lo.get("t_prepare_s"),
                 "lucj_cache_hit": lo.get("lucj_cache_hit"),
+                "explore_fraction": lo.get("explore_fraction"),
+                "explore_scale": lo.get("explore_scale"),
+                "unique_valid_main": lo.get("unique_valid_main"),
+                "unique_valid_explore_new": lo.get("unique_valid_explore_new"),
             })
     else:   # gqe
         from quenais.visualization.plots import parse_gqe_log

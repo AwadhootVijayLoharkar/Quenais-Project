@@ -1,0 +1,94 @@
+{
+  "name": "h8_sqd_explore",
+  "description": "H8: the optimised LUCJ samples only ~155 distinct determinants at 10k shots (subspace 36-41%, 1.5-2.1 kcal/mol). Two fixes at the same total budget: (a) just more shots, 30k/100k; (b) give 25%/50% of the shots to a random-parameter exploration circuit (scale 0.3 or 1.0). Optimised circuit is cached, so ~1 min per run. --out $B/h8_smoke.",
+  "defaults": {
+    "molecule": "H8",
+    "basis": "sto-3g",
+    "geometry": "H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "H 1s"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "las_fragments": [
+      "0+1:2:1,1",
+      "2+3:2:1,1",
+      "4+5:2:1,1",
+      "6+7:2:1,1"
+    ],
+    "lassqd_carryover_eps": 1e-05
+  },
+  "studies": [
+    {
+      "name": "more_shots",
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "sqd_lucj_pairs": [
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          2
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ],
+        "shots": [
+          30000,
+          100000
+        ]
+      }
+    },
+    {
+      "name": "explore",
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "sqd_lucj_pairs": [
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          2
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ],
+        "shots": [
+          1000,
+          10000
+        ],
+        "sqd_explore_fraction": [
+          0.25,
+          0.5
+        ],
+        "sqd_explore_scale": [
+          0.3,
+          1.0
+        ]
+      }
+    }
+  ]
+}

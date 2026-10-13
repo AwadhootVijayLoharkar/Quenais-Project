@@ -208,6 +208,39 @@ def _lucj_diagnostics(prep, n, nelec):
         return None, None
 
 
+def _exploration_circuit(n, nelec, s, scale, seed=12345):
+    """
+    Same LUCJ form as the optimised circuit, random parameters ~ N(0, scale),
+    fixed seed (a seed repeat resamples the same circuit, as for the main
+    one). Built in the same orbital basis, so its bitstrings mean the same
+    determinants.
+    """
+    import ffsim
+
+    from quenais.las import sqd_solver
+
+    pairs = sqd_solver._interaction_pairs(n, s.lucj_pairs)
+    npar = ffsim.UCJOpSpinUnbalanced.n_params(
+        n, s.lucj_n_reps, interaction_pairs=pairs,
+        with_final_orbital_rotation=False)
+    x = np.random.default_rng(seed).normal(0.0, scale, size=npar)
+    op = ffsim.UCJOpSpinUnbalanced.from_parameters(
+        x, norb=n, n_reps=s.lucj_n_reps, interaction_pairs=pairs,
+        with_final_orbital_rotation=False)
+    return sqd_solver._fragment_circuit(n, nelec, op)
+
+
+def _valid_keys(counts, n, na, nb):
+    """Distinct bitstrings with the right electron numbers (Qiskit order:
+    left half beta, right half alpha)."""
+    out = set()
+    for key in counts:
+        k = key.replace(" ", "")
+        if k[:n].count("1") == nb and k[n:].count("1") == na:
+            out.add(k)
+    return out
+
+
 def _hardware_cost(circuit):
     """(depth, two-qubit gate count) in the {cx, rz, sx, x} basis."""
     try:
@@ -261,7 +294,29 @@ def run_lucj_opt_sqd(step2, q, log=print):
         log(f"  circuit ({{cx,rz,sx,x}} basis): depth {depth}, {n2q} CX")
 
     t0 = time.perf_counter()
-    counts = sqd_solver.sample_fragment_circuits([prep["circuit"]], s)[0]
+    f = float(getattr(q, "sqd_explore_fraction", 0.0) or 0.0)
+    n_explore = int(round(f * s.shots)) if f > 0 else 0
+    n_main = s.shots - n_explore
+    import dataclasses
+
+    counts = sqd_solver.sample_fragment_circuits(
+        [prep["circuit"]], dataclasses.replace(s, shots=n_main))[0]
+    na, nb = nelec
+    keys_main = _valid_keys(counts, n, na, nb)
+    keys_explore = set()
+    if n_explore:
+        circ = _exploration_circuit(n, nelec, s, float(q.sqd_explore_scale))
+        c_exp = sqd_solver.sample_fragment_circuits(
+            [circ], dataclasses.replace(s, shots=n_explore))[0]
+        keys_explore = _valid_keys(c_exp, n, na, nb)
+        merged = dict(counts)
+        for k, v in c_exp.items():
+            merged[k] = merged.get(k, 0) + v
+        counts = merged
+        log(f"  exploration: {n_explore} of {s.shots} shots, scale "
+            f"{q.sqd_explore_scale}; distinct valid bitstrings main "
+            f"{len(keys_main)}, exploration {len(keys_explore)}, new "
+            f"{len(keys_explore - keys_main)}")
     t_sample = time.perf_counter() - t0
 
     t0 = time.perf_counter()
@@ -320,5 +375,10 @@ def run_lucj_opt_sqd(step2, q, log=print):
             "seed": s.seed,
             "t_prepare_s": t_build,
             "lucj_cache_hit": cache_hit,
+            "explore_fraction": f,
+            "explore_scale": float(q.sqd_explore_scale) if n_explore else None,
+            "explore_shots": n_explore,
+            "unique_valid_main": len(keys_main),
+            "unique_valid_explore_new": len(keys_explore - keys_main),
         },
     }

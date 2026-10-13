@@ -36,7 +36,8 @@ how to run: `docs/benchmarking.md`.
    OpenMPI settings disabling UCX. Not a thesis point, just methods detail.
 9. Task 3a: `--ansatz lucj_opt` for DMET+SQD -- the LASSQD circuit and SQD
    (UCCSD-initialised LUCJ, linear-method optimisation, K x d batches,
-   carryover) on the embedding Hamiltonian as one fragment. Results: (pending).
+   carryover) on the embedding Hamiltonian as one fragment. Optimised LUCJ
+   cached per geometry (`~/.cache/quenais/lucj`). Results: §Step 3 below.
 
 
 ## Results (all with seed repeats unless stated)
@@ -173,6 +174,65 @@ Original setup exactly: plain
    The abstract and contribution 3 in the introduction must be rewritten
    accordingly. The w₁ framework itself stands, and is what makes this
    honest statement possible.
+
+## Step 3 (9 Oct 2026)
+
+### 3a DMET+SQD with the optimised LUCJ (`--ansatz lucj_opt`)
+
+**H4** (8 qubits, 36 determinants). Code validated: 10k shots exact for
+every setting. The LUCJ pair pattern decides the circuit quality
+(1k shots, seed 1, error of the circuit alone / of SQD, kcal/mol; HF->FCI
+correlation 42.6):
+
+| pairs | reps | maxiter | err_lucj | err_SQD (1k) |
+|---|---|---|---|---|
+| heavy-hex | 1 | 10 | 23.5 | 25.1 |
+| heavy-hex | 1 | 50 | 23.3 | 25.1 |
+| heavy-hex | 2 | 10 | 1.9 | 0.000 |
+| all | 1 | 10 | 1.0 | 0.000 |
+| **all** | **2** | **10** | **0.005** | **0.000** |
+| all | 2 | 50 | 0.000 | 0.000 |
+
+Hardware-native (heavy-hex) pairs lose most of the correlation; more
+optimiser iterations do not help. Default for DMET+SQD from here: all
+pairs, 2 reps, 10 iterations.
+
+**H8** (16 qubits, 4 900 determinants), 3 seeds:
+
+| circuit | err_lucj | SQD 1k | SQD 10k | distinct valid samples (1k / 10k) | CX |
+|---|---|---|---|---|---|
+| random angles (old) | -- | 17.6 +- 1.6 | 1.6 +- 2.8 | | |
+| heavy-hex LUCJ | 50.4 | 16.9-40.2 | 3.9-4.2 | | 208 |
+| all-pairs LUCJ, 2 reps | 3.5 | 6.7-9.8 | 1.5-2.1 | 45-49 / 153-156 | 768 |
+
+Batch size d (170, 1000, all samples in one batch) changes nothing: the
+optimised circuit yields fewer than 170 distinct valid bitstrings even at
+10k shots, so every batch already holds all of them. **The subspace is
+limited by how concentrated the optimised state is, not by batching**: a
+better circuit samples fewer distinct determinants (subspace 36-41 % at
+10k vs 96 % for the random circuit). Cost: ~930 s per geometry for the
+LUCJ optimisation (16 qubits), then 40-130 s per run with the cache.
+
+### 3b GQE tuning, DMET-embedded N2 (STO-3G), 3 seeds, error vs embedding FCI (kcal/mol)
+
+| R | 40 g / 120 ep | 40 g / 300 ep | 80 g / 120 ep | 80 g / 300 ep |
+|---|---|---|---|---|
+| 1.8 | 82.0-82.6 | 82.0-83.6 | 81.0-81.7 | 80.9-82.1 |
+| 2.1 | 95.1 | 40.5, 40.5, 94.9 | 40.5 (x3) | 40.5 (x3) |
+
+Cost relative to default: 80 gates x1.35, 300 epochs x2.5. At 2.1 A the
+error jumps between two fixed values (40.4598 identical to 4 decimals in
+8 runs) instead of improving gradually: GQE either reaches or misses one
+group of determinants. Depth and training length are not the limit.
+CIPSI at the same budget: 0.01-0.31. 3b closed: best setting 80 gates /
+120 epochs; best-of-3 40.5 (2.1 A), 81.0 (1.8 A).
+
+### N2 cc-pVDZ probe (1.1 A)
+
+AVAS N 2s2p -> (10e, 8o) as in STO-3G. DMET embedding 8 impurity + 5 bath
+= 13 orbitals = 26 qubits, (7a, 7b), 2 944 656 determinants (embedding
+FCI feasible; selection metrics skipped above 2 M). HF -108.953796, CCSD
+-109.267389, CASCI -109.034572 Ha.
 
 ## What it means — one paragraph
 

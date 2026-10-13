@@ -243,6 +243,12 @@ def build_parser():
                      help="configuration-recovery iterations (default 6)")
     sqo.add_argument("--sqd-carryover-eps", type=float, default=None,
                      help="carryover threshold on |c| (default 1e-5; 0 = off)")
+    sqo.add_argument("--sqd-explore-fraction", type=float, default=None,
+                     help="fraction of shots for a random-parameter LUCJ "
+                          "exploration circuit (default 0 = off)")
+    sqo.add_argument("--sqd-explore-scale", type=float, default=None,
+                     help="std of the exploration circuit's random "
+                          "parameters (default 0.5)")
 
     # ── GQE solver (--solver gqe) ────────────────────────────────────────
     gqe = parser.add_argument_group(
@@ -398,6 +404,8 @@ def build_qiskit_settings(args):
         "sqd_samples_per_batch": "sqd_samples_per_batch",
         "sqd_iterations": "sqd_opt_iterations",
         "sqd_carryover_eps": "sqd_carryover_eps",
+        "sqd_explore_fraction": "sqd_explore_fraction",
+        "sqd_explore_scale": "sqd_explore_scale",
     }
     for arg, field_name in simple.items():
         value = getattr(args, arg, None)

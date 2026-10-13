@@ -53,6 +53,13 @@ class QiskitSolverSettings:
     sqd_opt_iterations: int = 6
     #: carryover threshold on |c|; 0 disables carryover
     sqd_carryover_eps: float = 1e-5
+    #: fraction of the shots given to an EXPLORATION circuit: the same LUCJ
+    #: form with random parameters (fixed seed), in the same orbital basis.
+    #: 0 = off. The optimised circuit concentrates on few determinants
+    #: (H8: ~155 distinct at 10k shots); exploration adds coverage.
+    sqd_explore_fraction: float = 0.0
+    #: standard deviation of the exploration circuit's random parameters
+    sqd_explore_scale: float = 0.5
 
     # ── SKQD (sample-based Krylov quantum diagonalisation) ───────────────
     skqd_krylov_dim: int = 5
@@ -109,6 +116,10 @@ class QiskitSolverSettings:
         if self.lucj_opt_pairs not in LUCJ_OPT_PAIRS:
             raise ValueError(f"lucj_opt_pairs must be one of {LUCJ_OPT_PAIRS}, "
                              f"got {self.lucj_opt_pairs!r}")
+        if not 0.0 <= self.sqd_explore_fraction < 1.0:
+            raise ValueError("sqd_explore_fraction must lie in [0, 1)")
+        if self.sqd_explore_scale <= 0:
+            raise ValueError("sqd_explore_scale must be > 0")
         if self.sqd_carryover_eps < 0:
             raise ValueError("sqd_carryover_eps must be >= 0 (0 disables carryover)")
         if self.mps_trunc_thresh <= 0:

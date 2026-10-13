@@ -168,3 +168,48 @@ def test_cache_key_depends_on_hamiltonian_and_settings():
     assert ka == lucj_cache_key(embedding_fragment(a), s2)      # seed-independent
     assert ka != lucj_cache_key(embedding_fragment(b), s1)
     assert ka != lucj_cache_key(embedding_fragment(a), s3)
+
+
+def test_exploration_adds_determinants_and_keeps_shot_budget():
+    """Main circuit = exact ground state, exploration = uniform superposition
+    over the sector. Few shots on a 5-orbital space: exploration must add
+    new distinct bitstrings, keep the total shot budget, stay variational."""
+    from quenais.quantum import sqd_opt
+    from tests import test_las_sqd_logic as lsl
+    from tests._las_toy import local_state
+
+    step2 = _toy_step2(n=5, na=2, nb=2, seed=3)
+    n, na, nb = 5, 2, 2
+    st = sector_states(n, na, nb)
+    uniform = lsl._ExactCircuit(local_state(n, na, nb, np.ones(len(st)), st), n)
+
+    orig = sqd_opt._exploration_circuit
+    sqd_opt._exploration_circuit = lambda *a, **k: uniform
+    try:
+        res = {}
+        for f in (0.0, 0.5):
+            q = QiskitSolverSettings(ansatz="lucj_opt", n_shots=60, seed=2,
+                                     sqd_batches=2, sqd_opt_iterations=1,
+                                     sqd_samples_per_batch=1000,
+                                     sqd_carryover_eps=0.0,
+                                     sqd_explore_fraction=f)
+            res[f] = lsl._patched(lambda: sqd_opt.run_lucj_opt_sqd(
+                step2, q, log=lambda *_: None))
+    finally:
+        sqd_opt._exploration_circuit = orig
+    lo = res[0.5]["lucj_opt"]
+    assert lo["explore_shots"] == 30 and lo["unique_valid_explore_new"] > 0
+    assert res[0.0]["lucj_opt"]["explore_shots"] == 0
+    assert res[0.5]["stats"]["shots_per_circuit"] == 60
+    assert res[0.5]["energy"] >= _exact(step2) - 1e-9
+
+
+def test_explore_flags_reach_settings(tmp_path):
+    from quenais.cli import build_config, build_parser
+
+    args = build_parser().parse_args([
+        "--molecule", "LiH", "--solver", "sqd", "--ansatz", "lucj_opt",
+        "--sqd-explore-fraction", "0.25", "--sqd-explore-scale", "1.0",
+        "--project-dir", str(tmp_path)])
+    q = build_config(args).qiskit
+    assert (q.sqd_explore_fraction, q.sqd_explore_scale) == (0.25, 1.0)
