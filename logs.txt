@@ -1,22 +1,9 @@
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u loharkar -o pid,etime,pcpu,rss,cmd | grep "_prep-syste 
-m" | grep -v grep
-     21    07:18:16  0.0  3640 /bin/bash /home/.CarmeScripts/start_apps.sh
-     34    07:18:16  0.0  7604 sshd: /usr/sbin/sshd -p 2297 -D -h /home/loharkar/.local/share/carme/job/57094/ssh/server_key -E /home/loharkar/.local/share/carme/job/57094/ssh/sshd/erebos03.log -f /home/loharkar/.local/share/carme/job/57094/ssh/sshd/erebos03.conf [listener] 0 of 10-100 startups
-     45    07:18:16  0.0  3428 /bin/bash /opt/miniforge/bin/code-server --auth none --disable-telemetry --bind-addr 192.168.152.73:7135 --app-name CARME-IDE --user-data-dir /home/loharkar/.local/share/code-server --extensions-dir /home/loharkar/.local/share/code-server/extensions
-     51    07:18:16  0.0 100348 /opt/miniforge/bin/python3.14 /opt/miniforge/bin/jupyter-lab --ip=192.168.152.73 --port=6596 --notebook-dir=/home --preferred-dir=/home/loharkar --no-browser --NotebookApp.base_url=/nb_mzeh0bupi1udw7qc4c7pqv3z16n0g6 --LabApp.workspaces_dir=/home/loharkar/.local/share/carme/job/57094/jupyter/workspaces --LabApp.quit_button=False --LabApp.disable_check_xsrf=True --LabApp.token= --LabApp.log_datefmt=%Y-%m-%d %H:%M:%S
-     62    07:18:15  0.0 71156 node /opt/miniforge/share/code-server/out/node/entry.js --auth none --disable-telemetry --bind-addr 192.168.152.73:7135 --app-name CARME-IDE --user-data-dir /home/loharkar/.local/share/code-server --extensions-dir /home/loharkar/.local/share/code-server/extensions
-    109    07:17:30  0.1 190396 /opt/miniforge/bin/node /opt/miniforge/share/code-server/out/node/entry
-    158    07:14:32  0.2 129204 /opt/miniforge/bin/node /opt/miniforge/share/code-server/lib/vscode/out/bootstrap-fork --type=fileWatcher
-    204    07:14:31  1.6 274804 /opt/miniforge/bin/node --dns-result-order=ipv4first /opt/miniforge/share/code-server/lib/vscode/out/bootstrap-fork --type=extensionHost --transformURIs --useHostProxy=false
-    205    07:14:31  0.0 135052 /opt/miniforge/bin/node /opt/miniforge/share/code-server/lib/vscode/out/bootstrap-fork --type=agentHost --logsPath /home/loharkar/.local/share/code-server/logs/20261013T110331 --user-data-dir /home/loharkar/.local/share/code-server --telemetry-level off
-    255    07:14:25  0.1 32044 /opt/miniforge/share/code-server/lib/vscode/node_modules/@github/copilot-sdk-linux-x64/prebuilds/linux-x64/copilot-runtime --headless --no-auto-update --log-level info --stdio --no-auto-login
-    346    07:14:15  0.0 251788 /opt/miniforge/bin/node --use-system-ca /home/loharkar/.local/share/code-server/extensions/gitlab.gitlab-workflow-7.2.0-universal/assets/language-server/main-bundle-node.js --stdio --clientProcessId=204
-    402    07:14:10  0.1 86800 /opt/miniforge/bin/node /opt/miniforge/share/code-server/lib/vscode/out/bootstrap-fork --type=ptyHost --logsPath /home/loharkar/.local/share/code-server/logs/20261013T110331
-    413    07:14:10  0.0  7440 /bin/bash --init-file /opt/miniforge/share/code-server/lib/vscode/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
-   7601    06:00:55  0.0  8124 /bin/bash --init-file /opt/miniforge/share/code-server/lib/vscode/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
-   8126    05:59:30  0.0  6928 /bin/bash --init-file /opt/miniforge/share/code-server/lib/vscode/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
-   8247    05:59:26  0.0  7612 /bin/bash --init-file /opt/miniforge/share/code-server/lib/vscode/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
-  63022       51:56  0.0 21560 python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym --retry-failed
-  63037       51:55 99.9 126088 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_prep-system /home/loharkar/quenais-standalone/benchmark_results/fe2bpym adff1a56c5a7
-  71932       00:00  0.0  3964 ps -u loharkar -o pid,etime,pcpu,rss,cmd
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
+grid            progress  failed  per_run  left    state     changed      log              
+h8_sqd_explore  30/30     0       3 min    -       finished  639 min ago  explore_batch.log
+fe2bpym_las     0/5       0       -        -       STALE?    408 min ago  fe2bpym.log      
+n2_dz_sqd       10/12     0       39 min   ~1.3 h  running   21 min ago   n2_dz_sqd.log    
+n2_sqd_explore  72/72     0       5 min    -       finished  407 min ago  n2_explore.log   
+n2_gqe_angles   12/12     0       37 min   -       finished  56 min ago   n2_gqe_angles.log
+n2_gqe_ens      10/10     0       18 min   -       finished  575 min ago  n2_gqe_ens.log   
 [W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
