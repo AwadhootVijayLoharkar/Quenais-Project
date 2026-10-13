@@ -50,7 +50,7 @@ index 16a8ca0..df7976a 100644
              res = [x for xs in res for x in xs]  
  
 diff --git a/gqe_qsci/train_pipeline.py b/gqe_qsci/train_pipeline.py
-index bfed3fb..37a8721 100644
+index bfed3fb..f2139e3 100644
 --- a/gqe_qsci/train_pipeline.py
 +++ b/gqe_qsci/train_pipeline.py
 @@ -57,8 +57,9 @@ class TrainPipeline(pl.LightningModule):
@@ -65,7 +65,7 @@ index bfed3fb..37a8721 100644
      
      def on_train_epoch_end(self):
          super().on_train_epoch_end()
-@@ -97,11 +98,45 @@ class TrainPipeline(pl.LightningModule):
+@@ -97,11 +98,47 @@ class TrainPipeline(pl.LightningModule):
                  self.best_local_refined = qsci_result.local_refined
              if self.best_global_refined is None or qsci_result.global_refined.energy < self.best_global_refined.energy:
                  self.best_global_refined = qsci_result.global_refined
@@ -89,11 +89,13 @@ index bfed3fb..37a8721 100644
 +        try:
 +            sci = self.qsci_pipeline.global_refined_scistates
 +            strs = getattr(sci, "_strs", None)
++            # _strs is the determinant LIST, one (alpha, beta) occupation
++            # pair per determinant -- not a pair of string lists.
 +            data = {
 +                "energy": float(result.energy),
 +                "epoch": int(self.current_epoch),
-+                "strs_a": None if strs is None else np.asarray(strs[0]),
-+                "strs_b": None if strs is None else np.asarray(strs[1]),
++                "subspace_dim": getattr(result, "subspace_dim", None),
++                "dets": None if strs is None else np.asarray(strs),
 +                "coeffs": np.asarray(sci),
 +            }
 +            try:

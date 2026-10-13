@@ -517,42 +517,45 @@ def test_build_env_sets_the_determinant_dump_path(tmp_path):
     assert env["QUENAIS_GQE_DUMP"].startswith(str(cfg.results_dir))
 
 
-def test_gqe_ensemble_merge_is_a_union():
+def _ensemble_module():
     import importlib.util
-    from pathlib import Path
-
-    import numpy as np
 
     root = Path(__file__).resolve().parents[1]
     spec = importlib.util.spec_from_file_location("gqe_ensemble",
                                                   root / "tools" / "gqe_ensemble.py")
     m = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(m)
-    sa, sb = m.merge_sets([([3, 5], [3]), ([5, 6], [3, 9])])
-    assert list(sa) == [3, 5, 6] and list(sb) == [3, 9]
+    return m
+
+
+def test_gqe_ensemble_reads_a_determinant_list():
+    """The trainer's _strs is an (N, 2) list of (alpha, beta) pairs. The
+    first dump version took strs[0], strs[1] -- two DETERMINANTS -- as the
+    alpha and beta string lists."""
+    import numpy as np
+
+    m = _ensemble_module()
+    astrs = bstrs = np.array([3, 5, 6])          # 3 orbitals, 2 electrons
+    dets = m.dets_from_dump({"dets": [[3, 3], [5, 6], [6, 5]]})
+    idx = m.dets_to_indices(dets, astrs, bstrs)
+    assert list(idx) == [0 * 3 + 0, 1 * 3 + 2, 2 * 3 + 1]
+    assert m.dets_from_dump({"strs_a": [3, 5], "strs_b": [3, 6]}) is None
+    assert list(m.merge_indices([[0, 5], [5, 7]])) == [0, 5, 7]
 
 
 def test_gqe_ensemble_coverage_by_level():
     """2 orbitals, 1 alpha + 1 beta: strings 1 (orb 0) and 2 (orb 1).
-    Dominant det (1,1); (2,1),(1,2) singles; (2,2) double."""
-    import importlib.util
-    from pathlib import Path
-
+    Dominant det (1,1) = index 0; (1,2)=1, (2,1)=2 singles; (2,2)=3 double."""
     import numpy as np
 
-    root = Path(__file__).resolve().parents[1]
-    spec = importlib.util.spec_from_file_location("gqe_ensemble",
-                                                  root / "tools" / "gqe_ensemble.py")
-    m = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(m)
+    m = _ensemble_module()
     astrs = bstrs = np.array([1, 2])
-    flat = np.sqrt(np.array([0.7, 0.1, 0.1, 0.1]))   # index = ia*2 + ib
-    table, cap = m.coverage_by_level(flat, astrs, bstrs, sa=[1, 2], sb=[1])
-    assert abs(cap - 0.8) < 1e-12                       # (1,1) + (2,1)
-    assert table[0][0] == 1 and abs(table[0][1] - 0.7) < 1e-12 and abs(table[0][2] - 0.7) < 1e-12
+    flat = np.sqrt(np.array([0.7, 0.1, 0.1, 0.1]))
+    table, cap = m.coverage_by_level(flat, astrs, bstrs, indices=[0, 2])
+    assert abs(cap - 0.8) < 1e-12
+    assert table[0][0] == 1 and abs(table[0][2] - 0.7) < 1e-12
     assert abs(table[1][1] - 0.2) < 1e-12 and abs(table[1][2] - 0.1) < 1e-12
     assert abs(table[2][1] - 0.1) < 1e-12 and table[2][2] == 0.0
-
 
 
 def test_pool_angles_and_threshold_reach_hydra(tmp_path):

@@ -1,6 +1,5 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python -c "import pickle,glob;p=sorted(glob.glob('$B/n2_curve/runs/*/results/gqe_determinants.pkl'))[0];print(p);d=pickle.load(open(p,'rb'));print({k:(type(v).__name__,getattr(v,'shape',None)) for k,v in d.items()});r=d.get('result');a=getattr(r,'__dict__',None);print(type(r));print({k:(type(v).__name__,getattr(v,'shape',None) or (len(v) if hasattr(v,'__len__') else v)) for k,v in a.items()} if a else dir(r))"
-/home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/0eb97cf57635/results/gqe_determinants.pkl
-{'energy': ('float', None), 'epoch': ('int', None), 'strs_a': ('ndarray', (2,)), 'strs_b': ('ndarray', (2,)), 'coeffs': ('ndarray', (856,)), 'result': ('QSCISampleResult', None)}
-<class 'gqe_qsci.qsci.schema.QSCISampleResult'>
-['__annotations__', '__class__', '__dataclass_fields__', '__dataclass_params__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__match_args__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__setstate__', '__sizeof__', '__slots__', '__str__', '__subclasshook__', 'cx_count', 'energy', 'num_sampled_basis', 'num_symmetry_preserving_basis', 'seq', 'subspace_dim', 'total_gates']
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+git pull && cd $GQE_QSCI_REPO_PATH && git checkout -- gqe_qsci/factory.py gqe_qsci/gqe/sampler.py gqe_qsci/train_pipeline.py && rm -f .quenais_patch_applied && cd ~/quenais-standalone/Quenais-Project && quenais-gqe-setup --repo $GQE_QSCI_REPO_PATH && grep -c '"dets"' $GQE_QSCI_REPO_PATH/gqe_qsci/train_pipeline.py
+
+python -c "import pickle,glob,os;p=max(glob.glob('$B/n2_curve/runs/*/results/gqe_determinants.pkl'),key=os.path.getmtime);d=pickle.load(open(p,'rb'));print(p);print(d['dets'].shape, d.get('subspace_dim'))"
+
+python -c "import pickle,glob,os;p=max(glob.glob('$B/n2_curve/runs/*/results/gqe_determinants.pkl'),key=os.path.getmtime);d=pickle.load(open(p,'rb'));print(p);print(d['dets'].shape, d.get('subspace_dim'))"

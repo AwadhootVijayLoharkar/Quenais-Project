@@ -22,9 +22,11 @@ grouped by system_id, so --where may select several geometries at once.
 
 OUTPUT, per system
 ------------------
-  each seed     its own set re-diagonalised (checks the dump against the
-                logged energy) -- dim, error vs embedding FCI
-  union         all seeds' alpha strings x all seeds' beta strings
+  each seed     its own determinant list re-diagonalised (checks the dump
+                against the logged energy) -- dim, error vs embedding FCI
+  union         all seeds' determinants together (a list union, not a
+                product of string sets: GQE's QSCI space is a LIST of
+                (alpha, beta) determinants)
   CIPSI/oracle  at the union's dimension (skipped above 2 M determinants)
   coverage      weight of the EXACT wavefunction inside the best single
                 set and inside the union, split by excitation level
@@ -49,26 +51,33 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "tools"))
 
 
-def merge_sets(sets):
-    """Union of alpha strings and of beta strings over (sa, sb) pairs."""
-    sa = np.unique(np.concatenate([np.asarray(a, np.int64) for a, _ in sets]))
-    sb = np.unique(np.concatenate([np.asarray(b, np.int64) for _, b in sets]))
-    return sa, sb
+def dets_from_dump(d):
+    """(N, 2) int array of (alpha, beta) occupation strings, or None.
+    Dumps written before the fix hold only strs_a/strs_b (the first two
+    determinants) and are unusable."""
+    dets = d.get("dets")
+    if dets is None:
+        return None
+    dets = np.asarray(dets, dtype=np.int64)
+    if dets.ndim == 2 and dets.shape[1] != 2 and dets.shape[0] == 2:
+        dets = dets.T
+    if dets.ndim != 2 or dets.shape[1] != 2:
+        return None
+    return dets
 
 
-def diagonalise(step2, sa, sb):
-    """Lowest energy (incl. ecore) in span{|a>|b>: a in sa, b in sb}."""
-    from pyscf.fci import selected_ci
+def dets_to_indices(dets, astrs, bstrs):
+    """(alpha, beta) occupation pairs -> full indices addr_a * nb + addr_b."""
+    amap = {int(v): i for i, v in enumerate(astrs)}
+    bmap = {int(v): i for i, v in enumerate(bstrs)}
+    nb = len(bstrs)
+    return np.unique(np.array([amap[int(a)] * nb + bmap[int(b)]
+                               for a, b in dets], dtype=np.int64))
 
-    n = int(step2["n_emb"])
-    nelec = (int(step2["n_alpha"]), int(step2["n_beta"]))
-    myci = selected_ci.SelectedCI()
-    myci.conv_tol = 1e-10
-    e, _ = selected_ci.kernel_fixed_space(
-        myci, np.asarray(step2["h1e"]), np.asarray(step2["h2e"]), n, nelec,
-        (np.asarray(sa, np.int64), np.asarray(sb, np.int64)), nroots=1,
-        tol=1e-10, max_cycle=200)
-    return float(e) + float(step2["ecore"])
+
+def merge_indices(index_sets):
+    """Union of several determinant index sets."""
+    return np.unique(np.concatenate([np.asarray(x, np.int64) for x in index_sets]))
 
 
 def _popcount(x):
@@ -80,10 +89,10 @@ def _popcount(x):
     return out
 
 
-def coverage_by_level(flat, astrs, bstrs, sa, sb):
+def coverage_by_level(flat, astrs, bstrs, indices):
     """
     Exact-wavefunction weight per excitation level (relative to the
-    largest-|c| determinant), total and inside span{sa x sb}.
+    largest-|c| determinant), total and inside the determinant set.
 
     flat: exact CI vector, index = addr_alpha * len(bstrs) + addr_beta.
     Returns {level: (n_dets, weight_total, weight_in_set, n_in_set)} and
@@ -95,8 +104,9 @@ def coverage_by_level(flat, astrs, bstrs, sa, sb):
     la = _popcount(np.asarray(astrs) ^ astrs[ia0])
     lb = _popcount(np.asarray(bstrs) ^ bstrs[ib0])
     level = (la[:, None] + lb[None, :]) // 2
-    inside = (np.isin(astrs, np.asarray(sa))[:, None]
-              & np.isin(bstrs, np.asarray(sb))[None, :])
+    inside = np.zeros(na * nb, dtype=bool)
+    inside[np.asarray(indices, np.int64)] = True
+    inside = inside.reshape(na, nb)
     table = {}
     for lv in np.unique(level):
         m = level == lv
@@ -162,16 +172,20 @@ def main(argv=None):
         print("no matching ok GQE rows")
         return 1
 
+    from quenais.quantum.det_analysis import projected_energy
+
     for sid, rs in groups.items():
         rdir0 = Path(rs[0]["run_dir"])
-        with open(rdir0 / "results" / "step2_hamiltonian.pkl", "rb") as fh:
-            step2 = pickle.load(fh)
-        e_ref = float(rs[0]["solver_ref_energy_Ha"])
+        step2_path = rdir0 / "results" / "step2_hamiltonian.pkl"
         full = int(float(rs[0]["full_dim"]))
-        print(f"\n=== system {sid}  R={rs[0].get('tag_R', '-')}  "
-              f"{int(step2['n_emb'])} orbitals, {full} determinants ===")
+        print(f"\n=== system {sid}  R={rs[0].get('tag_R', '-')}  {full} determinants ===")
+        if full > 2_000_000:
+            print("  space > 2 M determinants: skipped")
+            continue
+        cached = exact_vector(step2_path)
+        mol, e_exact, flat, space = cached
         sets, skipped = [], []
-        print(f"{'seed':>4} {'gates':>5} {'epochs':>6} {'dim':>8} "
+        print(f"{'seed':>4} {'gates':>5} {'angles':>6} {'dets':>6} "
               f"{'err logged':>11} {'err re-diag':>12}")
         for r in sorted(rs, key=lambda r: (fmt(value(r, "gqe_ngates")),
                                            fmt(value(r, "seed")))):
@@ -180,49 +194,41 @@ def main(argv=None):
                 skipped.append(r["run_id"])
                 continue
             with open(dump, "rb") as fh:
-                d = pickle.load(fh)
-            if d.get("strs_a") is None:
-                skipped.append(r["run_id"] + " (no strings in dump)")
+                dets = dets_from_dump(pickle.load(fh))
+            if dets is None:
+                skipped.append(r["run_id"])
                 continue
-            sa, sb = d["strs_a"], d["strs_b"]
-            e = diagonalise(step2, sa, sb)
-            sets.append((sa, sb, e))
+            idx = dets_to_indices(dets, space.astrs, space.bstrs)
+            e = projected_energy(mol, idx, space=space)
+            sets.append((idx, e))
+            ang = "yes" if value(r, "gqe_pool_angles") not in ("-", None, "") else "ccsd"
             print(f"{fmt(value(r, 'seed')):>4} {fmt(value(r, 'gqe_ngates')):>5} "
-                  f"{fmt(value(r, 'gqe_max_iters')):>6} {len(sa) * len(sb):>8} "
+                  f"{ang:>6} {len(idx):>6} "
                   f"{float(r['err_solver_kcal']):>11.4f} "
-                  f"{(e - e_ref) * HARTREE_TO_KCAL:>12.4f}")
+                  f"{(e - e_exact) * HARTREE_TO_KCAL:>12.4f}")
         if skipped:
-            print(f"  skipped (no dump -- run before the patch?): {len(skipped)}")
-        if len(sets) < 2:
-            print("  fewer than 2 dumps: nothing to merge")
+            print(f"  skipped (no usable dump -- run before the fix?): {len(skipped)}")
+        if not sets:
             continue
-        sa, sb = merge_sets([(x, y) for x, y, _ in sets])
-        dim = len(sa) * len(sb)
-        e_u = diagonalise(step2, sa, sb)
-        print(f"union of {len(sets)}: dim {dim} ({100 * dim / full:.1f}%), "
-              f"err {(e_u - e_ref) * HARTREE_TO_KCAL:.4f} kcal/mol")
-        step2_path = rdir0 / "results" / "step2_hamiltonian.pkl"
-        cached = None
-        if full <= 2_000_000:
-            try:
-                cached = exact_vector(step2_path)
-                _mol, _e, flat, space = cached
-                best = min(sets, key=lambda t: t[2])
-                print_coverage("best single seed",
-                               *coverage_by_level(flat, space.astrs, space.bstrs,
-                                                  best[0], best[1]))
-                print_coverage("union", *coverage_by_level(
-                    flat, space.astrs, space.bstrs, sa, sb))
-            except Exception as exc:
-                print(f"  coverage analysis failed: {exc!r}"[:300])
+        best = min(sets, key=lambda t: t[1])
+        print_coverage("best single seed",
+                       *coverage_by_level(flat, space.astrs, space.bstrs, best[0]))
+        if len(sets) >= 2:
+            union = merge_indices([x for x, _ in sets])
+            e_u = projected_energy(mol, union, space=space)
+            print(f"union of {len(sets)}: {len(union)} dets ({100 * len(union) / full:.1f}%), "
+                  f"err {(e_u - e_exact) * HARTREE_TO_KCAL:.4f} kcal/mol")
+            print_coverage("union", *coverage_by_level(flat, space.astrs,
+                                                       space.bstrs, union))
+            budget = len(union)
+        else:
+            budget = len(best[0])
         if not a.no_cipsi:
             try:
-                _ex, e_or, e_ci = references(step2_path, dim, cached=cached)
-                if e_ci is None:
-                    print("  CIPSI/oracle skipped: space > 2 M determinants")
-                else:
-                    print(f"  same budget: oracle {(e_or - e_ref) * HARTREE_TO_KCAL:.4f}"
-                          f", CIPSI {(e_ci - e_ref) * HARTREE_TO_KCAL:.4f} kcal/mol")
+                _ex, e_or, e_ci = references(step2_path, budget, cached=cached)
+                print(f"  same budget ({budget} dets): oracle "
+                      f"{(e_or - e_exact) * HARTREE_TO_KCAL:.4f}, CIPSI "
+                      f"{(e_ci - e_exact) * HARTREE_TO_KCAL:.4f} kcal/mol")
             except Exception as exc:
                 print(f"  CIPSI/oracle failed: {exc!r}"[:300])
     return 0
