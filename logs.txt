@@ -1,6 +1,10 @@
-git pull
-nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym > $B/fe2bpym.log 2>&1 &
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u loharkar -o pid,etime,cmd | grep "benchmarks/" | grep -v grep | awk '{print $1, $2, $5}'
+12873 04:05:08 benchmarks/n2_sqd_explore.json
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
-grep -E "AVAS selected|UHF energy|Active space" $B/fe2bpym/systems/*/prep.log
 
-python tools/show_rows.py $B/fe2bpym --where --cols solver lassqd_lucj_pairs seed energy_Ha err_solver_kcal n_macro converged t_step3_s
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u loharkar -o pid,etime,cmd | grep "benchmarks/" | grep -v grep | awk '{print $1, $2, $5}'
+60904 40:40 benchmarks/n2_gqe_angles.json
+60905 40:40 benchmarks/n2_dz_sqd.json
+81655 05:21 benchmarks/fe2bpym_las.json
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
