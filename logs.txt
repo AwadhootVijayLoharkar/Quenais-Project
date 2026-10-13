@@ -1,3 +1,44 @@
-git pull
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
+remote: Enumerating objects: 28, done.
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 15 (delta 12), reused 15 (delta 12), pack-reused 0 (from 0)
+Unpacking objects: 100% (15/15), 8.37 KiB | 50.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+   c27330e..41bca99  main       -> origin/main
+Updating c27330e..41bca99
+Fast-forward
+ docs/benchmarking.md           |  19 +++++++++++++++++++
+ logs.txt                       | 122 +++-----------------------------------------------------------------------------------------------------------------------
+ quenais/quantum/sqd_opt.py     |  95 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_benchmark_driver.py |  63 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/test_sqd_opt.py          |  33 +++++++++++++++++++++++++++++++++
+ tools/run_benchmark.py         | 107 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------
+ tools/show_rows.py             |  52 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ tools/status.py                | 126 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 8 files changed, 468 insertions(+), 149 deletions(-)
+ create mode 100644 tools/status.py
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
 pytest -q -m "not slow"
 python tools/status.py
+Already up to date.
+........................................................................................................................................................................ [ 41%]
+...............................................................................ss....................................................................................... [ 83%]
+...................................................................                                                                                                      [100%]
+=============================================================================== warnings summary ===============================================================================
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
+  /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
+    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+401 passed, 2 skipped, 26 deselected, 3 warnings in 152.66s (0:02:32)
+grid            progress  failed  per_run  left     state     changed      log              
+h8_sqd_explore  30/30     0       3 min    -        finished  275 min ago  explore_batch.log
+fe2bpym_las     0/5       0       -        -        running   43 min ago   fe2bpym.log      
+n2_dz_sqd       1/12      0       27 min   ~5.0 h   running   15 min ago   n2_dz_sqd.log    
+n2_sqd_explore  72/72     0       5 min    -        finished  42 min ago   n2_explore.log   
+n2_gqe_angles   1/12      0       68 min   ~12.5 h  running   65 min ago   n2_gqe_angles.log
+n2_gqe_ens      10/10     0       18 min   -        finished  210 min ago  n2_gqe_ens.log   
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
