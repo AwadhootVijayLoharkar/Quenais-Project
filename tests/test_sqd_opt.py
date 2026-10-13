@@ -223,3 +223,36 @@ def test_maxiter_zero_switches_optimisation_off():
     assert s.lucj_optimize is False
     assert las_settings_from_qiskit(
         QiskitSolverSettings(ansatz="lucj_opt")).lucj_optimize is True
+
+
+def test_sampler_choice():
+    from quenais.quantum.sqd_opt import choose_sampler
+
+    assert choose_sampler("mps", 20) == "aer_statevector"
+    assert choose_sampler("mps", 28) == "aer_statevector"
+    assert choose_sampler("mps", 30) == "aer_mps"
+    assert choose_sampler("local", 40) == "aer_statevector"
+    assert choose_sampler("ibm", 20) == "ibm"
+
+
+def test_memory_plan_switches_optimisation_off_when_too_big():
+    import os
+
+    from quenais.quantum.sqd_opt import (las_settings_from_qiskit,
+                                         lucj_optimisation_memory_gb,
+                                         plan_lucj_optimisation)
+
+    small = lucj_optimisation_memory_gb(8, (4, 4), 2, "all")        # H8
+    big = lucj_optimisation_memory_gb(13, (7, 7), 2, "all")         # N2 cc-pVDZ
+    assert small < 1 and big > 20, (small, big)
+
+    s = las_settings_from_qiskit(QiskitSolverSettings(
+        ansatz="lucj_opt", lucj_opt_pairs="all", lucj_opt_n_reps=2))
+    os.environ["QUENAIS_MEM_GB"] = "16"
+    try:
+        s_small, info = plan_lucj_optimisation(s, 8, (4, 4), log=lambda *_: None)
+        assert s_small.lucj_optimize and not info["lucj_opt_skipped_for_memory"]
+        s_big, info = plan_lucj_optimisation(s, 13, (7, 7), log=lambda *_: None)
+        assert not s_big.lucj_optimize and info["lucj_opt_skipped_for_memory"]
+    finally:
+        os.environ.pop("QUENAIS_MEM_GB", None)

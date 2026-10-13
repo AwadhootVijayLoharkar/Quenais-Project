@@ -301,6 +301,36 @@ def file_lock(path):
             fcntl.flock(fh, fcntl.LOCK_UN)
 
 
+@contextlib.contextmanager
+def try_lock(path):
+    """
+    Non-blocking flock. Yields True if this process now holds the lock,
+    False if another process does. Released by the kernel if the holder
+    dies, so a killed driver never leaves a stale lock.
+    """
+    import fcntl
+
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as fh:
+        try:
+            fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            yield False
+            return
+        try:
+            yield True
+        finally:
+            fcntl.flock(fh, fcntl.LOCK_UN)
+
+
+def run_lock_path(out, rid):
+    """Outside runs/<rid>/, which is deleted and recreated when a run
+    restarts: a lock file inside it would vanish while held, and a second
+    driver would lock a fresh file and run anyway."""
+    return Path(out) / "locks" / f"{rid}.lock"
+
+
 # ═════════════════════════════════════════════════════════════════════════
 # Child processes
 # ═════════════════════════════════════════════════════════════════════════
@@ -642,6 +672,9 @@ def _dmet_part(params, cfg, step2, rdir, load):
                 "carryover_eps": lo.get("carryover_eps"),
                 "t_lucj_prepare_s": lo.get("t_prepare_s"),
                 "lucj_cache_hit": lo.get("lucj_cache_hit"),
+                "sampler": lo.get("sampler"),
+                "lucj_opt_memory_gb": lo.get("lucj_opt_memory_gb"),
+                "lucj_opt_skipped_for_memory": lo.get("lucj_opt_skipped_for_memory"),
                 "explore_fraction": lo.get("explore_fraction"),
                 "explore_scale": lo.get("explore_scale"),
                 "unique_valid_main": lo.get("unique_valid_main"),
@@ -1008,40 +1041,56 @@ def ensure_system(out, run, timeout):
 
 
 def execute(out, runs, retry_failed, timeout):
+    """
+    Run every pending run. Each run is held under a per-run lock for its
+    whole duration, so two drivers on the same --out (the same grid started
+    twice, or two grids that share runs) never execute -- or delete -- the
+    same run: the second one prints "skip (running elsewhere)" and moves on.
+    """
     n = len(runs)
     for i, run in enumerate(runs, 1):
-        rdir = run_dir(out, run["run_id"])
-        prior = _read_json(rdir / "row.json")
         label = (f"[{i}/{n}] {run['run_id']} {run['params']['solver']:<7} "
                  f"shots={run['params'].get('shots', run['params'].get('lassqd_shots', '-'))} "
                  f"seed={run['params'].get('seed', run['params'].get('lassqd_seed', run['params'].get('gqe_seed', '-')))}")
-        if prior and prior.get("status") == "ok":
-            print(f"{label}  skip (done)")
-            continue
-        if prior and prior.get("status") == "failed" and not retry_failed:
-            print(f"{label}  skip (failed before; --retry-failed to rerun)")
-            continue
-        if rdir.exists():
-            shutil.rmtree(rdir)
-        rdir.mkdir(parents=True)
-        _write_json(rdir / "run.json", run)
+        with try_lock(run_lock_path(out, run["run_id"])) as mine:
+            if not mine:
+                print(f"{label}  skip (running elsewhere)")
+                continue
+            _execute_one(out, run, label, retry_failed, timeout)
 
-        err = ensure_system(out, run, timeout)
-        if err:
-            _write_json(rdir / "row.json", _fail_row(run, err))
-            print(f"{label}  FAILED in system prep (see systems/{run['system_id']}/)")
-            continue
-        rc, dt = _spawn(["--_run", str(out), run["run_id"]], rdir / "run.log", timeout)
-        row = _read_json(rdir / "row.json")
-        if rc != 0 or row is None:
-            _write_json(rdir / "row.json",
-                        _fail_row(run, f"rc={rc}\n{_log_tail(rdir / 'run.log')}"))
-            print(f"{label}  FAILED rc={rc} ({dt:.0f} s) -> {rdir / 'run.log'}")
-            continue
-        e = row.get("err_solver_kcal")
-        print(f"{label}  ok {dt:6.1f} s  E={row['energy_Ha']:.8f}  "
-              f"err_solver={'-' if e is None else f'{e:+.4f}'} kcal/mol  "
-              f"subspace={row.get('subspace_fraction')}")
+
+def _execute_one(out, run, label, retry_failed, timeout):
+    rdir = run_dir(out, run["run_id"])
+    # Read the row only once the lock is held: another driver may have
+    # finished this run a moment ago.
+    prior = _read_json(rdir / "row.json")
+    if prior and prior.get("status") == "ok":
+        print(f"{label}  skip (done)")
+        return
+    if prior and prior.get("status") == "failed" and not retry_failed:
+        print(f"{label}  skip (failed before; --retry-failed to rerun)")
+        return
+    if rdir.exists():
+        shutil.rmtree(rdir)
+    rdir.mkdir(parents=True)
+    _write_json(rdir / "run.json", run)
+
+    err = ensure_system(out, run, timeout)
+    if err:
+        _write_json(rdir / "row.json", _fail_row(run, err))
+        print(f"{label}  FAILED in system prep (see systems/{run['system_id']}/)")
+        return
+    rc, dt = _spawn(["--_run", str(out), run["run_id"]], rdir / "run.log", timeout)
+    row = _read_json(rdir / "row.json")
+    if rc != 0 or row is None:
+        _write_json(rdir / "row.json",
+                    _fail_row(run, f"rc={rc}\n{_log_tail(rdir / 'run.log')}"))
+        print(f"{label}  FAILED rc={rc} ({dt:.0f} s) -> {rdir / 'run.log'}")
+        return
+    e = row.get("err_solver_kcal")
+    print(f"{label}  ok {dt:6.1f} s  E={row['energy_Ha']:.8f}  "
+          f"err_solver={'-' if e is None else f'{e:+.4f}'} kcal/mol  "
+          f"subspace={row.get('subspace_fraction')}", flush=True)
 
 
 def main(argv=None):

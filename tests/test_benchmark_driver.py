@@ -199,3 +199,66 @@ def test_h4_end_to_end(tmp_path):
     # H4/sto-3g with AVAS H 1s is the full space: CASCI must equal FCI
     r = rows[0]
     assert abs(float(r["E_CASCI_Ha"]) - float(r["E_FCI_Ha"])) < 1e-8
+
+
+def test_a_locked_run_is_skipped_not_deleted(tmp_path):
+    """Two drivers on one --out (the Fe grid was once started twice) must
+    not both execute -- and rmtree -- the same run."""
+    d = _driver()
+    run = {"run_id": "abc123", "system_id": "s", "params": {"solver": "sqd"}}
+    called = []
+    orig = d._execute_one
+    d._execute_one = lambda *a, **k: called.append(a[1]["run_id"])
+    try:
+        with d.try_lock(d.run_lock_path(tmp_path, "abc123")) as mine:
+            assert mine
+            d.execute(tmp_path, [run], retry_failed=False, timeout=None)
+        assert called == []                       # skipped while held
+        d.execute(tmp_path, [run], retry_failed=False, timeout=None)
+        assert called == ["abc123"]               # runs once released
+    finally:
+        d._execute_one = orig
+
+
+def test_run_lock_lives_outside_the_run_folder(tmp_path):
+    d = _driver()
+    lock = d.run_lock_path(tmp_path, "abc123")
+    assert d.run_dir(tmp_path, "abc123") not in lock.parents
+
+
+def _tool(name):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(name, ROOT / "tools" / f"{name}.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def test_status_parses_progress_per_grid():
+    st = _tool("status")
+    text = "\n".join([
+        "[benchmark] a: 3 runs over 1 system(s); this shard: 3  -> /x",
+        "[1/3] aaa sqd  skip (done)",
+        "[2/3] bbb sqd  ok  120.0 s  E=-1.0",
+        "[3/3] ccc sqd  FAILED rc=1 (5 s) -> /x",
+        "[collect] 3 runs",
+        "[benchmark] b: 4 runs over 1 system(s); this shard: 4  -> /y",
+        "[1/4] ddd gqe  ok  600.0 s  E=-2.0",
+    ])
+    g = st.parse(text)
+    assert [x["grid"] for x in g] == ["a", "b"]
+    a = st.summarise(g[0], age_min=1, stale_min=90)
+    b = st.summarise(g[1], age_min=1, stale_min=90)
+    assert (a["progress"], a["failed"], a["state"]) == ("3/3", "1", "finished")
+    assert (b["progress"], b["left"], b["state"]) == ("1/4", "~0.5 h", "running")
+    assert st.summarise(g[1], age_min=200, stale_min=90)["state"] == "STALE?"
+
+
+def test_show_rows_agg_collapses_seeds():
+    sr = _tool("show_rows")
+    rows = [{"config_id": "c1", "seed": s, "tag_R": "2.1", "err_solver_kcal": e}
+            for s, e in (("1", "1.0"), ("2", "3.0"))]
+    cols, body = sr.aggregate(rows, ["tag_R", "seed", "err_solver_kcal"])
+    assert cols == ["tag_R", "err_solver_kcal", "n"]
+    assert body == [["2.1000", "2+-1.4", "2"]]

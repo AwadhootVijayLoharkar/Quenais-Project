@@ -97,6 +97,95 @@ def las_settings_from_qiskit(q):
     )
 
 
+#: Above this many qubits the statevector sampler needs > 4 GB per state
+#: (2**28 x 16 B); below it, it is far faster than an exact MPS for deep,
+#: entangling LUCJ circuits (N2 cc-pVDZ, 26 qubits: MPS never finished one
+#: 1 068-CX circuit, statevector took minutes).
+STATEVECTOR_MAX_QUBITS = 28
+
+
+def choose_sampler(backend, n_qubits):
+    """'mps' means 'automatic': statevector up to STATEVECTOR_MAX_QUBITS,
+    exact MPS above. 'local' forces statevector, 'ibm' is hardware."""
+    if backend == "mps":
+        return "aer_statevector" if n_qubits <= STATEVECTOR_MAX_QUBITS else "aer_mps"
+    return _BACKENDS[backend]
+
+
+def _n_lucj_params(n, n_reps, pairs_kind):
+    """Upper bound on UCJOpSpinUnbalanced parameters (final rotation on)."""
+    try:
+        import ffsim
+
+        from quenais.las import sqd_solver
+
+        pairs = sqd_solver._interaction_pairs(n, pairs_kind)
+        return int(ffsim.UCJOpSpinUnbalanced.n_params(
+            n, n_reps, interaction_pairs=pairs, with_final_orbital_rotation=True))
+    except Exception:
+        if pairs_kind == "all":
+            npair = 3 * n * (n + 1) // 2
+        else:
+            npair = 2 * (n - 1) + len(range(0, n, 4))
+        return n_reps * npair + 2 * n * n * (n_reps + 1)
+
+
+def lucj_optimisation_memory_gb(n, nelec, n_reps, pairs_kind):
+    """
+    Peak memory of ffsim's linear method: it keeps the derivative of the
+    state w.r.t. every parameter, i.e. ~(n_params + 4) complex vectors of
+    the full (n_alpha, n_beta) sector.
+    """
+    from math import comb
+
+    dim = comb(n, nelec[0]) * comb(n, nelec[1])
+    return (_n_lucj_params(n, n_reps, pairs_kind) + 4) * dim * 16 / 1e9
+
+
+def available_memory_gb():
+    """Memory this process may use: $QUENAIS_MEM_GB, else the cgroup limit
+    (a Slurm allocation), else physical RAM. None if unknown."""
+    env = os.environ.get("QUENAIS_MEM_GB")
+    if env:
+        return float(env)
+    limits = []
+    for path in ("/sys/fs/cgroup/memory.max",
+                 "/sys/fs/cgroup/memory/memory.limit_in_bytes"):
+        try:
+            txt = open(path).read().strip()
+            if txt.isdigit():
+                limits.append(int(txt) / 1e9)
+        except OSError:
+            pass
+    try:
+        limits.append(os.sysconf("SC_PHYS_PAGES") * os.sysconf("SC_PAGE_SIZE") / 1e9)
+    except (ValueError, OSError, AttributeError):
+        pass
+    limits = [x for x in limits if 0 < x < 1e6]
+    return min(limits) if limits else None
+
+
+def plan_lucj_optimisation(s, n, nelec, log, fraction=0.7):
+    """
+    (settings, info): optimisation switched off, with a warning, when the
+    linear method would need more than `fraction` of the available memory
+    -- N2 cc-pVDZ (26 qubits) was killed for memory after 39 min instead.
+    """
+    import dataclasses
+
+    need = lucj_optimisation_memory_gb(n, nelec, s.lucj_n_reps, s.lucj_pairs)
+    have = available_memory_gb()
+    info = {"lucj_opt_memory_gb": need, "available_memory_gb": have,
+            "lucj_opt_skipped_for_memory": False}
+    if s.lucj_optimize and have is not None and need > fraction * have:
+        log(f"  WARNING: LUCJ optimisation needs ~{need:.1f} GB, only "
+            f"{have:.1f} GB available -> using the CCSD-initialised circuit "
+            f"WITHOUT optimisation (set QUENAIS_MEM_GB to override)")
+        info["lucj_opt_skipped_for_memory"] = True
+        s = dataclasses.replace(s, lucj_optimize=False)
+    return s, info
+
+
 def embedding_fragment(step2):
     """The step-2 embedding Hamiltonian as a single LAS fragment."""
     from quenais.las.energy import FragmentHamiltonian
@@ -267,10 +356,14 @@ def run_lucj_opt_sqd(step2, q, log=print):
     """
     from quenais.las import sqd_solver
 
+    import dataclasses
+
     s = las_settings_from_qiskit(q)
     ham = embedding_fragment(step2)
     n, nelec = ham.norb, ham.nelec
     ecore = ham.const
+    s = dataclasses.replace(s, backend=choose_sampler(q.backend, 2 * n))
+    s, mem_info = plan_lucj_optimisation(s, n, nelec, log)
     solver = sqd_solver.LassqdFragmentSolver(s, log=log)
 
     log(f"  LUCJ (optimised): pairs={s.lucj_pairs}, reps={s.lucj_n_reps}, "
@@ -375,6 +468,8 @@ def run_lucj_opt_sqd(step2, q, log=print):
             "seed": s.seed,
             "t_prepare_s": t_build,
             "lucj_cache_hit": cache_hit,
+            "sampler": s.backend,
+            **mem_info,
             "explore_fraction": f,
             "explore_scale": float(q.sqd_explore_scale) if n_explore else None,
             "explore_shots": n_explore,

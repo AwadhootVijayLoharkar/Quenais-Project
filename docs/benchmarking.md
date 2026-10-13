@@ -28,6 +28,25 @@ cat $B/h4_smoke/figures/summary.md
 Keep the output folder **outside** the repo, otherwise every row is marked
 `git_dirty=True`.
 
+**Status of every job, from any window:** `python tools/status.py` (reads
+every `$B/*.log`: progress, failures, minutes per run, time left, and
+`STALE?` when a log has not changed for 90 min -- a killed driver).
+**Seed-averaged tables:** `python tools/show_rows.py <out> ... --agg`
+(one line per configuration, mean+-std; `--range` for min..max).
+
+**Two drivers on one `--out` are safe.** Each run is executed under a lock
+(`<out>/locks/<run_id>.lock`); a second driver prints
+`skip (running elsewhere)` instead of deleting the other's run folder.
+
+**DMET+SQD sampler and memory (`--ansatz lucj_opt`).** `--backend mps`
+now means "automatic": statevector up to 28 qubits, exact MPS above (exact
+MPS is very slow for deep LUCJ circuits). Before optimising the LUCJ the
+peak memory of the linear method is estimated ((n_params + 4) state
+vectors); if it exceeds 70 % of the allocation's memory, the optimisation
+is skipped with a warning (`lucj_opt_skipped_for_memory` column). N2
+cc-pVDZ (26 qubits, all pairs, 2 reps) needs ~74 GB. Override with
+`QUENAIS_MEM_GB`.
+
 ## 2. Grid files (`benchmarks/*.json`)
 
 ```json
