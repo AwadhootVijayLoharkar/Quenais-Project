@@ -1,37 +1,7 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -f $B/explore_batch.log
-[23/30] 57195448acbd sqd     shots=1000 seed=3  ok  212.2 s  E=-4.30756114  err_solver=+0.0066 kcal/mol  subspace=0.9716326530612245
-[24/30] 474a10bc09a3 sqd     shots=1000 seed=3  ok  211.8 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
-[25/30] 621da5b3354d sqd     shots=1000 seed=3  ok  209.6 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
-[26/30] 855388a15dcc sqd     shots=1000 seed=3  ok  209.9 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
-[27/30] 5fff6aecd44d sqd     shots=10000 seed=3  ok  212.1 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
-[28/30] e3a1d59543d9 sqd     shots=10000 seed=3  ok  215.3 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
-[29/30] 7c4b0c61bfa0 sqd     shots=10000 seed=3  ok  213.3 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
-[30/30] e52acbde36cf sqd     shots=10000 seed=3  ok  217.9 s  E=-4.30757160  err_solver=+0.0000 kcal/mol  subspace=1.0
-[collect] 82 runs (82 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results.csv
-[collect] 28 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h8_smoke/results_agg.csv
-^C
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -3 $B/n2_explore.log 
-[33/72] 49c7a46bf001 sqd     shots=10000 seed=3  ok  322.6 s  E=-107.65412245  err_solver=+0.0000 kcal/mol  subspace=1.0
-[34/72] e44c513edad2 sqd     shots=10000 seed=3  ok  324.5 s  E=-107.65412245  err_solver=+0.0000 kcal/mol  subspace=1.0
-[35/72] e3ab78421e1a sqd     shots=10000 seed=3  ok  324.6 s  E=-107.65412245  err_solver=+0.0000 kcal/mol  subspace=1.0
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -3 $B/n2_gqe_ens.log 
-[7/10] 201365284f09 gqe     shots=- seed=5  ok 1018.6 s  E=-107.38414370  err_solver=+40.4598 kcal/mol  subspace=0.080640589569161
-[8/10] fd3c1cc9f18f gqe     shots=- seed=6  ok 1035.6 s  E=-107.38414370  err_solver=+40.4598 kcal/mol  subspace=0.08772675736961451
-[9/10] d071c5e9068b gqe     shots=- seed=7  ok 1010.8 s  E=-107.38414370  err_solver=+40.4598 kcal/mol  subspace=0.07865646258503402
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -f $B/n2_gqe_ens.log 
-[benchmark] n2_gqe_ens: 10 runs over 2 system(s); this shard: 10  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-[1/10] 524f3b66e30b gqe     shots=- seed=4  ok 1118.2 s  E=-107.35387300  err_solver=+81.3154 kcal/mol  subspace=0.06618055555555556
-[2/10] ceb71706ece2 gqe     shots=- seed=5  ok 1070.5 s  E=-107.35434965  err_solver=+81.0163 kcal/mol  subspace=0.07013888888888889
-[3/10] 0eb97cf57635 gqe     shots=- seed=6  ok 1070.3 s  E=-107.35245263  err_solver=+82.2067 kcal/mol  subspace=0.059444444444444446
-[4/10] e863d81c42ef gqe     shots=- seed=7  ok 1059.3 s  E=-107.35418091  err_solver=+81.1222 kcal/mol  subspace=0.06451388888888888
-[5/10] a52f573a5a76 gqe     shots=- seed=8  ok 1085.8 s  E=-107.35398591  err_solver=+81.2446 kcal/mol  subspace=0.06888888888888889
-[6/10] d538cdce4309 gqe     shots=- seed=4  ok 1012.9 s  E=-107.38414370  err_solver=+40.4598 kcal/mol  subspace=0.08234126984126984
-[7/10] 201365284f09 gqe     shots=- seed=5  ok 1018.6 s  E=-107.38414370  err_solver=+40.4598 kcal/mol  subspace=0.080640589569161
-[8/10] fd3c1cc9f18f gqe     shots=- seed=6  ok 1035.6 s  E=-107.38414370  err_solver=+40.4598 kcal/mol  subspace=0.08772675736961451
-[9/10] d071c5e9068b gqe     shots=- seed=7  ok 1010.8 s  E=-107.38414370  err_solver=+40.4598 kcal/mol  subspace=0.07865646258503402
-[10/10] a5ab5ee1cb85 gqe     shots=- seed=8  ok 1018.2 s  E=-107.38414370  err_solver=+40.4598 kcal/mol  subspace=0.08985260770975056
-[collect] 265 runs (265 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results.csv
-[collect] 97 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results_agg.csv
-^C[1]+  Done                    nohup python tools/run_benchmark.py benchmarks/n2_gqe_ens.json --out $B/n2_curve > $B/n2_gqe_ens.log 2>&1
+git pull
+pytest -q -m "not slow"
+grep -rn "params" $GQE_QSCI_REPO_PATH/configs/ | head
 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+nohup python tools/run_benchmark.py benchmarks/n2_gqe_angles.json --out $B/n2_curve > $B/n2_gqe_angles.log 2>&1 &
+nohup bash -c "export QUENAIS_SELECTION_MAX_DET=4000000; python tools/run_benchmark.py benchmarks/n2_dz_sqd.json --out $B/n2_dz" > $B/n2_dz_sqd.log 2>&1 &
+python tools/gqe_ensemble.py $B/n2_curve --where gqe_ngates=80 tag_R=2.1
