@@ -1,9 +1,7 @@
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid            progress  failed  per_run  left    state     changed      log              
-h8_sqd_explore  30/30     0       3 min    -       finished  639 min ago  explore_batch.log
-fe2bpym_las     0/5       0       -        -       STALE?    408 min ago  fe2bpym.log      
-n2_dz_sqd       10/12     0       39 min   ~1.3 h  running   21 min ago   n2_dz_sqd.log    
-n2_sqd_explore  72/72     0       5 min    -       finished  407 min ago  n2_explore.log   
-n2_gqe_angles   12/12     0       37 min   -       finished  56 min ago   n2_gqe_angles.log
-n2_gqe_ens      10/10     0       18 min   -       finished  575 min ago  n2_gqe_ens.log   
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+python tools/show_rows.py $B/n2_curve --where solver=gqe gqe_ngates=80 --cols tag_R gqe_pool_angles gqe_pool_threshold seed err_solver_kcal subspace_fraction t_step3_s
+
+python tools/show_rows.py $B/n2_dz --where solver=sqd --cols tag_R shots_per_circuit explore_fraction seed subspace_fraction err_solver_kcal err_cipsi_kcal t_step3_s
+
+tail -2 $B/fe2bpym/systems/*/prep.log
+echo "cpus: $SLURM_CPUS_PER_TASK / $SLURM_CPUS_ON_NODE   nproc: $(nproc)   OMP: $OMP_NUM_THREADS"
+cat /sys/fs/cgroup/memory.max 2>/dev/null || cat /sys/fs/cgroup/memory/memory.limit_in_bytes
