@@ -184,7 +184,10 @@ def test_upstream_sha_is_pinned():
     assert gqe_setup.UPSTREAM_SHA == "0a201ea"
 
 
-def test_resolve_repo_reports_a_missing_path():
+def test_resolve_repo_reports_a_missing_path(monkeypatch):
+    # The cluster's .bashrc exports GQE_QSCI_REPO_PATH, which made this
+    # test environment-dependent (it passed only in shells without it).
+    monkeypatch.delenv("GQE_QSCI_REPO_PATH", raising=False)
     with pytest.raises(FileNotFoundError, match="GQE_QSCI_REPO_PATH"):
         gqe_setup.resolve_repo(repo=None)
 
@@ -504,3 +507,26 @@ def test_readme_documents_performance_levers():
         "the performance section must state plainly that a faster build "
         "does not change results"
     )
+
+def test_build_env_sets_the_determinant_dump_path(tmp_path):
+    from quenais.config import Config
+
+    cfg = Config(molecule="H2", basis="sto-3g", project_dir=str(tmp_path))
+    env = gqe_runner.build_env(cfg, tmp_path, base_env={})
+    assert env["QUENAIS_GQE_DUMP"].endswith("gqe_determinants.pkl")
+    assert env["QUENAIS_GQE_DUMP"].startswith(str(cfg.results_dir))
+
+
+def test_gqe_ensemble_merge_is_a_union():
+    import importlib.util
+    from pathlib import Path
+
+    import numpy as np
+
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("gqe_ensemble",
+                                                  root / "tools" / "gqe_ensemble.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    sa, sb = m.merge_sets([([3, 5], [3]), ([5, 6], [3, 9])])
+    assert list(sa) == [3, 5, 6] and list(sb) == [3, 9]

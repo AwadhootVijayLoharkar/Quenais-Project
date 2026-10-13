@@ -50,7 +50,7 @@ index 16a8ca0..df7976a 100644
              res = [x for xs in res for x in xs]  
  
 diff --git a/gqe_qsci/train_pipeline.py b/gqe_qsci/train_pipeline.py
-index bfed3fb..df94239 100644
+index bfed3fb..37a8721 100644
 --- a/gqe_qsci/train_pipeline.py
 +++ b/gqe_qsci/train_pipeline.py
 @@ -57,8 +57,9 @@ class TrainPipeline(pl.LightningModule):
@@ -65,3 +65,49 @@ index bfed3fb..df94239 100644
      
      def on_train_epoch_end(self):
          super().on_train_epoch_end()
+@@ -97,11 +98,45 @@ class TrainPipeline(pl.LightningModule):
+                 self.best_local_refined = qsci_result.local_refined
+             if self.best_global_refined is None or qsci_result.global_refined.energy < self.best_global_refined.energy:
+                 self.best_global_refined = qsci_result.global_refined
++                self._quenais_dump(qsci_result.global_refined)
+ 
+         self.scheduler.update(energies=energies)
+         return qsci_result
+ 
+ 
++    def _quenais_dump(self, result):
++        """QuEnAIS: write the best global-refined determinant set to
++        $QUENAIS_GQE_DUMP (pickle) each time it improves, so several runs
++        can be merged afterwards (tools/gqe_ensemble.py). No-op if unset;
++        never raises."""
++        import os
++        import pickle
++
++        path = os.environ.get("QUENAIS_GQE_DUMP")
++        if not path:
++            return
++        try:
++            sci = self.qsci_pipeline.global_refined_scistates
++            strs = getattr(sci, "_strs", None)
++            data = {
++                "energy": float(result.energy),
++                "epoch": int(self.current_epoch),
++                "strs_a": None if strs is None else np.asarray(strs[0]),
++                "strs_b": None if strs is None else np.asarray(strs[1]),
++                "coeffs": np.asarray(sci),
++            }
++            try:
++                pickle.dumps(result)
++                data["result"] = result
++            except Exception:
++                pass
++            tmp = path + ".tmp"
++            with open(tmp, "wb") as fh:
++                pickle.dump(data, fh)
++            os.replace(tmp, path)
++        except Exception as exc:
++            print(f"[quenais dump] failed: {exc}", flush=True)
++
+     def training_step(self, batch, _):
+         for k, v in batch.items():
+             if torch.is_tensor(v):

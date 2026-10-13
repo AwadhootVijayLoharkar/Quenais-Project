@@ -30,6 +30,11 @@ WHAT THE PATCH CONTAINS (three files, deliberately not four)
                              visualisation stage parses. Without it,
                              training runs fine and produces nothing
                              plottable.
+                             Since Oct 2026 it also writes the best
+                             global-refined determinant set to
+                             $QUENAIS_GQE_DUMP whenever it improves
+                             (set by gqe_runner; merged by
+                             tools/gqe_ensemble.py).
 
   configs/trainer/default.yaml  NOT SHIPPED. Those were leftover debugging
                              values (max_iters 100->50, load_checkpoint

@@ -74,7 +74,16 @@ def build_env(cfg, repo, base_env=None):
     # reaches the log until ~8 KB pile up, and a run that is training looks
     # identical to one that is hung. Line-buffer it.
     env.setdefault("PYTHONUNBUFFERED", "1")
+    # The patched train_pipeline.py writes the best global-refined
+    # determinant set here whenever it improves (tools/gqe_ensemble.py
+    # merges several runs). Unpatched trainers ignore it.
+    env["QUENAIS_GQE_DUMP"] = gqe_dump_file(cfg)
     return env
+
+
+def gqe_dump_file(cfg):
+    """Where the trainer writes its best determinant set for this run."""
+    return os.path.join(cfg.results_dir, "gqe_determinants.pkl")
 
 
 def build_command(cfg, repo, extra_args=None):
