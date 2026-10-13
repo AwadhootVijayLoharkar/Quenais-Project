@@ -20,7 +20,7 @@
     "dmet_reference": "casci",
     "ansatz": "lucj_opt",
     "mapping": "jw",
-    "backend": "mps",
+    "backend": "local",
     "sqd_lucj_pairs": "all",
     "sqd_lucj_reps": 2,
     "sqd_samples_per_batch": 1000000,
