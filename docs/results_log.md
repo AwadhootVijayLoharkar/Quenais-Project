@@ -91,6 +91,10 @@ how to run: `docs/benchmarking.md`.
     starts from the lowest-diagonal determinant) are not affected. To check
     later: the old random-angle DMET+SQD path (`solver.py`) may share the
     issue; the lucj_opt path does its own mean field and does not.
+    **First result after the fix** (2.1 Å, CCSD angles, seed 4, 80 gates,
+    120 epochs, 1 107 s): error **0.0013 kcal/mol** with 660 determinants
+    (9.4 %, after QSCI's spin-symmetry completion) -- CIPSI at the same size
+    0.0026, oracle (top-|c|) 0.0034. Before the fix: 95 kcal/mol.
 
 
 ## Results (all with seed repeats unless stated)

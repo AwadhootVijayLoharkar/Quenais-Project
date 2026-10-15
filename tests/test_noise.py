@@ -102,6 +102,19 @@ def test_settings_cli_and_driver():
     p, _ = d.normalise_params({"solver": "sqd", "ansatz": "lucj_opt",
                                "backend": "mps", "noise_scale": 0.1})
     assert "noise_scale" not in p
+    p, _ = d.normalise_params({"solver": "lassqd", "lassqd_backend": "aer_noisy",
+                               "noise_scale": 0.1, "las_fragments": ["0:2:1,1"]})
+    assert p["noise_scale"] == 0.1
+    p, _ = d.normalise_params({"solver": "lasscf", "noise_scale": 0.1,
+                               "las_fragments": ["0:2:1,1"]})
+    assert "noise_scale" not in p
+
+    from quenais.cli import build_las_settings
+    a = build_parser().parse_args([
+        "--molecule", "LiH", "--solver", "lassqd", "--las-fragments", "0:2:1,1",
+        "--lassqd-backend", "aer_noisy", "--noise-scale", "0.1"])
+    ls = build_las_settings(a)
+    assert (ls.backend, ls.noise_scale) == ("aer_noisy", 0.1)
 
 
 @pytest.mark.needs_qiskit

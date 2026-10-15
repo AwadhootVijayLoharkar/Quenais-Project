@@ -1,17 +1,5 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_benchmark.py --out $B/n2_curve --collect-only
-python tools/show_rows.py $B/n2_curve --where solver=gqe gqe_basis=mo --cols tag_R seed err_solver_kcal subspace_dim err_cipsi_kcal err_oracle_kcal
-[collect] 332 runs (332 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results.csv
-[collect] 120 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results_agg.csv
- tag_R  seed  err_solver_kcal  subspace_dim  err_cipsi_kcal  err_oracle_kcal
-2.1000     4           0.0013           660          0.0026           0.0034
-
-1 ok rows
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ls benchmarks/fe2bpym_las.json 
-benchmarks/fe2bpym_las.json
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ls benchmarks/fe2bpym_las_df.json
-ls: cannot access 'benchmarks/fe2bpym_las_df.json': No such file or directory
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-
+git pull
+ls benchmarks/fe2bpym_las_df.json        # must exist now
 export OMP_NUM_THREADS=20 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 nohup python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out $B/fe2bpym_df > $B/fe2bpym_df.log 2>&1 &
 sleep 60; tail -3 $B/fe2bpym_df.log

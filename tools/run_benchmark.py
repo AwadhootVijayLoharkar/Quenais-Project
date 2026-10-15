@@ -153,7 +153,8 @@ def normalise_params(raw):
     if not (solver == "sqd" and params.get("ansatz") == "lucj_opt"):
         drop(("sqd_",))
     # --noise-* only mean something on the noisy sampler
-    if params.get("backend") != "noisy":
+    if not (params.get("backend") == "noisy"
+            or (solver == "lassqd" and params.get("lassqd_backend") == "aer_noisy")):
         drop(("noise_",))
     if solver == "lasscf":
         drop(("lassqd_",))
