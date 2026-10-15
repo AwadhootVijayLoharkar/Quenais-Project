@@ -77,21 +77,19 @@ chat (`THESIS_HANDOFF.md`).
 | GQE (3b) | CCSD-angle plateau found; free angles 81→75 (1.8 Å), 40.5→28.7 (2.1 Å) | done, still worst solver |
 | GQE+LAS | not worth it | **decided: skip, outlook only** |
 | SKQD cheaper (3c) | – | dropped |
-| N₂ cc-pVDZ | SQD/GQE/LAS rows in `n2_dz` | done except 2.1 Å exploration rows (check) |
-| [Fe₂(bpym)]⁴⁺ LAS | restarted 13 Oct night with 24 threads, step 0 done | **running — check first** |
+| N₂ cc-pVDZ | SQD/GQE/LAS rows in `n2_dz` | done |
+| [Fe₂(bpym)]⁴⁺ LAS | prep done (1 476 s), then 0/5 runs and no log change for 34 h | **check first: alive or hung?** |
 
 ## Next, in order
 
-1. **Collect** (no code):
-   - Fe, in **W2**: `python tools/status.py`, `tail -5 $B/fe2bpym.log`,
-     `grep -v OpenBLAS $B/fe2bpym/systems/*/prep.log | tail -5`,
-     then `python tools/show_rows.py $B/fe2bpym --where --cols solver
-     las_fragments seed energy_Ha err_solver_kcal n_macro t_step3_s`.
-     Compare LASSCF with −3655.496377 Ha.
-   - n2_dz: `python tools/show_rows.py $B/n2_dz --where solver=sqd tag_R=2.1
-     --cols shots_per_circuit explore_fraction subspace_fraction
-     err_solver_kcal err_cipsi_kcal t_step3_s`.
-   - Put the numbers into results_log (§Fe and the cc-pVDZ table).
+1. **Fe₂(bpym) — find out why 0/5 runs after 34 h** (in **W2**, the only
+   window that sees its processes):
+   `ps -u $USER -o pid,etime,pcpu,rss,cmd | grep -v grep | grep run_benchmark`
+   and `tail -20 $(ls -td $B/fe2bpym/runs/*/ | head -1)run.log`.
+   Alive at ~2000 % CPU and the log moving → LASSCF is just slow, wait.
+   Dead, or 100 % CPU (thread pinning again), or log frozen → kill, restart with
+   the thread/memory exports above and `--retry-failed`. Then compare LASSCF
+   with −3655.496377 Ha and fill §Fe in results_log.
 2. **Step 4 — determinant-list SQD (code, ~½ day).** New option
    `--sqd-subspace product|list` (default product). `list` keeps only the
    sampled (α,β) determinant pairs (after configuration recovery) instead of

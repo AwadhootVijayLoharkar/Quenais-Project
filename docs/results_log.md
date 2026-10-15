@@ -329,8 +329,8 @@ DMET+SQD, error vs embedding FCI (kcal/mol):
 | 1.1 | 100k | 19.7 | 0.01 % | 1.5 | 0.0 (100 %, 4 700 s) |
 | 1.6 | 10k | 70.9 | 0.02 % | 7.5 | 0.0 (100 %, 1 750 s) |
 | 1.6 | 100k | 51.4 | 0.07 % | 2.0 | 0.0 (100 %, 1 750 s) |
-| 2.1 | 10k | 94.1 | 0.02 % | 11.2 | see results.csv (ran last) |
-| 2.1 | 100k | 88.5 | 0.03 % | 7.9 | see results.csv |
+| 2.1 | 10k | 94.1 | 0.02 % | 11.2 | 0.0 (100 %, 3 000 s) |
+| 2.1 | 100k | 88.5 | 0.03 % | 7.9 | 0.0 (100 %, 3 000 s) |
 
 The unoptimised circuit alone is 50.5 kcal/mol off at 1.1 Å. Without
 exploration, sampling loses to CIPSI by 5–25× at the same size. With
@@ -383,8 +383,11 @@ Pandharkar, Gagliardi, JCTC 16, 4923 (2020) SI Table S4
 (Wang et al. 2026). Grid: LASSCF + LASSQD (heavy-hex / all pairs) × seeds 1–2.
 
 Status 15 Oct: the first attempt stalled in UHF for hours (1 thread, direct SCF);
-restarted with 24 OpenMP threads, OpenBLAS 1 thread and
-`PYSCF_MAX_MEMORY=100000`, after which step 0 finished. Results: fill in.
+restarted 13 Oct with 24 OpenMP threads, OpenBLAS 1 thread and
+`PYSCF_MAX_MEMORY=100000`: system prep (UHF, AVAS, step 0) finished in
+1 476 s. Then the log stayed at "ready", 0/5 runs, for 34 h (status STALE?).
+To check: is the first run (LASSCF) still alive, or did it die/hang? Per-run
+log: `$B/fe2bpym/runs/<id>/run.log`. Results: fill in.
 
 ## What it means (updated 15 Oct)
 
@@ -410,7 +413,6 @@ restarted with 24 OpenMP threads, OpenBLAS 1 thread and
 ## Still open (15 Oct 2026)
 
 - Fe₂(bpym): collect LASSCF/LASSQD numbers, compare with −3655.496377 Ha.
-- N₂ cc-pVDZ 2.1 Å exploration rows (ran last).
 - Step 4 (code): determinant-list SQD — keep only the sampled (α,β) pairs
   instead of the α×β product, diagonalise with `det_analysis.projected_energy`,
   compare with CIPSI at the same size. Directly tests selection quality.
