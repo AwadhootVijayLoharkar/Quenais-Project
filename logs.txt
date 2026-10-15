@@ -1,7 +1,21 @@
-git pull
-python tools/check_gqe_basis.py $B/n2_curve
-
+/home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/0031e1fad9c4/results/step2_hamiltonian.pkl
+   norb=10 nelec=(7, 7)  overlap min/mean 0.000/0.716   E(ref det) - E(HF) =  40168.13 kcal/mol
+/home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/01600de2717b/results/step2_hamiltonian.pkl
+   norb=9 nelec=(6, 6)  overlap min/mean 0.000/0.667   E(ref det) - E(HF) =  19634.08 kcal/mol
+/home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/083f0ef0b83f/results/step2_hamiltonian.pkl
+   norb=9 nelec=(6, 6)  overlap min/mean 0.011/0.786   E(ref det) - E(HF) =  19592.51 kcal/mol
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 grep -rn "cas_hamiltonian\|hf_state\|initial_state\|\.x(" $GQE_QSCI_REPO_PATH/gqe_qsci | head -20
+grep: /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/__pycache__/molecule.cpython-311.pyc: binary file matches
+grep: /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/qsci/__pycache__/pipeline.cpython-311.pyc: binary file matches
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/qsci/pipeline.py:26:        self.hamiltonian = molecule.cas_hamiltonian
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/gqe/utils.py:11:            piece = cudaq.spin.x(k)
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:34:    self.cas_hamiltonian = self._build_cas_hamiltonian()
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:65:  def _build_cas_hamiltonian(self):
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:79:      self.cas_hamiltonian.h1,
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:80:      self.cas_hamiltonian.h2,
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:83:      ecore=self.cas_hamiltonian.e_core,
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
 grep -c "LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
 
