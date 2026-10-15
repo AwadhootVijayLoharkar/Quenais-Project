@@ -1,0 +1,80 @@
+{
+  "name": "n2_gqe_more",
+  "description": "After step 5, optional GQE push (config only, no new code). Free angles already beat CCSD angles (1.8 A: 81->75, 2.1 A: 40.5->28.7 kcal/mol) and gave identical results across seeds, so one seed is enough. Tests a finer angle grid (10 values) and longer circuits (160 gates). The 6-angle/80-gate runs are reused from n2_gqe_angles. Runs one at a time per gqe-for-qsci checkout; ~1-2.5 h each on an A100. --out $B/n2_curve.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80
+  },
+  "studies": [
+    {
+      "name": "gqe_more",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.8",
+          "tag_R": 1.8
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_pool_angles": [
+          [
+            -1.0,
+            -0.4,
+            -0.1,
+            0.1,
+            0.4,
+            1.0
+          ],
+          [
+            -1.2,
+            -0.8,
+            -0.4,
+            -0.2,
+            -0.05,
+            0.05,
+            0.2,
+            0.4,
+            0.8,
+            1.2
+          ]
+        ],
+        "gqe_ngates": [
+          80,
+          160
+        ],
+        "seed": [
+          4
+        ]
+      }
+    }
+  ]
+}
