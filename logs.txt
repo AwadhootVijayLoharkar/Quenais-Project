@@ -1,7 +1,33 @@
-git pull
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
 export OMP_NUM_THREADS=20 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 nohup python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out $B/fe2bpym_df --retry-failed > $B/fe2bpym_df.log 2>&1 &
 sleep 120; tail -3 $B/fe2bpym_df.log
 grep "density fitting\|LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log | head -5
-
-grep -c "LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
+Already up to date.
+[2] 294636
+nohup: ignoring input
+[benchmark] fe2bpym_las_df: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df
+  density fitting with auxbasis def2-universal-jkfit
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -3 $B/fe2bpym_df.log
+nohup: ignoring input
+[benchmark] fe2bpym_las_df: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pyton tools/status.py 
+bash: pyton: command not found
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
+grid            progress  failed  per_run  left    state     changed       log            
+fe2bpym_las     0/5       0       -        -       STALE?    2429 min ago  fe2bpym.log    
+fe2bpym_las_df  0/5       0       -        -       running   5 min ago     fe2bpym_df.log 
+fe2bpym_las     1/5       0       -        -       STALE?    139 min ago   fe2bpym_w1.log 
+n2_gqe_mo       2/16      0       18 min   ~4.3 h  running   13 min ago    n2_gqe_mo.log  
+n2_sqd_list     36/36     0       1 min    -       finished  165 min ago   n2_sqd_list.log
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
+grid            progress  failed  per_run  left    state     changed       log            
+fe2bpym_las     0/5       0       -        -       STALE?    2435 min ago  fe2bpym.log    
+fe2bpym_las_df  0/5       0       -        -       running   11 min ago    fe2bpym_df.log 
+fe2bpym_las     1/5       0       -        -       STALE?    145 min ago   fe2bpym_w1.log 
+n2_gqe_mo       3/16      0       18 min   ~3.9 h  running   1 min ago     n2_gqe_mo.log  
+n2_sqd_list     36/36     0       1 min    -       finished  171 min ago   n2_sqd_list.log
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -3 $B/fe2bpym_df.log
+nohup: ignoring input
+[benchmark] fe2bpym_las_df: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
