@@ -1,6 +1,11 @@
-pkill -f fe2bpym; sleep 2; pgrep -af fe2bpym          # should print nothing
-export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
-nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym --retry-failed > $B/fe2bpym.log 2>&1 &
-
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tools/status.py
+[1]-  Done                    nohup python tools/run_benchmark.py benchmarks/n2_gqe_angles.json --out $B/n2_curve > $B/n2_gqe_angles.log 2>&1
+[2]+  Done                    nohup bash -c "export QUENAIS_SELECTION_MAX_DET=4000000; python tools/run_benchmark.py benchmarks/n2_dz_sqd.json --out $B/n2_dz" > $B/n2_dz_sqd.log 2>&1
+bash: tools/status.py: Permission denied
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 top -b -n1 | grep python | head -1                         # still ~2000 %
 grep -v OpenBLAS $B/fe2bpym/systems/*/prep.log | tail -3   # real progress (old warnings filtered out)
+======================================================================================
+
+[Step 0] Saved -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym/systems/adff1a56c5a7/results/step0_classical.pkl
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
