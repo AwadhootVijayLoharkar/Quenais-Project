@@ -19,14 +19,22 @@ import numpy as np
 __all__ = ["PyscfIntegrals"]
 
 
+#: Fitting basis tried first, then the fallback. PySCF's automatic choice
+#: for Pople bases (6-31G -> cc-pvdz-jkfit) has no transition metals, so
+#: [Fe2(bpym)]4+ failed with "Basis set not found for Fe in cc-pvdz-jkfit".
+#: def2-universal-jkfit (Weigend) covers H-Rn.
+DEFAULT_AUXBASES = ("def2-universal-jkfit", "weigend")
+
+
 class PyscfIntegrals:
     def __init__(self, mol, density_fit=False, auxbasis=None):
         from pyscf import scf
 
         self.mol = mol
         mf = scf.RHF(mol)
+        self.auxbasis = None
         if density_fit:
-            mf = mf.density_fit(auxbasis=auxbasis)
+            mf, self.auxbasis = _density_fitted(mf, auxbasis)
         self._mf = mf
         self.density_fit = bool(density_fit)
         self.hcore = mf.get_hcore()
@@ -48,3 +56,18 @@ class PyscfIntegrals:
 
             eri = ao2mo.general(self.mol, (c1, c2, c3, c4), compact=False)
         return np.asarray(eri).reshape(shape)
+
+
+def _density_fitted(mf, auxbasis):
+    """(density-fitted mf, auxbasis used). Builds the fit eagerly so a
+    missing basis fails here, with the fallback tried, not mid-run."""
+    tried = [auxbasis] if auxbasis else list(DEFAULT_AUXBASES)
+    last = None
+    for name in tried:
+        try:
+            dmf = mf.density_fit(auxbasis=name)
+            dmf.with_df.build()
+            return dmf, name
+        except Exception as exc:          # BasisNotFoundError and friends
+            last = exc
+    raise RuntimeError(f"density fitting failed for auxbasis {tried}: {last}")

@@ -137,6 +137,8 @@ def main(cfg, force=False):
                 spin=cfg.spin, verbose=0)
     C, space, nelec_sub, spin2s_sub, specs, svals, dm1s0 = build_problem(cfg, mol, step1)
     ints = PyscfIntegrals(mol, density_fit=cfg.las.density_fit)
+    if ints.auxbasis:
+        print(f"  density fitting with auxbasis {ints.auxbasis}")
 
     s = cfg.las
     if solver_name == "lassqd":

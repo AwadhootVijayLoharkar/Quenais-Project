@@ -1,33 +1,7 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -30 $B/fe2bpym_df/runs/c80c2890f995/run.log 
-[2]+  Done                    nohup python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out $B/fe2bpym_df > $B/fe2bpym_df.log 2>&1
-    vj, vk = self._mf.get_jk(self.mol, dms, hermi=1)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/df/df_jk.py", line 175, in get_jk
-    vj, vk = self.with_df.get_jk(dm, hermi, with_j, with_dfk,
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/df/df.py", line 263, in get_jk
-    return df_jk.get_jk(self, dm, hermi, with_j, with_k, direct_scf_tol)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/df/df_jk.py", line 391, in get_jk
-    for eri1 in dfobj.loop(blksize):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/df/df.py", line 216, in loop
-    self.build()
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/df/df.py", line 158, in build
-    auxmol = self.auxmol = addons.make_auxmol(self.mol, self.auxbasis)
-                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/df/addons.py", line 276, in make_auxmol
-    pmol._basis = pmol.format_basis(_basis)
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/gto/mole.py", line 458, in format_basis
-    _basis = basis_converter(symb, atom_basis)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/gto/mole.py", line 493, in converter
-    _basis = load(raw_basis, _std_symbol_without_ghost(symb))
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/gto/mole.py", line 486, in load
-    _basis = basis.load(basis_name, symb)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/gto/basis/__init__.py", line 734, in load
-    raise BasisNotFoundError(
-pyscf.lib.exceptions.BasisNotFoundError: Basis set not found for Fe in cc-pvdz-jkfit
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+git pull
+export OMP_NUM_THREADS=20 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
+nohup python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out $B/fe2bpym_df --retry-failed > $B/fe2bpym_df.log 2>&1 &
+sleep 120; tail -3 $B/fe2bpym_df.log
+grep "density fitting\|LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log | head -5
+
+grep -c "LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
