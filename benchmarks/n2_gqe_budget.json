@@ -1,0 +1,65 @@
+{
+  "name": "n2_gqe_budget",
+  "description": "GQE (fixed MO basis, CCSD angles, 80 gates, 120 epochs) on DMET N2 with a RESTRICTED QSCI budget of 100 / 200 determinants, where CIPSI at the same size errs by ~0.5-1 kcal/mol, so differences in selection quality can show. Seeds 4-6 (reliability across seeds). Compare err_solver_kcal with err_cipsi_kcal / err_oracle_kcal at the same subspace_dim. --out $B/n2_curve.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80,
+    "gqe_basis": "mo"
+  },
+  "studies": [
+    {
+      "name": "budget",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.8",
+          "tag_R": 1.8
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.5",
+          "tag_R": 2.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200,
+          100
+        ],
+        "seed": [
+          4,
+          5,
+          6
+        ]
+      }
+    }
+  ]
+}

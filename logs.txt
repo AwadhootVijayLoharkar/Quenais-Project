@@ -1,28 +1,8 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid            progress  failed  per_run  left    state     changed       log            
-fe2bpym_las     0/5       0       -        -       STALE?    2720 min ago  fe2bpym.log    
-fe2bpym_las_df  0/5       0       -        -       STALE?    296 min ago   fe2bpym_df.log 
-fe2bpym_las     1/5       0       -        -       STALE?    429 min ago   fe2bpym_w1.log 
-n2_gqe_mo       8/16      0       35 min   ~4.6 h  running   62 min ago    n2_gqe_mo.log  
-n2_sqd_list     36/36     0       1 min    -       finished  456 min ago   n2_sqd_list.log
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/n2_gqe_mo.log 
-nohup: ignoring input
-[benchmark] n2_gqe_mo: 16 runs over 4 system(s); this shard: 16  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-[1/16] 18527d84178d gqe     shots=- seed=4  ok 1106.9 s  E=-107.44861844  err_solver=+0.0013 kcal/mol  subspace=0.0935374149659864
-[2/16] 7f9b6285790d gqe     shots=- seed=4  ok 1083.2 s  E=-107.65405795  err_solver=+0.0405 kcal/mol  subspace=0.0770138888888889
-[3/16] e8108d69b7fa gqe     shots=- seed=5  ok 1090.7 s  E=-107.65404992  err_solver=+0.0455 kcal/mol  subspace=0.07395833333333333
-[4/16] 12c037de4dc8 gqe     shots=- seed=4  ok 2826.5 s  E=-107.65412245  err_solver=-0.0000 kcal/mol  subspace=0.2511111111111111
-[5/16] e5480a4685fa gqe     shots=- seed=5  ok 3283.3 s  E=-107.65412245  err_solver=-0.0000 kcal/mol  subspace=0.2511111111111111
-[6/16] bf6925da1278 gqe     shots=- seed=4  ok 1097.6 s  E=-107.48344340  err_solver=+0.0088 kcal/mol  subspace=0.06694444444444445
-[7/16] dae3caa6a7c2 gqe     shots=- seed=5  ok 1099.4 s  E=-107.48344900  err_solver=+0.0052 kcal/mol  subspace=0.071875
-[8/16] 1eb85919b8b0 gqe     shots=- seed=4  ok 5094.4 s  E=-107.48345736  err_solver=-0.0000 kcal/mol  subspace=0.25333333333333335
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/fe2bpym.log 
-nohup: ignoring input
-[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
-  [system adff1a56c5a7] steps 1, 0 ...
-  [system adff1a56c5a7] ready (1476 s)
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/fe2bpym_w1.log 
-nohup: ignoring input
-[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
-[1/5] 506dded29d65 lasscf  shots=- seed=-  skip (running elsewhere)
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+git pull
+nohup bash -c 'while pgrep -f n2_gqe_mo.json >/dev/null; do sleep 300; done; OMP_NUM_THREADS=4 python tools/run_benchmark.py benchmarks/n2_gqe_budget.json --out $B/n2_curve' > $B/n2_gqe_budget.log 2>&1 &
+
+ps -u $USER -o pid,cmd | grep -v grep | grep "while pgrep"
+
+python tools/status.py
+python tools/run_benchmark.py --out $B/n2_curve --collect-only
+python tools/show_rows.py $B/n2_curve --where solver=gqe gqe_basis=mo --cols tag_R gqe_pool_angles gqe_qsci_max_dim seed err_solver_kcal subspace_dim err_cipsi_kcal err_oracle_kcal
