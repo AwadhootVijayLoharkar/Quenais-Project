@@ -1,7 +1,29 @@
-ps -u $USER -o pid,ppid,pcpu,cmd | grep -v grep | grep run_benchmark
+W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u $USER -o pid,ppid,pcpu,cmd | grep -v grep | grep run_benchmark
+ 107117    7601  0.0 python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym --retry-failed
+ 111458  107117 1359 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/fe2bpym 506dded29d65
+ 307688    7601  0.0 python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
+ 307766  307688 1055 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/fe2bpym 803534b1441e
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ kill 307688 307766
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u $USER -o pid,ppid,pcpu,cmd | grep -v grep | grep run_benchmark
+[2]+  Terminated              nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym > $B/fe2bpym_w1.log 2>&1
+ 107117    7601  0.0 python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym --retry-failed
+ 111458  107117 1358 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/fe2bpym 506dded29d65
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
-kill 307688 <the other --_run PID>
 
-cd ~/quenais-standalone/Quenais-Project
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py^C
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym --retry-failed > $B/fe2bpym_w1.log 2>&1 &
+[1] 261915
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/fe2bpym_w1.log 
+nohup: ignoring input
+[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
+[1/5] 506dded29d65 lasscf  shots=- seed=-  skip (running elsewhere)
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym --retry-failed > $B/fe2bpym_w1.log^C
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
+grid         progress  failed  per_run  left  state     changed       log            
+fe2bpym_las  0/5       0       -        -     STALE?    2293 min ago  fe2bpym.log    
+fe2bpym_las  1/5       0       -        -     running   3 min ago     fe2bpym_w1.log 
+n2_sqd_list  36/36     0       1 min    -     finished  29 min ago    n2_sqd_list.log
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
