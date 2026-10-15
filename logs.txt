@@ -1,9 +1,56 @@
-python tools/show_rows.py $B/n2_curve --where solver=gqe gqe_basis=mo --cols tag_R seed err_solver_kcal subspace_dim err_cipsi_kcal err_oracle_kcal
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/show_rows.py $B/n2_curve --where solver=gqe gqe_basis=mo --cols tag_R seed err_solver_kcal subspace_dim err_cipsi_kcal err_oracle_kcal
+tag_R  seed  err_solver_kcal  subspace_dim  err_cipsi_kcal  err_oracle_kcal
+
+0 ok rows
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ al subspace_dim err_cipsi_kcal err_oracle_kcal
 
 grep -rn "enlarge\|max_dim\|max_cycle" $GQE_QSCI_REPO_PATH/configs/ | head -20
 grep -n "def.*enlarge\|enlarge_method" -A3 $GQE_QSCI_REPO_PATH/gqe_qsci/qsci/pipeline.py | head -40
-
+bash: al: command not found
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/configs/default.yaml:31:  max_dim: 2000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/configs/default.yaml:32:  enlarge_method: "symmetry_completion"
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/configs/default.yaml:33:  max_cycle: 1000
+22:        enlarge_method: str = "symmetry_completion",
+23-        eigsh_kwargs: dict[str, Any] | None = None,
+24-    ):
+25-        self.mol = molecule
+--
+34:        self.enlarge_method = enlarge_method
+35-        self.subspace_refiner = RefinePipeline(hamiltonian=self.hamiltonian, nelec=self.nelec, norb=self.norb)
+36-        self.global_refined_scistates = None
+37-
+--
+66:            enlarged_subspace = valid_subspace.enlarge(max_dim=self.max_dim, method=self.enlarge_method)
+67-            energy, ci = self.diagonalize(enlarged_subspace)
+68-            sci_states.append(ci)
+69-
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ^C
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ grep -rn "enlarge\|max_dim\|max_cycle" $GQE_QSCI_REPO_PATH/configs/ | head -20^C
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ grep -rn "enlarge\|max_dim\|max_cycle" $GQE_QSCI_REPO_PATH/configs/ | head -20
+grep -n "def.*enlarge\|enlarge_method" -A3 $GQE_QSCI_REPO_PATH/gqe_qsci/qsci/pipeline.py | head -40
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/configs/default.yaml:31:  max_dim: 2000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/configs/default.yaml:32:  enlarge_method: "symmetry_completion"
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/configs/default.yaml:33:  max_cycle: 1000
+22:        enlarge_method: str = "symmetry_completion",
+23-        eigsh_kwargs: dict[str, Any] | None = None,
+24-    ):
+25-        self.mol = molecule
+--
+34:        self.enlarge_method = enlarge_method
+35-        self.subspace_refiner = RefinePipeline(hamiltonian=self.hamiltonian, nelec=self.nelec, norb=self.norb)
+36-        self.global_refined_scistates = None
+37-
+--
+66:            enlarged_subspace = valid_subspace.enlarge(max_dim=self.max_dim, method=self.enlarge_method)
+67-            energy, ci = self.diagonalize(enlarged_subspace)
+68-            sci_states.append(ci)
+69-
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 tail -5 $B/fe2bpym_df.log
 ps -u $USER -o pid,pcpu,cmd | grep -v grep | grep fe2bpym_las_df
-
-grep "1/16" $B/n2_gqe_mo.log
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1168, in main
+    with open(a.grid) as fh:
+         ^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'benchmarks/fe2bpym_las_df.json'
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
