@@ -1,5 +1,12 @@
-git pull
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
 ls benchmarks/fe2bpym_las_df.json        # must exist now
 export OMP_NUM_THREADS=20 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 nohup python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out $B/fe2bpym_df > $B/fe2bpym_df.log 2>&1 &
 sleep 60; tail -3 $B/fe2bpym_df.log
+Already up to date.
+benchmarks/fe2bpym_las_df.json
+[2] 292789
+[benchmark] fe2bpym_las_df: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df
+[1/5] c80c2890f995 lasscf  shots=- seed=-  FAILED rc=1 (22 s) -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df/runs/c80c2890f995/run.log
+[2/5] c092b4e57bba lassqd  shots=10000 seed=1  FAILED rc=1 (22 s) -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df/runs/c092b4e57bba/run.log
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
