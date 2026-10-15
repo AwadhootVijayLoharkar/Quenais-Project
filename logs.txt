@@ -1,5 +1,23 @@
-   python tools/status.py
-   tail -5 $B/fe2bpym.log
-   grep -v OpenBLAS $B/fe2bpym/systems/*/prep.log | tail -5
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py
+tail -5 $B/fe2bpym.log
+grep -v OpenBLAS $B/fe2bpym/systems/*/prep.log | tail -5
+grid         progress  failed  per_run  left  state   changed       log        
+fe2bpym_las  0/5       0       -        -     STALE?  2052 min ago  fe2bpym.log
+nohup: ignoring input
+[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
+  [system adff1a56c5a7] steps 1, 0 ...
+  [system adff1a56c5a7] ready (1476 s)
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 1067.8s
+======================================================================================
 
-      python tools/show_rows.py $B/n2_dz --where solver=sqd tag_R=2.1 --cols shots_per_circuit explore_fraction subspace_fraction err_solver_kcal err_cipsi_kcal t_step3_s
+[Step 0] Saved -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym/systems/adff1a56c5a7/results/step0_classical.pkl
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/show_rows.py $B/n2_dz --where solver=sqd tag_R=2.1 --cols shots_per_circuit explore_fraction subspace_fraction err_solver_kcal err_cipsi_kcal t_step3_s
+shots_per_circuit  explore_fraction  subspace_fraction  err_solver_kcal  err_cipsi_kcal  t_step3_s
+            10000            0.5000                  1           0.0000               0  2982.1058
+            10000                 0             0.0002          94.1424         11.2431    97.1116
+           100000            0.5000                  1           0.0000               0  2998.6082
+           100000                 0             0.0003          88.4921          7.8500   101.2755
+
+4 ok rows
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
