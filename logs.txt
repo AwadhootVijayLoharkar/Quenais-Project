@@ -1,10 +1,16 @@
-git pull
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 ps -u $USER -o pid,ppid,pcpu,cmd | grep -v grep | grep run_benchmark
-kill <number 1> <number 2>
+ 261915     571  0.0 python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym --retry-failed
+ 261916  261915 1402 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/fe2bpym 803534b1441e
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ kill 261915 261916
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u $USER -o pid,ppid,pcpu,cmd | grep -v grep | grep run_benchmark
+[1]+  Terminated              nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym --retry-failed > $B/fe2bpym_w1.log 2>&1
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 mkdir -p $B/fe2bpym_df && cp -r $B/fe2bpym/systems $B/fe2bpym_df/
 export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 nohup python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out $B/fe2bpym_df > $B/fe2bpym_df.log 2>&1 &
-
+[1] 277575
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
 grep -c "LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
 
