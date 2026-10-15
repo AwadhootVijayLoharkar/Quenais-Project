@@ -1,0 +1,83 @@
+{
+  "name": "n2_noise",
+  "description": "Step 5: DMET+SQD (optimised LUCJ, all pairs, 2 reps, one batch) for N2 STO-3G 1.1 A, 10k shots, seeds 1-3, sampled on a noisy fake IBM device (FakeSherbrooke, heavy-hex routing). noise_scale multiplies the device-average error rates: 1 = today's device, 0.1 = 10x better, 0 = ideal gates on the device layout (sanity check, must match the noiseless runs). Product and list subspace. Noiseless references: same settings with backend mps in n2_curve. noise_scale 1.0 runs first: check the time of the first run before leaving it. --out $B/n2_curve.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000
+  },
+  "studies": [
+    {
+      "name": "noise",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        }
+      ],
+      "sweep": {
+        "noise_scale": [
+          1.0,
+          0.1,
+          0.0
+        ],
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "backend": [
+          "noisy"
+        ],
+        "noise_device": [
+          "FakeSherbrooke"
+        ],
+        "sqd_lucj_pairs": [
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          2
+        ],
+        "sqd_samples_per_batch": [
+          1000000
+        ],
+        "sqd_batches": [
+          1
+        ],
+        "shots": [
+          10000
+        ],
+        "sqd_subspace": [
+          null,
+          "list"
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ]
+}

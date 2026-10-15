@@ -152,6 +152,9 @@ def normalise_params(raw):
     # would only split identical runs into different run_ids.
     if not (solver == "sqd" and params.get("ansatz") == "lucj_opt"):
         drop(("sqd_",))
+    # --noise-* only mean something on the noisy sampler
+    if params.get("backend") != "noisy":
+        drop(("noise_",))
     if solver == "lasscf":
         drop(("lassqd_",))
     if solver != "gqe":
@@ -681,6 +684,13 @@ def _dmet_part(params, cfg, step2, rdir, load):
                 "unique_valid_explore_new": lo.get("unique_valid_explore_new"),
                 "sqd_subspace": lo.get("sqd_subspace") or "product",
                 "list_n_sampled_dets": lo.get("list_n_sampled_dets"),
+                "noise_device": lo.get("noise_device"),
+                "noise_model": lo.get("noise_model"),
+                "noise_scale": lo.get("noise_scale"),
+                "noise_r2": lo.get("noise_r2"),
+                "n_2q_device": lo.get("n_2q_device"),
+                "depth_device": lo.get("depth_device"),
+                "est_fidelity": lo.get("est_fidelity"),
             })
     else:   # gqe
         from quenais.visualization.plots import parse_gqe_log

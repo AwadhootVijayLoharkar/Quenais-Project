@@ -21,7 +21,7 @@ ANSATZE = ("su2", "lucj", "lucj_opt")
 LUCJ_OPT_PAIRS = ("heavy_hex", "all")
 SQD_SUBSPACES = ("product", "list")
 MAPPINGS = ("jw", "bk")
-BACKENDS = ("local", "mps", "ibm")
+BACKENDS = ("local", "mps", "ibm", "noisy")
 
 
 @dataclass
@@ -94,6 +94,12 @@ class QiskitSolverSettings:
     mps_max_bond_dim: int = 256
     mps_trunc_thresh: float = 1e-6
 
+    #: backend="noisy" (ansatz lucj_opt only): Aer with a fake IBM device's
+    #: noise, see quenais/quantum/noise.py
+    noise_device: str = "FakeSherbrooke"
+    noise_model: str = "depolarizing"
+    noise_scale: float = 1.0
+
     ibm_backend_name: str | None = None
     ibm_optimization_level: int = 1
     ibm_max_circuit_depth: int = 3000
@@ -126,6 +132,12 @@ class QiskitSolverSettings:
                              f"got {self.lucj_opt_pairs!r}")
         if not 0.0 <= self.sqd_explore_fraction < 1.0:
             raise ValueError("sqd_explore_fraction must lie in [0, 1)")
+        if self.backend == "noisy" and self.ansatz != "lucj_opt":
+            raise ValueError("backend='noisy' is implemented for ansatz='lucj_opt' only")
+        if self.noise_scale < 0:
+            raise ValueError("noise_scale must be >= 0")
+        if self.noise_model not in ("depolarizing", "device"):
+            raise ValueError("noise_model must be 'depolarizing' or 'device'")
         if self.sqd_subspace not in SQD_SUBSPACES:
             raise ValueError(f"sqd_subspace must be one of {SQD_SUBSPACES}, "
                              f"got {self.sqd_subspace!r}")

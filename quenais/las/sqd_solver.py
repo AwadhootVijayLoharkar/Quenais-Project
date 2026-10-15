@@ -149,6 +149,11 @@ def _fragment_circuit(n, nelec, op):
 # Sampling
 # ═════════════════════════════════════════════════════════════════════════
 
+#: diagnostics of the last sample_fragment_circuits call (noisy backend:
+#: device gate counts, estimated fidelity); empty for the ideal samplers
+LAST_SAMPLING_INFO = {}
+
+
 def sample_fragment_circuits(circuits, settings):
     """
     Place every fragment circuit on its own qubits, measure each into its
@@ -172,8 +177,19 @@ def sample_fragment_circuits(circuits, settings):
         names.append(f"f{i}")
         off += c.num_qubits
 
+    global LAST_SAMPLING_INFO
+    LAST_SAMPLING_INFO = {}
     backend = settings.backend
-    if backend in ("aer_mps", "aer_statevector"):
+    if backend == "aer_noisy":
+        from qiskit_aer.primitives import SamplerV2
+
+        from quenais.quantum.noise import noisy_sampler_setup
+
+        tqc, opts, info = noisy_sampler_setup(glued, settings)
+        LAST_SAMPLING_INFO = info
+        sampler = SamplerV2(seed=settings.seed, options={"backend_options": opts})
+        pub = sampler.run([tqc], shots=settings.shots).result()[0]
+    elif backend in ("aer_mps", "aer_statevector"):
         from qiskit_aer import AerSimulator
         from qiskit_aer.primitives import SamplerV2
 

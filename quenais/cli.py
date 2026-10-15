@@ -250,6 +250,18 @@ def build_parser():
     sqo.add_argument("--sqd-explore-scale", type=float, default=None,
                      help="std of the exploration circuit's random "
                           "parameters (default 0.5)")
+    sqo.add_argument("--noise-device", default=None,
+                     help="--backend noisy: fake IBM device from "
+                          "qiskit_ibm_runtime.fake_provider (default "
+                          "FakeSherbrooke)")
+    sqo.add_argument("--noise-model", default=None,
+                     choices=["depolarizing", "device"],
+                     help="--backend noisy: depolarizing = device-average "
+                          "rates x --noise-scale (default); device = "
+                          "calibrated per-qubit model")
+    sqo.add_argument("--noise-scale", type=float, default=None,
+                     help="--backend noisy: multiply the device error rates "
+                          "(default 1; 0 = ideal gates on the device layout)")
     sqo.add_argument("--sqd-subspace", default=None,
                      choices=["product", "list"],
                      help="product = alpha x beta strings (default); list = "
@@ -425,6 +437,9 @@ def build_qiskit_settings(args):
         "sqd_explore_fraction": "sqd_explore_fraction",
         "sqd_explore_scale": "sqd_explore_scale",
         "sqd_subspace": "sqd_subspace",
+        "noise_device": "noise_device",
+        "noise_model": "noise_model",
+        "noise_scale": "noise_scale",
     }
     for arg, field_name in simple.items():
         value = getattr(args, arg, None)

@@ -68,6 +68,12 @@ how to run: `docs/benchmarking.md`.
     columns `sqd_subspace`, `list_n_sampled_dets`; `spin_sq` now filled for
     lucj_opt list runs; grid `benchmarks/n2_sqd_list.json`;
     `tests/test_sqd_list.py`.
+14. Step 5: `--backend noisy` with `--noise-device/-model/-scale`
+    (`quenais/quantum/noise.py`; sampler branch in
+    `quenais/las/sqd_solver.py`, so LASSQD can use it too via
+    `--lassqd-backend aer_noisy`); columns `noise_*`, `n_2q_device`,
+    `depth_device`, `est_fidelity`; grid `benchmarks/n2_noise.json`;
+    `tests/test_noise.py`; `qiskit-ibm-runtime` added to requirements.
 
 
 ## Results (all with seed repeats unless stated)
@@ -458,6 +464,18 @@ product = the usual SQD from §3a, much bigger subspace):
   geometry the sampled list is not spin complete and the lowest state in
   it is a spin mixture. Still variational. (CIPSI has no spin constraint
   either.)
+
+## Step 5: hardware-like noise (code 15 Oct, runs: fill in)
+
+N₂ STO-3G 1.1 Å, optimised LUCJ (all pairs, 2 reps), 10k shots, seeds 1–3,
+FakeSherbrooke (heavy-hex routing), depolarizing noise × scale.
+
+| noise scale | CX after routing | est. fidelity | valid shots | product err | list err | CIPSI @ list dim |
+|---|---|---|---|---|---|---|
+| noiseless (mps) | – | 1 | | 1.2–3.4 | 5.6–6.6 | 3.7–5.4 |
+| 0 (routing only) | | | | | | |
+| 0.1 | | | | | | |
+| 1 (today) | | | | | | |
 
 ## Still open (15 Oct 2026)
 

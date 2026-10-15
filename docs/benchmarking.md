@@ -79,7 +79,7 @@ cc-pVDZ (26 qubits, all pairs, 2 reps) needs ~74 GB. Override with
 Shipped grids: `h4_smoke`, `h4_lucj_pairs`, `h8_smoke`, `h8_lucj_opt`,
 `gqe_smoke`, `gqe_h8`, `scf_quick`, `scf_carryover`, `n2_curve`, `n2_gqe`,
 `h4_sqd_opt`, `h8_sqd_opt`, `n2_sqd_opt` (task 3a), `n2_gqe_tune` (task 3b),
-`n2_sqd_list` (step 4).
+`n2_sqd_list` (step 4), `n2_noise` (step 5).
 
 **DMET+SQD with the optimised LUCJ** (`"solver": "sqd", "ansatz":
 "lucj_opt"`): the step-2 embedding Hamiltonian is solved by the LASSQD
@@ -102,6 +102,17 @@ and `err_cipsi_kcal` are at the same determinant count without the
 product-space filling effect. Extra columns: `sqd_subspace`,
 `list_n_sampled_dets` (before HF/carryover/spin completion), `spin_sq`.
 Grid: `n2_sqd_list` (`null` = product, reuses the finished runs).
+
+**Noisy sampler** (`"backend": "noisy"`, lucj_opt only, step 5): the
+circuit is routed onto a fake IBM device (`noise_device`, default
+FakeSherbrooke, from `qiskit_ibm_runtime.fake_provider`) and sampled by
+Aer with a noise model. `noise_model` "depolarizing" (default) uses the
+device-average gate/readout errors × `noise_scale` (1 = today's device,
+0.1 = 10× better, 0 = ideal gates on the device layout); "device" is the
+calibrated per-qubit model (scale 1 only). Extra columns: `noise_*`,
+`n_2q_device`, `depth_device`, `est_fidelity` (chance a shot sees no
+error). Aer simulates noise shot by shot: time ∝ shots × gates. Grid:
+`n2_noise`.
 
 A `null` in a sweep means "flag not given" (the default), so the run has the
 same identity as a run in a grid that never mentioned the flag

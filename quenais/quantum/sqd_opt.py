@@ -75,7 +75,8 @@ import numpy as np
 
 __all__ = ["run_lucj_opt_sqd", "las_settings_from_qiskit", "embedding_fragment"]
 
-_BACKENDS = {"mps": "aer_mps", "local": "aer_statevector", "ibm": "ibm"}
+_BACKENDS = {"mps": "aer_mps", "local": "aer_statevector", "ibm": "ibm",
+             "noisy": "aer_noisy"}
 
 
 def las_settings_from_qiskit(q):
@@ -101,6 +102,9 @@ def las_settings_from_qiskit(q):
         sqd_samples_per_batch=int(q.sqd_samples_per_batch),
         carryover_eps=float(q.sqd_carryover_eps),
         seed=1234 if q.seed is None else int(q.seed),
+        noise_device=getattr(q, "noise_device", "FakeSherbrooke"),
+        noise_model=getattr(q, "noise_model", "depolarizing"),
+        noise_scale=float(getattr(q, "noise_scale", 1.0)),
     )
 
 
@@ -401,6 +405,13 @@ def run_lucj_opt_sqd(step2, q, log=print):
 
     counts = sqd_solver.sample_fragment_circuits(
         [prep["circuit"]], dataclasses.replace(s, shots=n_main))[0]
+    noise_info = dict(getattr(sqd_solver, "LAST_SAMPLING_INFO", {}) or {})
+    if noise_info:
+        log(f"  noisy sampler: {noise_info['noise_device']} "
+            f"({noise_info['noise_model']}, scale {noise_info['noise_scale']}): "
+            f"{noise_info['n_2q_device']} two-qubit gates after routing, "
+            f"depth {noise_info['depth_device']}, estimated fidelity "
+            f"{noise_info['est_fidelity']:.3g}")
     na, nb = nelec
     keys_main = _valid_keys(counts, n, na, nb)
     keys_explore = set()
@@ -498,6 +509,7 @@ def run_lucj_opt_sqd(step2, q, log=print):
             "unique_valid_main": len(keys_main),
             "unique_valid_explore_new": len(keys_explore - keys_main),
             "sqd_subspace": mode,
+            **noise_info,
             "list_n_sampled_dets": info.get("n_sampled_dets"),
         },
     }

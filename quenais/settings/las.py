@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 
 __all__ = ["LasSettings", "LAS_BACKENDS", "LUCJ_PAIRS"]
 
-LAS_BACKENDS = ("aer_mps", "aer_statevector", "ibm")
+LAS_BACKENDS = ("aer_mps", "aer_statevector", "ibm", "aer_noisy")
 LUCJ_PAIRS = ("heavy_hex", "all")
 
 
@@ -63,6 +63,12 @@ class LasSettings:
     mps_max_bond_dim: int | None = None
     ibm_backend_name: str | None = None
     ibm_optimization_level: int = 3
+    #: backend "aer_noisy" only (quenais/quantum/noise.py): fake IBM device,
+    #: noise model ("depolarizing" = device-average rates x noise_scale,
+    #: "device" = calibrated per-qubit model) and the scale factor
+    noise_device: str = "FakeSherbrooke"
+    noise_model: str = "depolarizing"
+    noise_scale: float = 1.0
     lucj_n_reps: int = 1
     lucj_pairs: str = "heavy_hex"
     #: refine the CCSD-initialised LUCJ with ffsim's linear method (costly:
@@ -91,6 +97,10 @@ class LasSettings:
                              f"got {self.backend!r}")
         if self.backend == "ibm" and not self.ibm_backend_name:
             raise ValueError("las.backend='ibm' requires las.ibm_backend_name")
+        if self.noise_scale < 0:
+            raise ValueError("las.noise_scale must be >= 0")
+        if self.noise_model not in ("depolarizing", "device"):
+            raise ValueError("las.noise_model must be 'depolarizing' or 'device'")
         if self.lucj_pairs not in LUCJ_PAIRS:
             raise ValueError(f"las.lucj_pairs must be one of {LUCJ_PAIRS}")
         for name in ("max_macro", "orb_max_iter", "lasci_max_cycle", "n_consecutive",
