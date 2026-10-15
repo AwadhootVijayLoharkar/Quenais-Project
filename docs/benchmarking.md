@@ -78,7 +78,8 @@ cc-pVDZ (26 qubits, all pairs, 2 reps) needs ~74 GB. Override with
 
 Shipped grids: `h4_smoke`, `h4_lucj_pairs`, `h8_smoke`, `h8_lucj_opt`,
 `gqe_smoke`, `gqe_h8`, `scf_quick`, `scf_carryover`, `n2_curve`, `n2_gqe`,
-`h4_sqd_opt`, `h8_sqd_opt`, `n2_sqd_opt` (task 3a), `n2_gqe_tune` (task 3b).
+`h4_sqd_opt`, `h8_sqd_opt`, `n2_sqd_opt` (task 3a), `n2_gqe_tune` (task 3b),
+`n2_sqd_list` (step 4).
 
 **DMET+SQD with the optimised LUCJ** (`"solver": "sqd", "ansatz":
 "lucj_opt"`): the step-2 embedding Hamiltonian is solved by the LASSQD
@@ -89,6 +90,18 @@ fragment solver as one fragment (`quenais/quantum/sqd_opt.py`). Tuning flags
 other solver/ansatz. Extra CSV columns: `lucj_energy_Ha`, `err_lucj_kcal`
 (the circuit alone, no SQD), `lucj_off_hf_weight`, `n_2q_gates`;
 `circuit_depth_max` is the depth in the {cx, rz, sx, x} basis.
+
+**Determinant-list SQD** (`"sqd_subspace": "list"`, lucj_opt only):
+instead of the α×β product of the sampled strings, diagonalise only the
+sampled (α,β) determinants (after configuration recovery, plus HF,
+carryover and, for closed shells, the spin-flipped partner of each
+determinant). One list per recovery iteration, no batches
+(`sqd_batches`/`sqd_samples_per_batch` ignored). Same operator as the
+oracle/CIPSI columns (`det_analysis.projected_eigh`), so `err_solver_kcal`
+and `err_cipsi_kcal` are at the same determinant count without the
+product-space filling effect. Extra columns: `sqd_subspace`,
+`list_n_sampled_dets` (before HF/carryover/spin completion), `spin_sq`.
+Grid: `n2_sqd_list` (`null` = product, reuses the finished runs).
 
 A `null` in a sweep means "flag not given" (the default), so the run has the
 same identity as a run in a grid that never mentioned the flag

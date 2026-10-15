@@ -1,23 +1,15 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$   ps -u $USER -o pid,etime,pcpu,rss,cmd | grep -v grep | grep run_benchmark
-  tail -20 $(ls -td $B/fe2bpym/runs/*/ | head -1)run.log
-  LAS cycle  18  E = -3655.4974144463  dE = -2.48e-07  |g_orb| = 6.99e-04
-  LAS cycle  19  E = -3655.4974146933  dE = -2.47e-07  |g_orb| = 6.93e-04
-  LAS cycle  20  E = -3655.4974149401  dE = -2.47e-07  |g_orb| = 6.91e-04
-  LAS cycle  21  E = -3655.4974151872  dE = -2.47e-07  |g_orb| = 6.90e-04
-      orbital line search stalled at |g| = 1.93e-06
-  LAS cycle  22  E = -3655.4974154349  dE = -2.48e-07  |g_orb| = 6.90e-04
-      orbital line search stalled at |g| = 2.81e-06
-  LAS cycle  23  E = -3655.4974156829  dE = -2.48e-07  |g_orb| = 6.90e-04
-  LAS cycle  24  E = -3655.4974159315  dE = -2.49e-07  |g_orb| = 6.90e-04
-      orbital line search stalled at |g| = 3.17e-06
-  LAS cycle  25  E = -3655.4974161806  dE = -2.49e-07  |g_orb| = 6.90e-04
-  LAS cycle  26  E = -3655.4974164301  dE = -2.49e-07  |g_orb| = 6.90e-04
-      orbital line search stalled at |g| = 1.09e-06
-  LAS cycle  27  E = -3655.4974166800  dE = -2.50e-07  |g_orb| = 6.90e-04
-      orbital line search stalled at |g| = 1.84e-06
-  LAS cycle  28  E = -3655.4974169302  dE = -2.50e-07  |g_orb| = 6.90e-04
-      orbital line search stalled at |g| = 1.75e-06
-  LAS cycle  29  E = -3655.4974171806  dE = -2.50e-07  |g_orb| = 6.90e-04
-      orbital line search stalled at |g| = 3.96e-06
-  LAS cycle  30  E = -3655.4974174308  dE = -2.50e-07  |g_orb| = 6.90e-04
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+ps -u $USER -o pid,etime,pcpu,rss,cmd | grep -v grep | grep run_benchmark
+R=$(ls -td $B/fe2bpym/runs/*/ | head -1); date; ls -l --time-style=+%H:%M ${R}run.log
+
+export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
+nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym > $B/fe2bpym_w1.log 2>&1 &
+
+git pull
+pytest -q tests/test_sqd_list.py        # expect 10 passed
+pytest -q -m "not slow"                 # expect 411 passed
+python tools/run_benchmark.py benchmarks/n2_sqd_list.json --out $B/n2_curve --dry-run
+
+
+nohup python tools/run_benchmark.py benchmarks/n2_sqd_list.json --out $B/n2_curve > $B/n2_sqd_list.log 2>&1 &
+
+python tools/show_rows.py $B/n2_curve --where solver=sqd ansatz=lucj_opt sqd_subspace=list --cols tag_R shots_per_circuit seed err_solver_kcal subspace_dim list_n_sampled_dets err_cipsi_kcal spin_sq

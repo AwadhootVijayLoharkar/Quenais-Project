@@ -679,6 +679,8 @@ def _dmet_part(params, cfg, step2, rdir, load):
                 "explore_scale": lo.get("explore_scale"),
                 "unique_valid_main": lo.get("unique_valid_main"),
                 "unique_valid_explore_new": lo.get("unique_valid_explore_new"),
+                "sqd_subspace": lo.get("sqd_subspace") or "product",
+                "list_n_sampled_dets": lo.get("list_n_sampled_dets"),
             })
     else:   # gqe
         from quenais.visualization.plots import parse_gqe_log

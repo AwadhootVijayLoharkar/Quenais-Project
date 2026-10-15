@@ -1,0 +1,81 @@
+{
+  "name": "n2_sqd_list",
+  "description": "Step 4: determinant-list SQD (--sqd-subspace list) vs the usual product-space SQD on N2 STO-3G, DMET+SQD with the optimised LUCJ (all pairs, 2 reps), one batch with all samples, 1.1/1.8/2.5 A, 10k/100k shots, 3 seeds. sqd_subspace null = product: same run ids as n2_sqd_opt / n2_sqd_explore, so those finished runs are skipped. Compare err_solver_kcal with err_cipsi_kcal at the same subspace_dim. --out $B/n2_curve.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000
+  },
+  "studies": [
+    {
+      "name": "sqd_list",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.8",
+          "tag_R": 1.8
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.5",
+          "tag_R": 2.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "sqd_lucj_pairs": [
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          2
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ],
+        "sqd_samples_per_batch": [
+          1000000
+        ],
+        "sqd_batches": [
+          1
+        ],
+        "shots": [
+          10000,
+          100000
+        ],
+        "sqd_subspace": [
+          null,
+          "list"
+        ]
+      }
+    }
+  ]
+}

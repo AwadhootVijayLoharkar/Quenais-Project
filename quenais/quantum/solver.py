@@ -499,7 +499,7 @@ def main(cfg, force=False):
                             it["subspace_dim"], prev)
             prev = it["energy"]
         print(f"  {'─'*84}  (configs column = subspace dimension)")
-        return r["energy"], None, r["iterations"]
+        return r["energy"], r.get("spin_sq"), r["iterations"]
 
     # ── SQD ───────────────────────────────────────────────────────────────────
     def run_sqd():

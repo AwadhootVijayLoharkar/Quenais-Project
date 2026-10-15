@@ -30,6 +30,13 @@ file only adapts inputs and outputs to the step-3 result format, so the
 benchmark driver writes the same CSV columns as for the other Qiskit
 solvers.
 
+SUBSPACE (q.sqd_subspace)
+-------------------------
+"product" (default) alpha x beta product of sampled strings, K batches
+"list"    only the sampled (alpha, beta) determinants, one list per
+          recovery iteration (quenais/quantum/sqd_list.py); comparable
+          with CIPSI at the same determinant count
+
 EXTRA DIAGNOSTICS (in result["lucj_opt"])
 -----------------------------------------
 lucj_energy        <psi_LUCJ|H|psi_LUCJ> + ecore (statevector, exact)
@@ -412,11 +419,24 @@ def run_lucj_opt_sqd(step2, q, log=print):
             f"{len(keys_explore - keys_main)}")
     t_sample = time.perf_counter() - t0
 
+    mode = getattr(q, "sqd_subspace", "product") or "product"
     t0 = time.perf_counter()
-    res = solver._sqd(ham, prep, counts)
+    if mode == "list":
+        from quenais.quantum.sqd_list import run_list_sqd
+
+        log("  SQD subspace: determinant LIST (sampled (alpha, beta) pairs, "
+            "no product, no batches)")
+        info = run_list_sqd(prep["h1_mo"], prep["eri_mo"], n, nelec, counts,
+                            s, solver.rng, log=log)
+        e_sub = info["energy"]
+        n_diag = s.sqd_iterations
+    else:
+        res = solver._sqd(ham, prep, counts)
+        info = res.info
+        e_sub = res.energy
+        n_diag = s.sqd_iterations * s.sqd_batches
     t_diag = time.perf_counter() - t0
 
-    info = res.info
     iterations = [{
         "iter": i + 1,
         "energy": float(it["energy"]) + ecore,
@@ -424,8 +444,9 @@ def run_lucj_opt_sqd(step2, q, log=print):
         "ecore": ecore,
         "subspace_dim": int(it["dim"]),
         "n_carry": list(it["n_carry"]),
+        **({"n_sampled": int(it["n_sampled"])} if "n_sampled" in it else {}),
     } for i, it in enumerate(info["iterations"])]
-    energy = float(res.energy) + ecore
+    energy = float(e_sub) + ecore
 
     log(f"  SQD dim {info['subspace_dim']} / {info['full_dim']} "
         f"({100 * info['subspace_fraction']:.1f}%), valid shots "
@@ -434,6 +455,7 @@ def run_lucj_opt_sqd(step2, q, log=print):
 
     return {
         "energy": energy,
+        "spin_sq": info.get("spin_sq"),
         "iterations": iterations,
         "timings": {
             # circuit_build includes mean field, UCCSD and the LUCJ
@@ -445,7 +467,7 @@ def run_lucj_opt_sqd(step2, q, log=print):
             "hardware_cost_estimate": t_cost,
         },
         "stats": {
-            "n_diagonalisations": s.sqd_iterations * s.sqd_batches,
+            "n_diagonalisations": n_diag,
             "circuit_depths": [depth] if depth is not None else [],
             "transpiled_depths": [depth] if depth is not None else [],
             "valid_shot_fraction": float(info["shots_valid_fraction"]),
@@ -475,5 +497,7 @@ def run_lucj_opt_sqd(step2, q, log=print):
             "explore_shots": n_explore,
             "unique_valid_main": len(keys_main),
             "unique_valid_explore_new": len(keys_explore - keys_main),
+            "sqd_subspace": mode,
+            "list_n_sampled_dets": info.get("n_sampled_dets"),
         },
     }

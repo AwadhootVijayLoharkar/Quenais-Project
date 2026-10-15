@@ -19,6 +19,7 @@ __all__ = ["QiskitSolverSettings", "ANSATZE", "MAPPINGS", "BACKENDS"]
 #:            as one fragment. See quenais/quantum/sqd_opt.py.
 ANSATZE = ("su2", "lucj", "lucj_opt")
 LUCJ_OPT_PAIRS = ("heavy_hex", "all")
+SQD_SUBSPACES = ("product", "list")
 MAPPINGS = ("jw", "bk")
 BACKENDS = ("local", "mps", "ibm")
 
@@ -62,6 +63,11 @@ class QiskitSolverSettings:
     sqd_explore_fraction: float = 0.0
     #: standard deviation of the exploration circuit's random parameters
     sqd_explore_scale: float = 0.5
+    #: "product": diagonalise in {alpha strings} x {beta strings} (SQD as
+    #: published). "list": only the sampled (alpha, beta) determinants
+    #: (quenais/quantum/sqd_list.py), directly comparable with CIPSI at the
+    #: same size; sqd_batches / sqd_samples_per_batch are then ignored.
+    sqd_subspace: str = "product"
 
     # ── SKQD (sample-based Krylov quantum diagonalisation) ───────────────
     skqd_krylov_dim: int = 5
@@ -120,6 +126,9 @@ class QiskitSolverSettings:
                              f"got {self.lucj_opt_pairs!r}")
         if not 0.0 <= self.sqd_explore_fraction < 1.0:
             raise ValueError("sqd_explore_fraction must lie in [0, 1)")
+        if self.sqd_subspace not in SQD_SUBSPACES:
+            raise ValueError(f"sqd_subspace must be one of {SQD_SUBSPACES}, "
+                             f"got {self.sqd_subspace!r}")
         if self.sqd_explore_scale <= 0:
             raise ValueError("sqd_explore_scale must be > 0")
         if self.lucj_opt_maxiter < 0:

@@ -54,6 +54,7 @@ import numpy as np
 __all__ = [
     "DeterminantSpace",
     "weight_curve",
+    "projected_eigh",
     "projected_energy",
     "oracle_curve",
     "n_for_accuracy",
@@ -193,30 +194,32 @@ def _sigma_operator(mol, space):
     return sigma
 
 
-def projected_energy(mol, det_indices, space=None, sigma=None, tol=1e-10):
+def projected_eigh(sigma, shape, det_indices, tol=1e-10, vectors=False):
     """
-    Lowest eigenvalue of P H P, where P projects onto span(det_indices).
+    Lowest eigenpair of P H P on span(det_indices), WITHOUT any constant.
 
-    This is the exact variational energy obtainable from that determinant set.
-    Includes e_core.
+    sigma  : callable, full-space CI array (shape) -> H applied to it
+    shape  : (n_alpha_strings, n_beta_strings)
+    Returns e, or (e, v) with v the normalised coefficients on det_indices
+    (same order) when vectors=True.
+
+    Shared by projected_energy() (oracle / CIPSI columns) and the
+    determinant-list SQD (quenais.quantum.sqd_list), so both diagonalise
+    with literally the same operator.
     """
     from scipy.sparse.linalg import LinearOperator, eigsh
 
-    space = space or DeterminantSpace(mol.norb, mol.nelec)
-    sigma = sigma or _sigma_operator(mol, space)
     sel = np.asarray(det_indices, dtype=np.int64)
     n = sel.size
     if n == 0:
         raise ValueError("empty determinant list")
 
-    buf = np.zeros((space.na, space.nb))
+    buf = np.zeros(shape)
 
     def matvec(v):
         buf.fill(0.0)
         buf.reshape(-1)[sel] = np.asarray(v).reshape(-1)
         return sigma(buf).reshape(-1)[sel]
-
-    e_core = mol.cas_hamiltonian.e_core
 
     # eigsh needs k < n. Below the crossover a dense build is both cheaper and
     # more robust than an iterative solve on a tiny space.
@@ -228,7 +231,10 @@ def projected_energy(mol, det_indices, space=None, sigma=None, tol=1e-10):
             unit[i] = 1.0
             H[:, i] = matvec(unit)
         H = 0.5 * (H + H.T)
-        return float(np.linalg.eigvalsh(H)[0]) + e_core
+        if not vectors:
+            return float(np.linalg.eigvalsh(H)[0])
+        w, v = np.linalg.eigh(H)
+        return float(w[0]), v[:, 0]
 
     # v0 is mandatory, not optional. ARPACK seeds from a RANDOM vector when v0
     # is omitted, so two identical runs converge along different Krylov paths
@@ -237,9 +243,26 @@ def projected_energy(mol, det_indices, space=None, sigma=None, tol=1e-10):
     # is invisible in a single run and shows up as an irreproducible curve.
     op = LinearOperator((n, n), matvec=matvec, dtype=np.float64)
     v0 = np.full(n, 1.0 / np.sqrt(n))
-    vals = eigsh(op, k=1, which="SA", tol=tol, v0=v0,
-                 return_eigenvectors=False)
-    return float(vals[0]) + e_core
+    if not vectors:
+        vals = eigsh(op, k=1, which="SA", tol=tol, v0=v0,
+                     return_eigenvectors=False)
+        return float(vals[0])
+    vals, vecs = eigsh(op, k=1, which="SA", tol=tol, v0=v0)
+    v = vecs[:, 0]
+    return float(vals[0]), v / np.linalg.norm(v)
+
+
+def projected_energy(mol, det_indices, space=None, sigma=None, tol=1e-10):
+    """
+    Lowest eigenvalue of P H P, where P projects onto span(det_indices).
+
+    This is the exact variational energy obtainable from that determinant set.
+    Includes e_core.
+    """
+    space = space or DeterminantSpace(mol.norb, mol.nelec)
+    sigma = sigma or _sigma_operator(mol, space)
+    e = projected_eigh(sigma, (space.na, space.nb), det_indices, tol=tol)
+    return e + mol.cas_hamiltonian.e_core
 
 
 def truncated_energy(mol, det_indices, flat_civec, space=None, sigma=None):

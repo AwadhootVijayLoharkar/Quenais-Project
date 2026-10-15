@@ -62,6 +62,12 @@ how to run: `docs/benchmarking.md`.
     `tools/status.py` (progress/ETA/STALE of every log),
     `tools/show_rows.py --agg/--range`, `QUENAIS_SELECTION_MAX_DET` (CIPSI/
     oracle columns above 2 M determinants).
+13. Step 4: `--sqd-subspace list` (determinant-list SQD,
+    `quenais/quantum/sqd_list.py`); `det_analysis.projected_eigh` (shared
+    with the oracle/CIPSI columns, `projected_energy` unchanged); new
+    columns `sqd_subspace`, `list_n_sampled_dets`; `spin_sq` now filled for
+    lucj_opt list runs; grid `benchmarks/n2_sqd_list.json`;
+    `tests/test_sqd_list.py`.
 
 
 ## Results (all with seed repeats unless stated)
@@ -386,8 +392,16 @@ Status 15 Oct: the first attempt stalled in UHF for hours (1 thread, direct SCF)
 restarted 13 Oct with 24 OpenMP threads, OpenBLAS 1 thread and
 `PYSCF_MAX_MEMORY=100000`: system prep (UHF, AVAS, step 0) finished in
 1 476 s. Then the log stayed at "ready", 0/5 runs, for 34 h (status STALE?).
-To check: is the first run (LASSCF) still alive, or did it die/hang? Per-run
-log: `$B/fe2bpym/runs/<id>/run.log`. Results: fill in.
+15 Oct check: LASSCF alive, cycle 30 after ~34 h (~65 min/cycle).
+E = −3655.497417 Ha, i.e. 1.04 mHa (0.65 kcal/mol) BELOW the paper's
+−3655.496377. dE is a constant −2.5e-7 Ha/cycle and |g_orb| is stuck at
+6.9e-4: after each orbital step the fixed-RDM gradient is ~1e-6 ("line
+search stalled"), the fragment re-solve puts it back to 6.9e-4. The
+two-step (orbitals, then CI) scheme crawls along a soft orbital–CI
+coupled mode; the `|g| < 1e-4` criterion will not be met, so the run ends
+at max_macro = 50 as "NOT converged" with the energy converged to
+~5 µHa. Decision: let it finish (no restart). Report as
+energy-converged, gradient 7e-4. Results: fill in.
 
 ## What it means (updated 15 Oct)
 
@@ -409,6 +423,23 @@ log: `$B/fe2bpym/runs/<id>/run.log`. Results: fill in.
   (optimised) and CIPSI; separable strong correlation → LAS/LASSQD;
   intermediate bond breaking (N₂ 1.6–1.8 Å) → nothing quantum is good,
   CIPSI still is.
+
+## Step 4: determinant-list SQD (code 15 Oct, runs: fill in)
+
+`--sqd-subspace list` (`quenais/quantum/sqd_list.py`): diagonalise only
+the sampled (α,β) determinants, not the α×β product. Tests: all
+determinants → FCI (toy and H4/PySCF); few → variational and equal to a
+brute-force diagonalisation of the same list. Grid `n2_sqd_list` (1.1/1.8/
+2.5 Å, 10k/100k, seeds 1–3) into `n2_curve`.
+
+| R (Å) | shots | product: err / dim | list: err / dim | CIPSI @ list dim |
+|---|---|---|---|---|
+| 1.1 | 10k | | | |
+| 1.1 | 100k | | | |
+| 1.8 | 10k | | | |
+| 1.8 | 100k | | | |
+| 2.5 | 10k | | | |
+| 2.5 | 100k | | | |
 
 ## Still open (15 Oct 2026)
 
