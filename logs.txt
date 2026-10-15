@@ -1,58 +1,9 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u $USER -o pid,ppid,cmd | grep -v grep | grep n2_gqe_more
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pytest -q tests/test_gqe_basis.py 
-...                                                                                                                                                                      [100%]
-3 passed in 3.63s
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/n2_gqe_mo.json --out $B/n2_curve > $B/n2_gqe_mo.log 2>&1 &
-[1] 282359
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid         progress  failed  per_run  left  state     changed       log            
-fe2bpym_las  0/5       0       -        -     STALE?    2384 min ago  fe2bpym.log    
-fe2bpym_las  1/5       0       -        -     STALE?    93 min ago    fe2bpym_w1.log 
-n2_gqe_mo    0/16      0       -        -     running   4 min ago     n2_gqe_mo.log  
-n2_sqd_list  36/36     0       1 min    -     finished  119 min ago   n2_sqd_list.log
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/fe2bpym_w1.log 
-nohup: ignoring input
-[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
-[1/5] 506dded29d65 lasscf  shots=- seed=-  skip (running elsewhere)
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/fe2bpym_w1.log ^C
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-grep "1/16" $B/n2_gqe_mo.log
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ grep "1/16" $B/n2_gqe_mo.log
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/n2_gqe_mo.log 
-nohup: ignoring input
-[benchmark] n2_gqe_mo: 16 runs over 4 system(s); this shard: 16  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid         progress  failed  per_run  left  state     changed       log            
-fe2bpym_las  0/5       0       -        -     STALE?    2389 min ago  fe2bpym.log    
-fe2bpym_las  1/5       0       -        -     STALE?    98 min ago    fe2bpym_w1.log 
-n2_gqe_mo    0/16      0       -        -     running   9 min ago     n2_gqe_mo.log  
-n2_sqd_list  36/36     0       1 min    -     finished  124 min ago   n2_sqd_list.log
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid         progress  failed  per_run  left  state     changed       log            
-fe2bpym_las  0/5       0       -        -     STALE?    2392 min ago  fe2bpym.log    
-fe2bpym_las  1/5       0       -        -     STALE?    101 min ago   fe2bpym_w1.log 
-n2_gqe_mo    0/16      0       -        -     running   12 min ago    n2_gqe_mo.log  
-n2_sqd_list  36/36     0       1 min    -     finished  128 min ago   n2_sqd_list.log
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/n2_gqe_mo.log 
-nohup: ignoring input
-[benchmark] n2_gqe_mo: 16 runs over 4 system(s); this shard: 16  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid         progress  failed  per_run  left  state     changed       log            
-fe2bpym_las  0/5       0       -        -     STALE?    2396 min ago  fe2bpym.log    
-fe2bpym_las  1/5       0       -        -     STALE?    106 min ago   fe2bpym_w1.log 
-n2_gqe_mo    0/16      0       -        -     running   16 min ago    n2_gqe_mo.log  
-n2_sqd_list  36/36     0       1 min    -     finished  132 min ago   n2_sqd_list.log
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/n2_gqe_mo.log 
-nohup: ignoring input
-[benchmark] n2_gqe_mo: 16 runs over 4 system(s); this shard: 16  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-[1/16] 18527d84178d gqe     shots=- seed=4  ok 1106.9 s  E=-107.44861844  err_solver=+0.0013 kcal/mol  subspace=0.0935374149659864
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid         progress  failed  per_run  left    state     changed       log            
-fe2bpym_las  0/5       0       -        -       STALE?    2407 min ago  fe2bpym.log    
-fe2bpym_las  1/5       0       -        -       STALE?    116 min ago   fe2bpym_w1.log 
-n2_gqe_mo    1/16      0       18 min   ~4.6 h  running   8 min ago     n2_gqe_mo.log  
-n2_sqd_list  36/36     0       1 min    -       finished  142 min ago   n2_sqd_list.log
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+python tools/show_rows.py $B/n2_curve --where solver=gqe gqe_basis=mo --cols tag_R seed err_solver_kcal subspace_dim err_cipsi_kcal err_oracle_kcal
+
+grep -rn "enlarge\|max_dim\|max_cycle" $GQE_QSCI_REPO_PATH/configs/ | head -20
+grep -n "def.*enlarge\|enlarge_method" -A3 $GQE_QSCI_REPO_PATH/gqe_qsci/qsci/pipeline.py | head -40
+
+tail -5 $B/fe2bpym_df.log
+ps -u $USER -o pid,pcpu,cmd | grep -v grep | grep fe2bpym_las_df
 
 grep "1/16" $B/n2_gqe_mo.log
