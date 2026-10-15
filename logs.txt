@@ -1,13 +1,131 @@
-git pull
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
+remote: Enumerating objects: 42, done.
+remote: Counting objects: 100% (42/42), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 23 (delta 18), reused 23 (delta 18), pack-reused 0 (from 0)
+Unpacking objects: 100% (23/23), 9.47 KiB | 20.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+   dc5af7d..9e667db  main       -> origin/main
+Updating dc5af7d..9e667db
+Fast-forward
+ benchmarks/n2_noise.json          |  83 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ docs/benchmarking.md              |  13 ++++++++++-
+ docs/results_log.md               |  18 +++++++++++++++
+ logs.txt                          |  38 ++++++++++----------------------
+ quenais/cli.py                    |  15 +++++++++++++
+ quenais/las/sqd_solver.py         |  18 ++++++++++++++-
+ quenais/quantum/noise.py          | 162 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ quenais/quantum/sqd_opt.py        |  14 +++++++++++-
+ quenais/settings/las.py           |  12 +++++++++-
+ quenais/settings/qiskit_solver.py |  14 +++++++++++-
+ requirements-quantum.txt          |   2 ++
+ tests/test_noise.py               | 129 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ tools/run_benchmark.py            |  10 +++++++++
+ 13 files changed, 496 insertions(+), 32 deletions(-)
+ create mode 100644 benchmarks/n2_noise.json
+ create mode 100644 quenais/quantum/noise.py
+ create mode 100644 tests/test_noise.py
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 python -c "import qiskit_ibm_runtime; print(qiskit_ibm_runtime.__version__)"
-
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'qiskit_ibm_runtime'
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 pip install "qiskit-ibm-runtime>=0.23" "qiskit==$(python -c 'import qiskit;print(qiskit.__version__)')"
+Collecting qiskit-ibm-runtime>=0.23
+  Downloading qiskit_ibm_runtime-0.50.0-py3-none-any.whl.metadata (23 kB)
+Requirement already satisfied: qiskit==2.5.1 in ./quenais-env/lib/python3.11/site-packages (2.5.1)
+Requirement already satisfied: numpy<3,>=2.0 in ./quenais-env/lib/python3.11/site-packages (from qiskit==2.5.1) (2.4.6)
+Requirement already satisfied: scipy>=1.14 in ./quenais-env/lib/python3.11/site-packages (from qiskit==2.5.1) (1.17.1)
+Requirement already satisfied: rustworkx>=0.15.0 in ./quenais-env/lib/python3.11/site-packages (from qiskit==2.5.1) (0.18.1)
+Requirement already satisfied: dill>=0.3 in ./quenais-env/lib/python3.11/site-packages (from qiskit==2.5.1) (0.4.1)
+Requirement already satisfied: stevedore>=3.0.0 in ./quenais-env/lib/python3.11/site-packages (from qiskit==2.5.1) (5.9.0)
+Requirement already satisfied: typing-extensions in ./quenais-env/lib/python3.11/site-packages (from qiskit==2.5.1) (4.16.0)
+Requirement already satisfied: requests>=2.32.4 in ./quenais-env/lib/python3.11/site-packages (from qiskit-ibm-runtime>=0.23) (2.34.2)
+Collecting requests-ntlm>=1.1.0 (from qiskit-ibm-runtime>=0.23)
+  Using cached requests_ntlm-1.3.0-py3-none-any.whl.metadata (2.4 kB)
+Requirement already satisfied: urllib3>=2.4.0 in ./quenais-env/lib/python3.11/site-packages (from qiskit-ibm-runtime>=0.23) (2.7.0)
+Requirement already satisfied: python-dateutil>=2.9.0 in ./quenais-env/lib/python3.11/site-packages (from qiskit-ibm-runtime>=0.23) (2.9.0.post0)
+Collecting ibm-platform-services>=0.61.1 (from qiskit-ibm-runtime>=0.23)
+  Downloading ibm_platform_services-0.77.1-py3-none-any.whl.metadata (9.3 kB)
+Collecting ibm-quantum-schemas<1,>=0.12.20260921 (from qiskit-ibm-runtime>=0.23)
+  Downloading ibm_quantum_schemas-0.12.20260921-py3-none-any.whl.metadata (3.1 kB)
+Requirement already satisfied: pydantic>=2.13.0 in ./quenais-env/lib/python3.11/site-packages (from qiskit-ibm-runtime>=0.23) (2.13.4)
+Collecting pybase64>=1.4.0 (from qiskit-ibm-runtime>=0.23)
+  Downloading pybase64-1.5.1-cp311-cp311-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl.metadata (11 kB)
+Collecting samplomatic>=0.21.0 (from qiskit-ibm-runtime>=0.23)
+  Downloading samplomatic-0.21.0-py3-none-any.whl.metadata (6.7 kB)
+Collecting qiskit-mitigation>=0.1.1 (from qiskit-ibm-runtime>=0.23)
+  Downloading qiskit_mitigation-0.1.1-py3-none-any.whl.metadata (19 kB)
+Collecting qiskit_qasm3_import<1.0.0,>=0.6.0 (from ibm-quantum-schemas<1,>=0.12.20260921->qiskit-ibm-runtime>=0.23)
+  Using cached qiskit_qasm3_import-0.6.0-py3-none-any.whl.metadata (7.2 kB)
+Requirement already satisfied: annotated-types>=0.6.0 in ./quenais-env/lib/python3.11/site-packages (from pydantic>=2.13.0->qiskit-ibm-runtime>=0.23) (0.8.0)
+Requirement already satisfied: pydantic-core==2.46.4 in ./quenais-env/lib/python3.11/site-packages (from pydantic>=2.13.0->qiskit-ibm-runtime>=0.23) (2.46.4)
+Requirement already satisfied: typing-inspection>=0.4.2 in ./quenais-env/lib/python3.11/site-packages (from pydantic>=2.13.0->qiskit-ibm-runtime>=0.23) (0.4.2)
+Collecting openqasm3<2.0,>=0.4 (from openqasm3[parser]<2.0,>=0.4->qiskit_qasm3_import<1.0.0,>=0.6.0->ibm-quantum-schemas<1,>=0.12.20260921->qiskit-ibm-runtime>=0.23)
+  Using cached openqasm3-1.0.1-py3-none-any.whl.metadata (6.0 kB)
+Requirement already satisfied: antlr4_python3_runtime<4.14,>=4.7 in ./quenais-env/lib/python3.11/site-packages (from openqasm3[parser]<2.0,>=0.4->qiskit_qasm3_import<1.0.0,>=0.6.0->ibm-quantum-schemas<1,>=0.12.20260921->qiskit-ibm-runtime>=0.23) (4.9.3)
+Collecting ibm_cloud_sdk_core<4.0.0,>=3.24.4 (from ibm-platform-services>=0.61.1->qiskit-ibm-runtime>=0.23)
+  Downloading ibm_cloud_sdk_core-3.28.0-py3-none-any.whl.metadata (8.7 kB)
+Collecting PyJWT<3.0.0,>=2.11.0 (from ibm_cloud_sdk_core<4.0.0,>=3.24.4->ibm-platform-services>=0.61.1->qiskit-ibm-runtime>=0.23)
+  Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+Requirement already satisfied: six>=1.5 in ./quenais-env/lib/python3.11/site-packages (from python-dateutil>=2.9.0->qiskit-ibm-runtime>=0.23) (1.17.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in ./quenais-env/lib/python3.11/site-packages (from requests>=2.32.4->qiskit-ibm-runtime>=0.23) (3.4.9)
+Requirement already satisfied: idna<4,>=2.5 in ./quenais-env/lib/python3.11/site-packages (from requests>=2.32.4->qiskit-ibm-runtime>=0.23) (3.18)
+Requirement already satisfied: certifi>=2023.5.7 in ./quenais-env/lib/python3.11/site-packages (from requests>=2.32.4->qiskit-ibm-runtime>=0.23) (2026.7.22)
+Collecting cryptography>=1.3 (from requests-ntlm>=1.1.0->qiskit-ibm-runtime>=0.23)
+  Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+Collecting pyspnego>=0.4.0 (from requests-ntlm>=1.1.0->qiskit-ibm-runtime>=0.23)
+  Downloading pyspnego-0.12.4-py3-none-any.whl.metadata (4.2 kB)
+Requirement already satisfied: cffi>=2.0.0 in ./quenais-env/lib/python3.11/site-packages (from cryptography>=1.3->requests-ntlm>=1.1.0->qiskit-ibm-runtime>=0.23) (2.1.1)
+Requirement already satisfied: pycparser in ./quenais-env/lib/python3.11/site-packages (from cffi>=2.0.0->cryptography>=1.3->requests-ntlm>=1.1.0->qiskit-ibm-runtime>=0.23) (3.0)
+Requirement already satisfied: orjson>=3.9.0 in ./quenais-env/lib/python3.11/site-packages (from samplomatic>=0.21.0->qiskit-ibm-runtime>=0.23) (3.11.9)
+Downloading qiskit_ibm_runtime-0.50.0-py3-none-any.whl (2.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 16.3 MB/s  0:00:00
+Downloading ibm_quantum_schemas-0.12.20260921-py3-none-any.whl (120 kB)
+Using cached qiskit_qasm3_import-0.6.0-py3-none-any.whl (29 kB)
+Using cached openqasm3-1.0.1-py3-none-any.whl (541 kB)
+Downloading ibm_platform_services-0.77.1-py3-none-any.whl (412 kB)
+Downloading ibm_cloud_sdk_core-3.28.0-py3-none-any.whl (76 kB)
+Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+Downloading pybase64-1.5.1-cp311-cp311-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl (94 kB)
+Downloading qiskit_mitigation-0.1.1-py3-none-any.whl (113 kB)
+Using cached requests_ntlm-1.3.0-py3-none-any.whl (6.6 kB)
+Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 13.5 MB/s  0:00:00
+Downloading pyspnego-0.12.4-py3-none-any.whl (131 kB)
+Downloading samplomatic-0.21.0-py3-none-any.whl (234 kB)
+Installing collected packages: openqasm3, PyJWT, pybase64, ibm_cloud_sdk_core, cryptography, samplomatic, qiskit_qasm3_import, pyspnego, ibm-platform-services, requests-ntlm, qiskit-mitigation, ibm-quantum-schemas, qiskit-ibm-runtime
+Successfully installed PyJWT-2.15.1 cryptography-50.0.2 ibm-platform-services-0.77.1 ibm-quantum-schemas-0.12.20260921 ibm_cloud_sdk_core-3.28.0 openqasm3-1.0.1 pybase64-1.5.1 pyspnego-0.12.4 qiskit-ibm-runtime-0.50.0 qiskit-mitigation-0.1.1 qiskit_qasm3_import-0.6.0 requests-ntlm-1.3.0 samplomatic-0.21.0
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
 pytest -q tests/test_noise.py        # expect 6 passed
 pytest -q tests/test_sqd_opt.py tests/test_sqd_list.py tests/test_las_sqd_logic.py
 python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve --dry-run   # expect 18 runs
+......                                                                                                                                                                   [100%]
+6 passed in 14.26s
+............................                                                                                                                                             [100%]
+28 passed in 168.37s (0:02:48)
+[benchmark] n2_noise: 18 runs over 1 system(s); this shard: 18  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+  2987b2ef1f8b  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
+  9be00d88c7ef  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
+  0a955e41be0f  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
+  96803b7f0fd1  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
+  97b0c8f7d2d6  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
+  345788f9cc85  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
+  8f5594144173  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
+  57fe7acd8f88  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
+  3bc655f4cc29  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
+  e731444bc9fb  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
+  b70b322701fe  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
+  b3b1e4e2dd7a  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
+  653bc9c6c23f  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
+  acd390629118  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
+  c5014be7c462  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
+  eb7fbc03611b  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
+  1b2d433309cb  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
+  26205be0bcfa  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
 
-nohup python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve > $B/n2_noise.log 2>&1 &
-
-tail -f $B/n2_noise.log
-grep "noisy sampler" $B/n2_curve/runs/*/run.log | tail -1
+  first run reproduces with:
+  quenais-run --active-space-method avas --ansatz lucj_opt --avas-ao-labels 'N 2s' 'N 2p' --backend noisy --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASSCF CASCI FCI --dmet-reference casci --geometry 'N 0 0 0; N 0 0 1.1' --mapping jw --molecule N2 --noise-device FakeSherbrooke --noise-scale 1.0 --seed 1 --shots 10000 --solver sqd --sqd-batches 1 --sqd-lucj-pairs all --sqd-lucj-reps 2 --sqd-samples-per-batch 1000000 --steps 1 && quenais-run --active-space-method avas --ansatz lucj_opt --avas-ao-labels 'N 2s' 'N 2p' --backend noisy --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASSCF CASCI FCI --dmet-reference casci --geometry 'N 0 0 0; N 0 0 1.1' --mapping jw --molecule N2 --noise-device FakeSherbrooke --noise-scale 1.0 --seed 1 --shots 10000 --solver sqd --sqd-batches 1 --sqd-lucj-pairs all --sqd-lucj-reps 2 --sqd-samples-per-batch 1000000 --steps 0 2 3
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
