@@ -424,7 +424,7 @@ energy-converged, gradient 7e-4. Results: fill in.
   intermediate bond breaking (N₂ 1.6–1.8 Å) → nothing quantum is good,
   CIPSI still is.
 
-## Step 4: determinant-list SQD (code 15 Oct, runs: fill in)
+## Step 4: determinant-list SQD (15 Oct 2026)
 
 `--sqd-subspace list` (`quenais/quantum/sqd_list.py`): diagonalise only
 the sampled (α,β) determinants, not the α×β product. Tests: all
@@ -432,14 +432,32 @@ determinants → FCI (toy and H4/PySCF); few → variational and equal to a
 brute-force diagonalisation of the same list. Grid `n2_sqd_list` (1.1/1.8/
 2.5 Å, 10k/100k, seeds 1–3) into `n2_curve`.
 
-| R (Å) | shots | product: err / dim | list: err / dim | CIPSI @ list dim |
-|---|---|---|---|---|
-| 1.1 | 10k | | | |
-| 1.1 | 100k | | | |
-| 1.8 | 10k | | | |
-| 1.8 | 100k | | | |
-| 2.5 | 10k | | | |
-| 2.5 | 100k | | | |
+Results (15 Oct, 3 seeds, mean; error vs embedding FCI in kcal/mol;
+product = the usual SQD from §3a, much bigger subspace):
+
+| R (Å) | shots | product SQD (§3a) | list SQD | list dim (sampled) | CIPSI @ same dim | list / CIPSI | ⟨S²⟩ list |
+|---|---|---|---|---|---|---|---|
+| 1.1 | 10k | 1.2–3.4 | 6.3 (5.6–6.6) | 81 (62) | 4.5 | 1.4× | 0.01 |
+| 1.1 | 100k | 0.27–0.53 | 1.6 (1.5–1.8) | 248 (175) | 0.48 | 3.4× | 0.001 |
+| 1.8 | 10k | 14.7–27.5 | 13.6 (12.7–14.1) | 197 (154) | 2.6 | 5× | 1.2 |
+| 1.8 | 100k | 2.5–9.9 | 10.9 (9.9–11.6) | 361 (294) | 0.56 | 19× | 0.5–1.1 |
+| 2.5 | 10k | 0.5–155 | 37.4 (37.1–37.6) | 139 (107) | 0.80 | 47× | 2.4 |
+| 2.5 | 100k | 0.22–0.29 | 36.4 (35.9–37.0) | 309 (221) | 0.37 | 99× | 2.4–2.6 |
+
+60–140 s per run (LUCJ cached).
+
+- **At equal size, the sampled determinants are worse than CIPSI's
+  everywhere**: 1.4–3.4× near equilibrium, 5–19× at 1.8 Å, 50–100× at
+  2.5 Å. This is the clean selection test, without product-space filling.
+- **More shots do not help at 2.5 Å** (37 → 36 kcal/mol for 2× more
+  determinants): the circuit does not sample the important determinants,
+  so extra shots add unimportant ones. At 1.1 Å they do help (6.3 → 1.6).
+- The product mode's good numbers at 2.5 Å/100k (0.2–0.3) therefore come
+  from filling the space with α×β combinations, not from the circuit.
+- ⟨S²⟩ of the list state grows with R (0 → 1.2 → 2.4): at stretched
+  geometry the sampled list is not spin complete and the lowest state in
+  it is a spin mixture. Still variational. (CIPSI has no spin constraint
+  either.)
 
 ## Still open (15 Oct 2026)
 
