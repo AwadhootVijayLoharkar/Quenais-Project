@@ -1,11 +1,5 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tools/status.py
-[1]-  Done                    nohup python tools/run_benchmark.py benchmarks/n2_gqe_angles.json --out $B/n2_curve > $B/n2_gqe_angles.log 2>&1
-[2]+  Done                    nohup bash -c "export QUENAIS_SELECTION_MAX_DET=4000000; python tools/run_benchmark.py benchmarks/n2_dz_sqd.json --out $B/n2_dz" > $B/n2_dz_sqd.log 2>&1
-bash: tools/status.py: Permission denied
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-top -b -n1 | grep python | head -1                         # still ~2000 %
-grep -v OpenBLAS $B/fe2bpym/systems/*/prep.log | tail -3   # real progress (old warnings filtered out)
-======================================================================================
+   python tools/status.py
+   tail -5 $B/fe2bpym.log
+   grep -v OpenBLAS $B/fe2bpym/systems/*/prep.log | tail -5
 
-[Step 0] Saved -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym/systems/adff1a56c5a7/results/step0_classical.pkl
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+      python tools/show_rows.py $B/n2_dz --where solver=sqd tag_R=2.1 --cols shots_per_circuit explore_fraction subspace_fraction err_solver_kcal err_cipsi_kcal t_step3_s
