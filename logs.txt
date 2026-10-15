@@ -1,15 +1,210 @@
-ps -u $USER -o pid,etime,pcpu,rss,cmd | grep -v grep | grep run_benchmark
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
+remote: Enumerating objects: 38, done.
+remote: Counting objects: 100% (38/38), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 21 (delta 16), reused 21 (delta 16), pack-reused 0 (from 0)
+Unpacking objects: 100% (21/21), 12.23 KiB | 23.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+   d8da44d..c67f6f0  main       -> origin/main
+Updating d8da44d..c67f6f0
+Fast-forward
+ benchmarks/n2_sqd_list.json       |  81 +++++++++++++++++++++++++++++++++++++++++
+ docs/benchmarking.md              |  15 +++++++-
+ docs/results_log.md               |  35 ++++++++++++++++--
+ logs.txt                          |  38 ++++++++------------
+ quenais/cli.py                    |   6 ++++
+ quenais/quantum/det_analysis.py   |  49 ++++++++++++++++++-------
+ quenais/quantum/solver.py         |   2 +-
+ quenais/quantum/sqd_list.py       | 206 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ quenais/quantum/sqd_opt.py        |  32 ++++++++++++++---
+ quenais/settings/qiskit_solver.py |   9 +++++
+ tests/test_sqd_list.py            | 264 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ tools/run_benchmark.py            |   2 ++
+ 12 files changed, 695 insertions(+), 44 deletions(-)
+ create mode 100644 benchmarks/n2_sqd_list.json
+ create mode 100644 quenais/quantum/sqd_list.py
+ create mode 100644 tests/test_sqd_list.py
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u $USER -o pid,etime,pcpu,rss,cmd | grep -v grep | grep run_benchmark
 R=$(ls -td $B/fe2bpym/runs/*/ | head -1); date; ls -l --time-style=+%H:%M ${R}run.log
-
+ 107117  1-13:24:11  0.0 21724 python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym --retry-failed
+ 111458  1-12:59:34 1373 6163040 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/fe2bpym 506dded29d65
+Thu Oct 15 02:00:11 PM CEST 2026
+-rw-r--r-- 1 loharkar itwm-guest 3590 13:45 /home/loharkar/quenais-standalone/benchmark_results/fe2bpym/runs/506dded29d65/run.log
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym > $B/fe2bpym_w1.log 2>&1 &
-
+[2] 307688
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 git pull
 pytest -q tests/test_sqd_list.py        # expect 10 passed
 pytest -q -m "not slow"                 # expect 411 passed
 python tools/run_benchmark.py benchmarks/n2_sqd_list.json --out $B/n2_curve --dry-run
+Already up to date.
+..........                                                                                                                                                               [100%]
+10 passed in 105.72s (0:01:45)
+........................................................................................................................................................................ [ 40%]
+...............................................................................ss....................................................................................... [ 81%]
+.............................................................................                                                                                            [100%]
+=============================================================================== warnings summary ===============================================================================
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (alpha, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[single excitation (beta, 0->1)]
+tests/test_gqe_adapter.py::test_excitation_generator_matches_tequila[double excitation (alpha-beta)]
+  /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/tequila/quantumchemistry/chemistry_tools.py:367: TequilaWarning: Warning: No units passed with geometry, assuming units are angstrom.
+    warnings.warn("Warning: No units passed with geometry, assuming units are angstrom.", TequilaWarning)
 
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+411 passed, 2 skipped, 26 deselected, 3 warnings in 920.85s (0:15:20)
+[benchmark] n2_sqd_list: 36 runs over 3 system(s); this shard: 36  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+  8b25b9db631e  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
+  215d25b86bd8  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
+  fa89db48c89e  sys=bb6e7d72cdcf  sqd     shots=100000  seed=1    {"tag_R": 1.1}
+  9730dea0948c  sys=bb6e7d72cdcf  sqd     shots=100000  seed=1    {"tag_R": 1.1}
+  cf80bd4fd0f2  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
+  b2768940fac8  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
+  1e8d913ebaf1  sys=bb6e7d72cdcf  sqd     shots=100000  seed=2    {"tag_R": 1.1}
+  6cbd04a4f0d9  sys=bb6e7d72cdcf  sqd     shots=100000  seed=2    {"tag_R": 1.1}
+  d3bf9403f8e5  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
+  f0557d5e3a52  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
+  b8ad40e21d1b  sys=bb6e7d72cdcf  sqd     shots=100000  seed=3    {"tag_R": 1.1}
+  1691c805e121  sys=bb6e7d72cdcf  sqd     shots=100000  seed=3    {"tag_R": 1.1}
+  fec179bcb1b1  sys=fdf227e43c2f  sqd     shots=10000   seed=1    {"tag_R": 1.8}
+  795c1423be3f  sys=fdf227e43c2f  sqd     shots=10000   seed=1    {"tag_R": 1.8}
+  8788c4bf63a0  sys=fdf227e43c2f  sqd     shots=100000  seed=1    {"tag_R": 1.8}
+  c1e3cc8de005  sys=fdf227e43c2f  sqd     shots=100000  seed=1    {"tag_R": 1.8}
+  cb7ae63746b8  sys=fdf227e43c2f  sqd     shots=10000   seed=2    {"tag_R": 1.8}
+  bc543a64139d  sys=fdf227e43c2f  sqd     shots=10000   seed=2    {"tag_R": 1.8}
+  c8eaa9fdade3  sys=fdf227e43c2f  sqd     shots=100000  seed=2    {"tag_R": 1.8}
+  9f99d4663b69  sys=fdf227e43c2f  sqd     shots=100000  seed=2    {"tag_R": 1.8}
+  4d3091d99a3d  sys=fdf227e43c2f  sqd     shots=10000   seed=3    {"tag_R": 1.8}
+  baaffc07dc85  sys=fdf227e43c2f  sqd     shots=10000   seed=3    {"tag_R": 1.8}
+  6944751fee86  sys=fdf227e43c2f  sqd     shots=100000  seed=3    {"tag_R": 1.8}
+  cb0bc524d8a3  sys=fdf227e43c2f  sqd     shots=100000  seed=3    {"tag_R": 1.8}
+  5276f283c792  sys=a3ea7b0a52a5  sqd     shots=10000   seed=1    {"tag_R": 2.5}
+  b843ec7a170b  sys=a3ea7b0a52a5  sqd     shots=10000   seed=1    {"tag_R": 2.5}
+  94e20a669b0d  sys=a3ea7b0a52a5  sqd     shots=100000  seed=1    {"tag_R": 2.5}
+  39c053d75db9  sys=a3ea7b0a52a5  sqd     shots=100000  seed=1    {"tag_R": 2.5}
+  ecc0e00871aa  sys=a3ea7b0a52a5  sqd     shots=10000   seed=2    {"tag_R": 2.5}
+  24c17fd78cca  sys=a3ea7b0a52a5  sqd     shots=10000   seed=2    {"tag_R": 2.5}
+  07f0b433915f  sys=a3ea7b0a52a5  sqd     shots=100000  seed=2    {"tag_R": 2.5}
+  f7ca3d00babe  sys=a3ea7b0a52a5  sqd     shots=100000  seed=2    {"tag_R": 2.5}
+  8cea8d1beb5b  sys=a3ea7b0a52a5  sqd     shots=10000   seed=3    {"tag_R": 2.5}
+  30ae72c603e4  sys=a3ea7b0a52a5  sqd     shots=10000   seed=3    {"tag_R": 2.5}
+  5a0443c0aa74  sys=a3ea7b0a52a5  sqd     shots=100000  seed=3    {"tag_R": 2.5}
+  bd71c64ef322  sys=a3ea7b0a52a5  sqd     shots=100000  seed=3    {"tag_R": 2.5}
 
-nohup python tools/run_benchmark.py benchmarks/n2_sqd_list.json --out $B/n2_curve > $B/n2_sqd_list.log 2>&1 &
+  first run reproduces with:
+  quenais-run --active-space-method avas --ansatz lucj_opt --avas-ao-labels 'N 2s' 'N 2p' --backend mps --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASSCF CASCI FCI --dmet-reference casci --geometry 'N 0 0 0; N 0 0 1.1' --mapping jw --molecule N2 --seed 1 --shots 10000 --solver sqd --sqd-batches 1 --sqd-lucj-pairs all --sqd-lucj-reps 2 --sqd-samples-per-batch 1000000 --steps 1 && quenais-run --active-space-method avas --ansatz lucj_opt --avas-ao-labels 'N 2s' 'N 2p' --backend mps --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASSCF CASCI FCI --dmet-reference casci --geometry 'N 0 0 0; N 0 0 1.1' --mapping jw --molecule N2 --seed 1 --shots 10000 --solver sqd --sqd-batches 1 --sqd-lucj-pairs all --sqd-lucj-reps 2 --sqd-samples-per-batch 1000000 --steps 0 2 3
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ nohup python tools/run_benchmark.py benchmarks/n2_sqd_list.json --out $B/n2_curve > $B/n2_sqd_list.log 2>&1 &
 
 python tools/show_rows.py $B/n2_curve --where solver=sqd ansatz=lucj_opt sqd_subspace=list --cols tag_R shots_per_circuit seed err_solver_kcal subspace_dim list_n_sampled_dets err_cipsi_kcal spin_sq
+[3] 322921
+tag_R  shots_per_circuit  seed  err_solver_kcal  subspace_dim  list_n_sampled_dets  err_cipsi_kcal  spin_sq
+
+0 ok rows
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -3 $B/n2_sqd_list.log 
+nohup: ignoring input
+[benchmark] n2_sqd_list: 36 runs over 3 system(s); this shard: 36  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+[1/36] 8b25b9db631e sqd     shots=10000 seed=1  skip (done)
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/n2_sqd_list.log 
+nohup: ignoring input
+[benchmark] n2_sqd_list: 36 runs over 3 system(s); this shard: 36  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+[1/36] 8b25b9db631e sqd     shots=10000 seed=1  skip (done)
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/n2_sqd_list.log 
+nohup: ignoring input
+[benchmark] n2_sqd_list: 36 runs over 3 system(s); this shard: 36  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+[1/36] 8b25b9db631e sqd     shots=10000 seed=1  skip (done)
+[2/36] 215d25b86bd8 sqd     shots=10000 seed=1  ok   80.5 s  E=-107.64520256  err_solver=+5.5973 kcal/mol  subspace=0.006319444444444444
+[3/36] fa89db48c89e sqd     shots=100000 seed=1  skip (done)
+[4/36] 9730dea0948c sqd     shots=100000 seed=1  ok   71.5 s  E=-107.65155535  err_solver=+1.6109 kcal/mol  subspace=0.018125
+[5/36] cf80bd4fd0f2 sqd     shots=10000 seed=2  skip (done)
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/n2_sqd_list.log 
+nohup: ignoring input
+[benchmark] n2_sqd_list: 36 runs over 3 system(s); this shard: 36  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
+[1/36] 8b25b9db631e sqd     shots=10000 seed=1  skip (done)
+[2/36] 215d25b86bd8 sqd     shots=10000 seed=1  ok   80.5 s  E=-107.64520256  err_solver=+5.5973 kcal/mol  subspace=0.006319444444444444
+[3/36] fa89db48c89e sqd     shots=100000 seed=1  skip (done)
+[4/36] 9730dea0948c sqd     shots=100000 seed=1  ok   71.5 s  E=-107.65155535  err_solver=+1.6109 kcal/mol  subspace=0.018125
+[5/36] cf80bd4fd0f2 sqd     shots=10000 seed=2  skip (done)
+[6/36] b2768940fac8 sqd     shots=10000 seed=2  ok   52.4 s  E=-107.64354804  err_solver=+6.6355 kcal/mol  subspace=0.004930555555555555
+[7/36] 1e8d913ebaf1 sqd     shots=100000 seed=2  skip (done)
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/n2_sqd_list.log 
+[4/36] 9730dea0948c sqd     shots=100000 seed=1  ok   71.5 s  E=-107.65155535  err_solver=+1.6109 kcal/mol  subspace=0.018125
+[5/36] cf80bd4fd0f2 sqd     shots=10000 seed=2  skip (done)
+[6/36] b2768940fac8 sqd     shots=10000 seed=2  ok   52.4 s  E=-107.64354804  err_solver=+6.6355 kcal/mol  subspace=0.004930555555555555
+[7/36] 1e8d913ebaf1 sqd     shots=100000 seed=2  skip (done)
+[8/36] 6cbd04a4f0d9 sqd     shots=100000 seed=2  ok   63.5 s  E=-107.65173950  err_solver=+1.4953 kcal/mol  subspace=0.016875
+[9/36] d3bf9403f8e5 sqd     shots=10000 seed=3  skip (done)
+[10/36] f0557d5e3a52 sqd     shots=10000 seed=3  ok   63.0 s  E=-107.64357846  err_solver=+6.6165 kcal/mol  subspace=0.005625
+[11/36] b8ad40e21d1b sqd     shots=100000 seed=3  skip (done)
+[12/36] 1691c805e121 sqd     shots=100000 seed=3  ok   55.6 s  E=-107.65122254  err_solver=+1.8197 kcal/mol  subspace=0.016666666666666666
+[13/36] fec179bcb1b1 sqd     shots=10000 seed=1  skip (done)
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/n2_sqd_list.log 
+[6/36] b2768940fac8 sqd     shots=10000 seed=2  ok   52.4 s  E=-107.64354804  err_solver=+6.6355 kcal/mol  subspace=0.004930555555555555
+[7/36] 1e8d913ebaf1 sqd     shots=100000 seed=2  skip (done)
+[8/36] 6cbd04a4f0d9 sqd     shots=100000 seed=2  ok   63.5 s  E=-107.65173950  err_solver=+1.4953 kcal/mol  subspace=0.016875
+[9/36] d3bf9403f8e5 sqd     shots=10000 seed=3  skip (done)
+[10/36] f0557d5e3a52 sqd     shots=10000 seed=3  ok   63.0 s  E=-107.64357846  err_solver=+6.6165 kcal/mol  subspace=0.005625
+[11/36] b8ad40e21d1b sqd     shots=100000 seed=3  skip (done)
+[12/36] 1691c805e121 sqd     shots=100000 seed=3  ok   55.6 s  E=-107.65122254  err_solver=+1.8197 kcal/mol  subspace=0.016666666666666666
+[13/36] fec179bcb1b1 sqd     shots=10000 seed=1  skip (done)
+[14/36] 795c1423be3f sqd     shots=10000 seed=1  ok  137.5 s  E=-107.46322969  err_solver=+12.6930 kcal/mol  subspace=0.013888888888888888
+[15/36] 8788c4bf63a0 sqd     shots=100000 seed=1  skip (done)
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -f $B/n2_sqd_list.log 
+[6/36] b2768940fac8 sqd     shots=10000 seed=2  ok   52.4 s  E=-107.64354804  err_solver=+6.6355 kcal/mol  subspace=0.004930555555555555
+[7/36] 1e8d913ebaf1 sqd     shots=100000 seed=2  skip (done)
+[8/36] 6cbd04a4f0d9 sqd     shots=100000 seed=2  ok   63.5 s  E=-107.65173950  err_solver=+1.4953 kcal/mol  subspace=0.016875
+[9/36] d3bf9403f8e5 sqd     shots=10000 seed=3  skip (done)
+[10/36] f0557d5e3a52 sqd     shots=10000 seed=3  ok   63.0 s  E=-107.64357846  err_solver=+6.6165 kcal/mol  subspace=0.005625
+[11/36] b8ad40e21d1b sqd     shots=100000 seed=3  skip (done)
+[12/36] 1691c805e121 sqd     shots=100000 seed=3  ok   55.6 s  E=-107.65122254  err_solver=+1.8197 kcal/mol  subspace=0.016666666666666666
+[13/36] fec179bcb1b1 sqd     shots=10000 seed=1  skip (done)
+[14/36] 795c1423be3f sqd     shots=10000 seed=1  ok  137.5 s  E=-107.46322969  err_solver=+12.6930 kcal/mol  subspace=0.013888888888888888
+[15/36] 8788c4bf63a0 sqd     shots=100000 seed=1  skip (done)
+[16/36] c1e3cc8de005 sqd     shots=100000 seed=1  ok   83.3 s  E=-107.46765717  err_solver=+9.9148 kcal/mol  subspace=0.025069444444444443
+[17/36] cb7ae63746b8 sqd     shots=10000 seed=2  skip (done)
+[18/36] bc543a64139d sqd     shots=10000 seed=2  ok  134.6 s  E=-107.46102385  err_solver=+14.0772 kcal/mol  subspace=0.013541666666666667
+[19/36] c8eaa9fdade3 sqd     shots=100000 seed=2  skip (done)
+[20/36] 9f99d4663b69 sqd     shots=100000 seed=2  ok   83.5 s  E=-107.46501816  err_solver=+11.5708 kcal/mol  subspace=0.026111111111111113
+[21/36] 4d3091d99a3d sqd     shots=10000 seed=3  skip (done)
+[22/36] baaffc07dc85 sqd     shots=10000 seed=3  ok  136.7 s  E=-107.46110123  err_solver=+14.0287 kcal/mol  subspace=0.013680555555555555
+[23/36] 6944751fee86 sqd     shots=100000 seed=3  skip (done)
+[24/36] cb0bc524d8a3 sqd     shots=100000 seed=3  ok   82.3 s  E=-107.46560015  err_solver=+11.2056 kcal/mol  subspace=0.024027777777777776
+[25/36] 5276f283c792 sqd     shots=10000 seed=1  skip (done)
+[26/36] b843ec7a170b sqd     shots=10000 seed=1  ok  104.1 s  E=-107.38124259  err_solver=+37.1309 kcal/mol  subspace=0.01927437641723356
+[27/36] 94e20a669b0d sqd     shots=100000 seed=1  skip (done)
+[28/36] 39c053d75db9 sqd     shots=100000 seed=1  ok   86.1 s  E=-107.38148215  err_solver=+36.9806 kcal/mol  subspace=0.04265873015873016
+[29/36] ecc0e00871aa sqd     shots=10000 seed=2  skip (done)
+[30/36] 24c17fd78cca sqd     shots=10000 seed=2  ok  114.0 s  E=-107.38045036  err_solver=+37.6280 kcal/mol  subspace=0.020691609977324263
+[31/36] 07f0b433915f sqd     shots=100000 seed=2  skip (done)
+[32/36] f7ca3d00babe sqd     shots=100000 seed=2  ok   79.2 s  E=-107.38267393  err_solver=+36.2327 kcal/mol  subspace=0.044359410430839005
+[33/36] 8cea8d1beb5b sqd     shots=10000 seed=3  skip (done)
+[34/36] 30ae72c603e4 sqd     shots=10000 seed=3  ok   97.1 s  E=-107.38069642  err_solver=+37.4736 kcal/mol  subspace=0.01913265306122449
+[35/36] 5a0443c0aa74 sqd     shots=100000 seed=3  skip (done)
+[36/36] bd71c64ef322 sqd     shots=100000 seed=3  ok   60.9 s  E=-107.38319644  err_solver=+35.9049 kcal/mol  subspace=0.04450113378684807
+[collect] 331 runs (331 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results.csv
+[collect] 119 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results_agg.csv
+^C[3]+  Done                    nohup python tools/run_benchmark.py benchmarks/n2_sqd_list.json --out $B/n2_curve > $B/n2_sqd_list.log 2>&1
+
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/show_rows.py $B/n2_curve --where solver=sqd ansatz=lucj_opt sqd_subspace=list --cols tag_R shots_per_circuit seed err_solver_kcal subspace_dim list_n_sampled_dets err_cipsi_kcal spin_sq
+ tag_R  shots_per_circuit  seed  err_solver_kcal  subspace_dim  list_n_sampled_dets  err_cipsi_kcal  spin_sq
+1.1000              10000     1           5.5973            91                   67          3.7376   0.0021
+1.1000              10000     2           6.6355            71                   57          5.3780   0.0102
+1.1000              10000     3           6.6165            81                   62          4.4111   0.0080
+1.1000             100000     1           1.6109           261                  183          0.4270   0.0006
+1.1000             100000     2           1.4953           243                  171          0.4991   0.0007
+1.1000             100000     3           1.8197           240                  172          0.5085   0.0006
+1.8000              10000     1          12.6930           200                  154          2.4999   1.1471
+1.8000              10000     2          14.0772           195                  149          2.6055   1.2219
+1.8000              10000     3          14.0287           197                  160          2.5508   1.2731
+1.8000             100000     1           9.9148           361                  297          0.5645   0.5474
+1.8000             100000     2          11.5708           376                  299          0.4612   1.0817
+1.8000             100000     3          11.2056           346                  287          0.6573   1.0805
+2.5000              10000     1          37.1309           136                  105          0.8147   2.4224
+2.5000              10000     2          37.6280           146                  111          0.7608   2.3459
+2.5000              10000     3          37.4736           135                  104          0.8224   2.3751
+2.5000             100000     1          36.9806           301                  212          0.4133   2.4430
+2.5000             100000     2          36.2327           313                  228          0.3513   2.5602
+2.5000             100000     3          35.9049           314                  223          0.3431   2.6200
+
+18 ok rows
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
