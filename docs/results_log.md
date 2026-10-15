@@ -74,6 +74,23 @@ how to run: `docs/benchmarking.md`.
     `--lassqd-backend aer_noisy`); columns `noise_*`, `n_2q_device`,
     `depth_device`, `est_fidelity`; grid `benchmarks/n2_noise.json`;
     `tests/test_noise.py`; `qiskit-ibm-runtime` added to requirements.
+15. `--noise-*` also reach LASSQD (`--lassqd-backend aer_noisy`). Grids
+    `fe2bpym_las_df` (density-fitted LAS, much faster orbital steps) and
+    `fe2bpym_lassqd_noisy` (LASSQD-DF with device noise), both into
+    `$B/fe2bpym_df`.
+16. **GQE basis bug (15 Oct).** `DMETEmbeddingMolecule` gave GQE the RAW
+    DMET-basis Hamiltonian, while the CCSD pool and the "lowest orbitals
+    occupied" start state assume the embedding SCF (MO) basis.
+    `tools/check_gqe_basis.py` on N2: occupied-space overlap min 0.000,
+    start determinant 20 000–40 000 kcal/mol above HF. So every DMET+GQE
+    result so far started from a wrong state. Fix: `--gqe-basis mo` rotates
+    the Hamiltonian into the MO basis (default stays `embedding` so old run
+    ids and caches are unchanged). Plain-CAS GQE was not affected (its CAS
+    basis is the MO basis), which explains plain-CAS 2.1 Å median 3.3
+    kcal/mol vs DMET 29–95. Grid `n2_gqe_mo`. Classical columns (CIPSI
+    starts from the lowest-diagonal determinant) are not affected. To check
+    later: the old random-angle DMET+SQD path (`solver.py`) may share the
+    issue; the lucj_opt path does its own mean field and does not.
 
 
 ## Results (all with seed repeats unless stated)

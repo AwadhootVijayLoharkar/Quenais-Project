@@ -1,0 +1,92 @@
+{
+  "name": "n2_gqe_mo",
+  "description": "GQE on DMET N2 with the Hamiltonian in the embedding SCF (MO) basis (--gqe-basis mo). Before, GQE got the raw DMET-basis Hamiltonian while its CCSD pool and HF start state assume the MO basis (tools/check_gqe_basis.py: occupied-space overlap down to 0.000). Study 'probe' (one run, 2.1 A, CCSD angles) answers in ~20 min whether the fix matters; old value 95 kcal/mol (CCSD angles) / 28.7 (free angles). Then the curve with CCSD and free angles, seeds 4-5. 80 gates, 120 epochs. --out $B/n2_curve.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80,
+    "gqe_basis": "mo"
+  },
+  "studies": [
+    {
+      "name": "probe",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "seed": [
+          4
+        ]
+      }
+    },
+    {
+      "name": "curve",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.8",
+          "tag_R": 1.8
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 2.5",
+          "tag_R": 2.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_pool_angles": [
+          null,
+          [
+            -1.0,
+            -0.4,
+            -0.1,
+            0.1,
+            0.4,
+            1.0
+          ]
+        ],
+        "seed": [
+          4,
+          5
+        ]
+      }
+    }
+  ]
+}

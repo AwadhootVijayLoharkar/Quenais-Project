@@ -128,6 +128,7 @@ def _write_molecule_config(repo, cfg):
         "# molecule.step2_pickle_path, which takes precedence.\n"
         "_target_: dmet_molecule_adapter.load_from_dmet_pickle\n"
         f"step2_pickle_path: {os.path.abspath(cfg.step2_file)}\n"
+        f"orbital_basis: {getattr(cfg.gqe, 'dmet_basis', 'embedding')}\n"
     )
     return path
 

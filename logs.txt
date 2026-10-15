@@ -1,41 +1,8 @@
-/home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/0031e1fad9c4/results/step2_hamiltonian.pkl
-   norb=10 nelec=(7, 7)  overlap min/mean 0.000/0.716   E(ref det) - E(HF) =  40168.13 kcal/mol
-/home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/01600de2717b/results/step2_hamiltonian.pkl
-   norb=9 nelec=(6, 6)  overlap min/mean 0.000/0.667   E(ref det) - E(HF) =  19634.08 kcal/mol
-/home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/083f0ef0b83f/results/step2_hamiltonian.pkl
-   norb=9 nelec=(6, 6)  overlap min/mean 0.011/0.786   E(ref det) - E(HF) =  19592.51 kcal/mol
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-grep -rn "cas_hamiltonian\|hf_state\|initial_state\|\.x(" $GQE_QSCI_REPO_PATH/gqe_qsci | head -20
-grep: /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/__pycache__/molecule.cpython-311.pyc: binary file matches
-grep: /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/qsci/__pycache__/pipeline.cpython-311.pyc: binary file matches
-/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/qsci/pipeline.py:26:        self.hamiltonian = molecule.cas_hamiltonian
-/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/gqe/utils.py:11:            piece = cudaq.spin.x(k)
-/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:34:    self.cas_hamiltonian = self._build_cas_hamiltonian()
-/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:65:  def _build_cas_hamiltonian(self):
-/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:79:      self.cas_hamiltonian.h1,
-/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:80:      self.cas_hamiltonian.h2,
-/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/gqe_qsci/molecule.py:83:      ecore=self.cas_hamiltonian.e_core,
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+ps -u $USER -o pid,ppid,cmd | grep -v grep | grep n2_gqe_more
 
-grep -c "LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
+git pull
+pytest -q tests/test_gqe_basis.py        # expect 3 passed
 
-python tools/status.py
+OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/n2_gqe_mo.json --out $B/n2_curve > $B/n2_gqe_mo.log 2>&1 &
 
-ps -u $USER -o pid,ppid,pcpu,cmd | grep -v grep | grep run_benchmark
-kill <its numbers>
-
-tail -5 $B/fe2bpym/runs/506dded29d65/run.log
-
-export OMP_NUM_THREADS=24
-nohup python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve > $B/n2_noise.log 2>&1 &
-
-tail -3 $B/n2_noise.log
-
-nohup python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_noisy.json --out $B/fe2bpym_df > $B/fe2bpym_noisy.log 2>&1 &
-
-nohup python tools/run_benchmark.py benchmarks/n2_gqe_more.json --out $B/n2_curve > $B/n2_gqe_more.log 2>&1 &
-
-python tools/show_rows.py $B/n2_curve --where solver=sqd ansatz=lucj_opt backend=noisy \
-  --cols noise_scale sqd_subspace seed err_solver_kcal err_cipsi_kcal valid_shot_fraction est_fidelity n_2q_device
-python tools/show_rows.py $B/fe2bpym_df --where --cols solver lassqd_backend noise_scale seed energy_Ha err_solver_kcal converged n_macro
-python tools/show_rows.py $B/n2_curve --where solver=gqe --cols tag_R gqe_ngates gqe_pool_angles err_solver_kcal
+grep "1/16" $B/n2_gqe_mo.log

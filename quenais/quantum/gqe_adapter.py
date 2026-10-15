@@ -23,6 +23,24 @@ DMET-consistent total energy directly, because
 E_total = ecore + <psi|H_emb|psi> holds for any psi in the embedding space
 -- not only for the reference DMET used internally for its own bookkeeping.
 
+ORBITAL BASIS (orbital_basis="embedding" | "mo")
+-----------------------------------------------
+"embedding" (default, the original behaviour): cas_hamiltonian holds the RAW
+embedding integrals. The CCSD amplitudes, however, come from the SCF above
+and are indexed in the SCF MO basis, and the GQE circuit starts from "the
+lowest orbitals occupied". In the raw Schmidt basis that determinant is NOT
+Hartree-Fock (tools/check_gqe_basis.py on N2: overlap of the occupied
+spaces down to 0.000, reference determinant 20 000-40 000 kcal/mol above
+HF), so the circuit starts in the wrong state and the pool's excitation
+indices refer to different orbitals than the qubits.
+
+"mo": cas_hamiltonian is rotated into the SCF MO basis (h1 -> C^T h1 C,
+h2 likewise). Then the reference determinant IS HF, and Hamiltonian, CCSD
+amplitudes and circuit share one basis -- exactly the situation of the
+upstream plain-CAS molecule. Energies (CASCI, any projected energy) are
+basis-invariant; determinant indices and weights (w1, oracle ordering) are
+not, and refer to the MO basis. Closed shell only.
+
 Every heavy import is inside a function. This module must stay importable
 on a Qiskit-only install.
 """
@@ -36,6 +54,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+
+ORBITAL_BASES = ("embedding", "mo")
 
 __all__ = [
     "Hamiltonian",
@@ -72,8 +92,14 @@ class DMETEmbeddingMolecule:
     """
 
     def __init__(self, h1e_emb, h2e_emb, ecore, n_alpha, n_beta,
-                 num_threads=1, cache_key_extra="", cache_dir=None):
+                 num_threads=1, cache_key_extra="", cache_dir=None,
+                 orbital_basis="embedding"):
         from pyscf import lib, mcscf
+
+        if orbital_basis not in ORBITAL_BASES:
+            raise ValueError(f"orbital_basis must be one of {ORBITAL_BASES}, "
+                             f"got {orbital_basis!r}")
+        self.orbital_basis = orbital_basis
 
         lib.num_threads(num_threads)
 
@@ -103,9 +129,26 @@ class DMETEmbeddingMolecule:
         self.mc = mcscf.CASCI(self.hf, self.norb, self.nelec)
         self.mc.verbose = 0          # see the note in _run_embedding_scf
         self.mc.fcisolver.verbose = 0
-        self.cas_hamiltonian = Hamiltonian(
-            h1=self._h1e_emb, h2=self._h2e_emb, e_core=self._ecore
-        )
+        # Rotation from the raw embedding basis to the basis GQE works in
+        # (identity for "embedding").
+        self._C = np.eye(n_emb)
+        if orbital_basis == "mo":
+            if self.spin != 0:
+                raise ValueError("orbital_basis='mo' is implemented for "
+                                 "closed-shell embeddings only")
+            from pyscf import ao2mo
+
+            c = np.asarray(self.hf.mo_coeff)
+            self._C = c
+            h1 = c.T @ self._h1e_emb @ c
+            h2 = ao2mo.restore(1, ao2mo.incore.full(
+                ao2mo.restore(8, self._h2e_emb, n_emb), c), n_emb)
+            self.cas_hamiltonian = Hamiltonian(h1=h1, h2=np.asarray(h2),
+                                               e_core=self._ecore)
+        else:
+            self.cas_hamiltonian = Hamiltonian(
+                h1=self._h1e_emb, h2=self._h2e_emb, e_core=self._ecore
+            )
 
         self._ccsd_amplitude = None
         self._cache_key = self._build_cache_key(cache_key_extra)
@@ -163,6 +206,10 @@ class DMETEmbeddingMolecule:
             "nelec": self.nelec,
             "extra": extra,
         }
+        # Only added for "mo", so every existing "embedding" cache stays valid;
+        # the cached CI vector is basis-dependent.
+        if self.orbital_basis != "embedding":
+            payload["orbital_basis"] = self.orbital_basis
         return hashlib.sha256(
             json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
         ).hexdigest()
@@ -232,6 +279,11 @@ class DMETEmbeddingMolecule:
         dm_a, dm_b = self.mc.fcisolver.make_rdm1s(
             self._last_casci_civec, self.norb, self.nelec
         )
+        # Occupations are compared with the DMET reference density, which
+        # lives in the raw embedding basis: rotate back (no-op for
+        # "embedding").
+        c = self._C
+        dm_a, dm_b = c @ dm_a @ c.T, c @ dm_b @ c.T
         return (np.clip(np.diag(dm_a), 0.0, 1.0),
                 np.clip(np.diag(dm_b), 0.0, 1.0))
 

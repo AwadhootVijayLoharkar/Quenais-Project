@@ -75,6 +75,13 @@ class GqeSettings:
     #: convergence error), which looks plausible and means nothing.
     molecule_config: str = "dmet_embedding"
 
+    #: Orbital basis of the Hamiltonian handed to GQE (see
+    #: quenais/quantum/gqe_adapter.py): "embedding" = raw DMET orbitals (the
+    #: original behaviour; GQE's reference determinant is then NOT HF),
+    #: "mo" = rotated into the embedding SCF orbitals (consistent with the
+    #: CCSD-built pool). Passed as molecule.orbital_basis.
+    dmet_basis: str = "embedding"
+
     # ── Trainer (configs/trainer/default.yaml -- needs "trainer." prefix) ─
     seed: int | None = None
     max_iters: int | None = 120
@@ -236,6 +243,7 @@ class GqeSettings:
             overrides.append(
                 f"molecule.step2_pickle_path={os.path.abspath(step2_pickle_path)}"
             )
+            overrides.append(f"molecule.orbital_basis={self.dmet_basis}")
         overrides.extend(self.extra_overrides)
         return overrides
 
@@ -244,6 +252,9 @@ class GqeSettings:
         return {"CUDAQ_DEFAULT_SIMULATOR": self.cudaq_target}
 
     def validate(self) -> "GqeSettings":
+        if self.dmet_basis not in ("embedding", "mo"):
+            raise ValueError(f"gqe.dmet_basis must be 'embedding' or 'mo', "
+                             f"got {self.dmet_basis!r}")
         if self.operator_pool_spec not in OPERATOR_POOL_SPECS:
             raise ValueError(
                 f"gqe.operator_pool_spec must be one of {OPERATOR_POOL_SPECS}, "

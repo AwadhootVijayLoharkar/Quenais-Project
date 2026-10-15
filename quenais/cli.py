@@ -314,6 +314,11 @@ def build_parser():
     gqe.add_argument("--gqe-pool-threshold", type=float, default=None,
                      help="keep only excitations with |CCSD amplitude| above "
                           "this (default 1e-8 = all non-zero)")
+    gqe.add_argument("--gqe-basis", default=None, choices=["embedding", "mo"],
+                     help="orbital basis of the Hamiltonian given to GQE: "
+                          "embedding = raw DMET orbitals (old default; GQE's "
+                          "start state is then not HF), mo = embedding SCF "
+                          "orbitals (consistent with the CCSD pool)")
     gqe.add_argument("--gqe-seed", type=int, default=None,
                      help="trainer seed. The external repo's "
                           "configs/trainer/default.yaml pins seed=32, so runs "
@@ -408,6 +413,8 @@ def build_gqe_settings(args):
         kwargs["operator_pool_params"] = list(args.gqe_pool_angles)
     if getattr(args, "gqe_pool_threshold", None) is not None:
         kwargs["operator_pool_ccsd_threshold"] = args.gqe_pool_threshold
+    if getattr(args, "gqe_basis", None) is not None:
+        kwargs["dmet_basis"] = args.gqe_basis
     return GqeSettings(**kwargs)
 
 
@@ -513,6 +520,10 @@ def build_las_settings(args):
         "lassqd_samples_per_batch": "sqd_samples_per_batch",
         "lassqd_iterations": "sqd_iterations",
         "lassqd_carryover_eps": "carryover_eps",
+        # --noise-* are shared with DMET+SQD; used by --lassqd-backend aer_noisy
+        "noise_device": "noise_device",
+        "noise_model": "noise_model",
+        "noise_scale": "noise_scale",
         "lassqd_nroots": "sqd_nroots",
         "lassqd_lucj_pairs": "lucj_pairs",
         "lassqd_seed": "seed",
