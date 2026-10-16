@@ -1,77 +1,52 @@
-pkill -f "h_chain_gqe.json"
-pkill -f -E "benchmark_results/h_chain [0-9a-f]{12}"
-pkill -f "gqe-for-qsci_w2"
-sleep 10; pgrep -af "h_chain_gqe|gqe-for-qsci_w2"
-
-
-export GQE_QSCI_REPO_PATH=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ kill 495078
+bash: kill: (495078) - No such process
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pkill -f "benchmark_results/h_chain [0-9a-f]"
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ sleep 10; pgrep -af "h_chain|gqe-for-qsci_w2"
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ export GQE_QSCI_REPO_PATH=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2
 nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 --retry-failed > $B/h_chain_s1.log 2>&1 &
 sleep 120; tail -5 $B/h_chain_s1.log
+[8] 505196
+nohup: ignoring input
+[benchmark] h_chain_gqe: 18 runs over 6 system(s); this shard: 9  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/h_chain_s1.log
+nohup: ignoring input
+[benchmark] h_chain_gqe: 18 runs over 6 system(s); this shard: 9  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
-kill 344590
+
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ kill 344590
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
 
-export B=/home/loharkar/quenais-standalone/benchmark_results
-ls $B | head -3
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ ls $B | head -3
 free -g | head -2
-cd ~/quenais-standalone/Quenais-Project && source quenais-env/bin/activate && git pull
-python -c "import quenais, pyscf, qiskit_aer, ffsim; print('ok')"
+baselines_gqe_mo.log
+explore_batch.log
+fe2bpym
+               total        used        free      shared  buff/cache   available
+Mem:              62           3          51           0           8          59
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ python -c "import quenais, pyscf, qiskit_aer, ffsim; print('ok')"
 python -m pytest tests/test_las_init.py -q
-
-export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
+ok
+...........                                                                                                                                                              [100%]
+11 passed in 0.77s
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
 python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp --dry-run | head -2
 nohup python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1 &
 sleep 120; tail -5 $B/h_chain_cmp.log
-
-
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pkill -f "h_chain_gqe.json"
-pkill -f -E "benchmark_results/h_chain [0-9a-f]{12}"
-pkill -f "gqe-for-qsci_w2"
-sleep 10; pgrep -af "h_chain_gqe|gqe-for-qsci_w2"
-[6]-  Terminated              nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 > $B/h_chain_s1.log 2>&1
-pkill: invalid option -- 'E'
-
-Usage:
- pkill [options] <pattern>
-
-Options:
- -<sig>                    signal to send (either number or name)
- -H, --require-handler     match only if signal handler is present
- -q, --queue <value>       integer value to be sent with the signal
- -e, --echo                display what is killed
- -c, --count               count of matching processes
- -f, --full                use full process name to match
- -g, --pgroup <PGID,...>   match listed process group IDs
- -G, --group <GID,...>     match real group IDs
- -i, --ignore-case         match case insensitively
- -n, --newest              select most recently started
- -o, --oldest              select least recently started
- -O, --older <seconds>     select where older than seconds
- -P, --parent <PPID,...>   match only child processes of the given parent
- -s, --session <SID,...>   match session IDs
-     --signal <sig>        signal to send (either number or name)
- -t, --terminal <tty,...>  match by controlling terminal
- -u, --euid <ID,...>       match by effective IDs
- -U, --uid <ID,...>        match by real IDs
- -x, --exact               match exactly with the command name
- -F, --pidfile <file>      read PIDs from file
- -L, --logpidfile          fail if PID file is not locked
- -r, --runstates <state>   match runstates [D,S,Z,...]
- -A, --ignore-ancestors    exclude our ancestors from results
- --cgroup <grp,...>        match by cgroup v2 names
- --ns <PID>                match the processes that belong to the same
-                           namespace as <pid>
- --nslist <ns,...>         list which namespaces will be considered for
-                           the --ns option.
-                           Available namespaces: ipc, mnt, net, pid, user, uts
-
- -h, --help     display this help and exit
- -V, --version  output version information and exit
-
-For more details see pgrep(1).
-[5]-  Terminated              nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 > $B/h_chain_s1.log 2>&1
-492775 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2/train.py molecule=dmet_embedding trainer.seed=5 trainer.max_iters=120 trainer.num_samples=100 trainer.batch_size=100 trainer.warmup_size=100 trainer.buffer_size=100 trainer.load_checkpoint=false ngates=80 operator_pool.spec=dmet_excitation operator_pool.remove_z_ladder=false operator_pool.only_use_first_pauli=false qsci.max_dim=10000 molecule.step2_pickle_path=/home/loharkar/quenais-standalone/benchmark_results/h_chain/runs/75ccc6023a8c/results/step2_hamiltonian.pkl molecule.orbital_basis=mo
-495078 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2/train.py molecule=dmet_embedding trainer.seed=4 trainer.max_iters=120 trainer.num_samples=100 trainer.batch_size=100 trainer.warmup_size=100 trainer.buffer_size=100 trainer.load_checkpoint=false ngates=80 operator_pool.spec=dmet_excitation operator_pool.remove_z_ladder=false operator_pool.only_use_first_pauli=false qsci.max_dim=10000 molecule.step2_pickle_path=/home/loharkar/quenais-standalone/benchmark_results/h_chain/runs/a38c3b68f844/results/step2_hamiltonian.pkl molecule.orbital_basis=mo
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ sleep 10; pgrep -af "h_chain_gqe|gqe-for-qsci_w2"
-495078 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2/train.py molecule=dmet_embedding trainer.seed=4 trainer.max_iters=120 trainer.num_samples=100 trainer.batch_size=100 trainer.warmup_size=100 trainer.buffer_size=100 trainer.load_checkpoint=false ngates=80 operator_pool.spec=dmet_excitation operator_pool.remove_z_ladder=false operator_pool.only_use_first_pauli=false qsci.max_dim=10000 molecule.step2_pickle_path=/home/loharkar/quenais-standalone/benchmark_results/h_chain/runs/a38c3b68f844/results/step2_hamiltonian.pkl molecule.orbital_basis=mo
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+[benchmark] h_chain_compare: 84 runs over 12 system(s); this shard: 84  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp
+  b5adb1880707  sys=68a473ca5c3d  lasscf  shots=-       seed=-    {"tag_R": 1.0}
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1220, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1205, in main
+    print(f"  {r['run_id']}  sys={r['system_id']}  {p['solver']:<7} "
+BrokenPipeError: [Errno 32] Broken pipe
+[1] 7642
+[benchmark] h_chain_compare: 84 runs over 12 system(s); this shard: 84  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp
+  [system 68a473ca5c3d] steps 1, 0 ...
+  [system 68a473ca5c3d] ready (10 s)
+[1/84] b5adb1880707 lasscf  shots=- seed=-  ok   69.3 s  E=-5.31858565  err_solver=- kcal/mol  subspace=None
+[2/84] 9ba01b625793 lasscf  shots=- seed=-  ok   23.8 s  E=-5.24523236  err_solver=- kcal/mol  subspace=None
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
