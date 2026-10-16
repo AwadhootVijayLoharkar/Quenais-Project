@@ -1,68 +1,13 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python -c "
+git pull
+python -c "
 from pyscf import gto, scf
 from pyscf.mcscf import avas
 for R in (1.0,1.5,2.0):
-  m=gto.M(atom=';'.join(f'H 0 0 {R*i}' for i in range(10)),basis='sto-3g',verbose=0)
-  mf=scf.RHF(m).run()
-  for lab in (['4 H 1s','5 H 1s'], ['3 H 1s','4 H 1s','5 H 1s','6 H 1s']):
-    n,ne,_=avas.avas(mf,lab,threshold=0.2,minao='minao',verbose=0)
-    print(R, len(lab),'atoms ->', n,'orbitals', ne,'electrons')"
-1.0 2 atoms -> 3 orbitals 4 electrons
-1.0 4 atoms -> 5 orbitals 6 electrons
-1.5 2 atoms -> 2 orbitals 2 electrons
-1.5 4 atoms -> 6 orbitals 6 electrons
-2.0 2 atoms -> 2 orbitals 2 electrons
-2.0 4 atoms -> 6 orbitals 6 electrons
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+  m=gto.M(atom=';'.join(f'H 0 0 {R*i}' for i in range(14)),basis='sto-3g',verbose=0)
+  n,ne,_=avas.avas(scf.RHF(m).run(),['5 H 1s','6 H 1s','7 H 1s','8 H 1s'],threshold=0.2,minao='minao',verbose=0)
+  print(R, n, ne)"
 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@cerberus04:Quenais-Project]$ nvidia-smi
-python -c "import torch; x=torch.ones(3,device='cuda')*2; print('torch ok', torch.cuda.get_device_capability())"
-python -c "
-import cudaq; cudaq.set_target('nvidia')
-k=cudaq.make_kernel(); q=k.qalloc(20); k.h(q[0])
-for i in range(19): k.cx(q[i],q[i+1])
-k.mz(q); print(cudaq.sample(k, shots_count=1000))"
-Fri Oct 16 10:57:00 2026       
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 580.126.20             Driver Version: 580.126.20     CUDA Version: 13.0     |
-+-----------------------------------------+------------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-|                                         |                        |               MIG M. |
-|=========================================+========================+======================|
-|   0  NVIDIA TITAN V                 On  |   00000000:61:00.0 Off |                  N/A |
-| 28%   30C    P8             25W /  150W |       6MiB /  12288MiB |      0%      Default |
-|                                         |                        |                  N/A |
-+-----------------------------------------+------------------------+----------------------+
-
-+-----------------------------------------------------------------------------------------+
-| Processes:                                                                              |
-|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
-|        ID   ID                                                               Usage      |
-|=========================================================================================|
-|  No running processes found                                                             |
-+-----------------------------------------------------------------------------------------+
-/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/torch/cuda/__init__.py:422: UserWarning: Found GPU0 NVIDIA TITAN V which is of compute capability (CC) 7.0.
-The following list shows the CCs this version of PyTorch was built for and the hardware CCs it supports:
-- 7.5 which supports hardware CC >=7.5,<8.0
-- 8.0 which supports hardware CC >=8.0,<9.0 except {8.7}
-- 8.6 which supports hardware CC >=8.6,<9.0 except {8.7}
-- 9.0 which supports hardware CC >=9.0,<10.0
-- 10.0 which supports hardware CC >=10.0,<11.0 except {10.1}
-- 12.0 which supports hardware CC >=12.0,<13.0
-Your installed torch==2.13.0+cu130 does not include kernels for this GPU. Reinstall the same version against a CUDA build that does, e.g.:
-  For CUDA 12.6 use pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cu126
-  _warn_unsupported_code(d, device_cc, code_ccs)
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-torch.AcceleratorError: CUDA error: no kernel image is available for execution on the device
-Search for `cudaErrorNoKernelImageForDevice' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
-For more detailed error information, run with CUDA_LOG_FILE=stderr
-
-Traceback (most recent call last):
-  File "<string>", line 2, in <module>
-RuntimeError: architecture mismatch
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@cerberus04:Quenais-Project]$
+OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain > $B/h_chain.log 2>&1 &
 
 ps -u $USER -o pid,ppid,cmd | grep -v grep | grep run_benchmark
 

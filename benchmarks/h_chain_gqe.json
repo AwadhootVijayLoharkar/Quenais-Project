@@ -1,0 +1,149 @@
+{
+  "name": "h_chain_gqe",
+  "description": "First DMET+GQE test where DMET really embeds: linear H chains, STO-3G, impurity = AVAS on the central atoms only (atom-indexed labels). H10 with 2 central atoms (impurity 2-3 orbitals, embedding <=6 of 10) as a cheap pipeline check; H14 with 4 central atoms (impurity 5-6, embedding <=12 of 14, 24 qubits) as the main test. Whole-molecule FCI is in the row, so the embedding error (DMET exact vs FCI) is measured exactly. Order: h10 check, h14 probe, h14 curve (CCSD + free angles, seeds 4-5), h14 budget 200. Then tools/selection_baselines.py. --out $B/h_chain.",
+  "defaults": {
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80,
+    "gqe_basis": "mo",
+    "molecule": "H14",
+    "avas_ao_labels": [
+      "5 H 1s",
+      "6 H 1s",
+      "7 H 1s",
+      "8 H 1s"
+    ]
+  },
+  "studies": [
+    {
+      "name": "h10_check",
+      "cases": [
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0; H 0 0 8.0; H 0 0 9.0",
+          "tag_R": 1.0
+        },
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.5; H 0 0 3.0; H 0 0 4.5; H 0 0 6.0; H 0 0 7.5; H 0 0 9.0; H 0 0 10.5; H 0 0 12.0; H 0 0 13.5",
+          "tag_R": 1.5
+        },
+        {
+          "geometry": "H 0 0 0.0; H 0 0 2.0; H 0 0 4.0; H 0 0 6.0; H 0 0 8.0; H 0 0 10.0; H 0 0 12.0; H 0 0 14.0; H 0 0 16.0; H 0 0 18.0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H10",
+        "avas_ao_labels": [
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h14_probe",
+      "cases": [
+        {
+          "geometry": "H 0 0 0.0; H 0 0 2.0; H 0 0 4.0; H 0 0 6.0; H 0 0 8.0; H 0 0 10.0; H 0 0 12.0; H 0 0 14.0; H 0 0 16.0; H 0 0 18.0; H 0 0 20.0; H 0 0 22.0; H 0 0 24.0; H 0 0 26.0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "seed": [
+          4
+        ]
+      }
+    },
+    {
+      "name": "h14_curve",
+      "cases": [
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0; H 0 0 8.0; H 0 0 9.0; H 0 0 10.0; H 0 0 11.0; H 0 0 12.0; H 0 0 13.0",
+          "tag_R": 1.0
+        },
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.5; H 0 0 3.0; H 0 0 4.5; H 0 0 6.0; H 0 0 7.5; H 0 0 9.0; H 0 0 10.5; H 0 0 12.0; H 0 0 13.5; H 0 0 15.0; H 0 0 16.5; H 0 0 18.0; H 0 0 19.5",
+          "tag_R": 1.5
+        },
+        {
+          "geometry": "H 0 0 0.0; H 0 0 2.0; H 0 0 4.0; H 0 0 6.0; H 0 0 8.0; H 0 0 10.0; H 0 0 12.0; H 0 0 14.0; H 0 0 16.0; H 0 0 18.0; H 0 0 20.0; H 0 0 22.0; H 0 0 24.0; H 0 0 26.0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_pool_angles": [
+          null,
+          [
+            -1.0,
+            -0.4,
+            -0.1,
+            0.1,
+            0.4,
+            1.0
+          ]
+        ],
+        "seed": [
+          4,
+          5
+        ]
+      }
+    },
+    {
+      "name": "h14_budget",
+      "cases": [
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0; H 0 0 8.0; H 0 0 9.0; H 0 0 10.0; H 0 0 11.0; H 0 0 12.0; H 0 0 13.0",
+          "tag_R": 1.0
+        },
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.5; H 0 0 3.0; H 0 0 4.5; H 0 0 6.0; H 0 0 7.5; H 0 0 9.0; H 0 0 10.5; H 0 0 12.0; H 0 0 13.5; H 0 0 15.0; H 0 0 16.5; H 0 0 18.0; H 0 0 19.5",
+          "tag_R": 1.5
+        },
+        {
+          "geometry": "H 0 0 0.0; H 0 0 2.0; H 0 0 4.0; H 0 0 6.0; H 0 0 8.0; H 0 0 10.0; H 0 0 12.0; H 0 0 14.0; H 0 0 16.0; H 0 0 18.0; H 0 0 20.0; H 0 0 22.0; H 0 0 24.0; H 0 0 26.0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200
+        ],
+        "seed": [
+          4
+        ]
+      }
+    }
+  ]
+}
