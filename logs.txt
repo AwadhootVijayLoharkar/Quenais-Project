@@ -1,16 +1,293 @@
-git pull
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
 python -m pytest tests/test_las_init.py tests/test_benchmark_driver.py -q
-
-G='H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0'
+Already up to date.
+.............................                                                                                                                                            [100%]
+29 passed in 281.50s (0:04:41)
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ G='H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0'
 A=(--molecule H4 --basis sto-3g --geometry "$G" --active-space-method avas --avas-ao-labels 'H 1s' --las-fragments '0+1:2:1,1' '2+3:2:1,1')
 quenais-run "${A[@]}" --solver lasscf --project-dir /tmp/ws/a --steps 1 && quenais-run "${A[@]}" --solver lasscf --project-dir /tmp/ws/a --steps 0 3
 quenais-run "${A[@]}" --solver lassqd --lassqd-lucj-optimize --lassqd-shots 10000 --las-init-from /tmp/ws/a/results/step3_lasscf.pkl --las-no-orbital-opt --project-dir /tmp/ws/b --steps 1 && quenais-run "${A[@]}" --solver lassqd --lassqd-lucj-optimize --lassqd-shots 10000 --las-init-from /tmp/ws/a/results/step3_lasscf.pkl --las-no-orbital-opt --project-dir /tmp/ws/b --steps 0 3
 
+============================================================
+  Step 1: Active space
+============================================================
 
-python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym --dry-run
-python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp --dry-run
-NP=$(pgrep -f n2_noise.json | head -1); echo $NP
-nohup bash -c "while kill -0 $NP 2>/dev/null; do sleep 300; done
-export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
-python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym > $B/fe2bpym_warm.log 2>&1
-python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1" > /dev/null 2>&1 &
+============================================================
+[Step 1] Active Space Finder -- H4
+         Selector: avas
+============================================================
+  Atoms     : 4 ['H', 'H', 'H', 'H']  Basis: sto-3g
+  Electrons : 4  AOs: 4
+
+-- Phase A: UHF + Classification --
+  UHF energy = -2.09854594 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=18.4804 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -0.041198 Ha
+  Selector: avas (PySCF) -- skipping ASF/DMRG.
+  AVAS labels    : ['H 1s']
+  AVAS threshold : 0.2  minao=minao
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/active_space/selectors.py:271: RuntimeWarning: AVAS is running in a minimal basis (sto-3g). The projection onto minao is near-trivial there, so avas_threshold is weakly discriminating. Scan the threshold, and confirm in a polarised basis before concluding the selection is wrong.
+  warnings.warn(
+  AVAS selected 4 orbitals [0, 1, 2, 3] with 4 electrons.
+  Phase C skipped: it can only shrink a selection, and these orbitals were chosen deliberately.
+
+  Active electrons from AVAS: 4 (not recomputed -- mo_list is in the selector's basis)
+
+-- Phase D: Loewdin Population --
+
+     MO    Atom  Symbol    Weight
+  ---------------------------------
+      0       2       H    0.3449
+      1       0       H    0.3562
+      2       0       H    0.3449
+      3       2       H    0.3562
+
+============================================================
+[Step 1] Summary -- H4
+  Tier: 1  Active space: (4e, 4orb)  Orbitals: [0, 1, 2, 3]
+  Selection: automatic (AVAS, PySCF)
+  Selector settings: {'selector': 'avas', 'ao_labels': ['H 1s'], 'threshold': 0.2, 'minao': 'minao', 'openshell_option': 2, 'ncas': 4, 'nelecas': 4}
+  Correlation strength: 0.0227
+============================================================
+
+[Step 1] Saved -> /tmp/ws/a/results/step1_asf.pkl
+
+[QuEnAIS] Pipeline complete.
+
+============================================================
+  Step 0: Classical
+============================================================
+
+============================================================
+[Step 0] Classical Methods -- H4
+============================================================
+  Basis     : sto-3g
+  Charge    : 0   Spin (2S): 0
+  Methods   : ['HF', 'MP2']
+  Electrons : 4   AOs: 4
+  Step 1 loaded: (4e, 4orb)
+
+-- HF --
+  [HF] done in 2.1s
+  RHF energy: -2.09854594 Ha (converged: True)
+
+-- MP2 --
+  [MP2] done in 0.1s
+  E_corr: -0.04119811 Ha   MP2 energy: -2.13974405 Ha
+
+======================================================================================
+[Step 0] Results -- H4 / sto-3g
+======================================================================================
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol                   reproducibility       
+  ------------------------------------------------------------------------------------
+  HF               -2.09854594     +0.000000       +0.00                   deterministic         
+  MP2              -2.13974405     -0.041198      -25.85                   deterministic         
+
+  No exact reference in this run. Add --classical-methods CASCI (cheap, exact in step 1's active space) to get an error column, or FCI/DMRG for a reference that is exact in the basis.
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 3.0s
+======================================================================================
+
+[Step 0] Saved -> /tmp/ws/a/results/step0_classical.pkl
+
+============================================================
+  Step 3: Quantum solver
+============================================================
+
+============================================================
+[Step 3] LASSCF -- H4
+============================================================
+  fragment 0+1        atoms [0, 1]  (2o, 1a+1b, 2S=0)  localisation: min singular value 1.000
+  fragment 2+3        atoms [2, 3]  (2o, 1a+1b, 2S=0)  localisation: min singular value 1.000
+  LAS cycle   0  E = -2.0384903213  |g_orb| = 8.24e-01
+  LAS cycle   1  E = -2.1506397086  dE = -1.12e-01  |g_orb| = 2.76e-02
+  LAS cycle   2  E = -2.1507653619  dE = -1.26e-04  |g_orb| = 9.40e-04
+  LAS cycle   3  E = -2.1507655081  dE = -1.46e-07  |g_orb| = 3.20e-05
+  LAS cycle   4  E = -2.1507655082  dE = -1.71e-10  |g_orb| = 1.27e-06
+
+  LASSCF converged after 5 cycles: E = -2.1507655082 Ha  |g_orb| = 1.27e-06
+[Step 3] Saved -> /tmp/ws/a/results/step3_lasscf.pkl
+
+[QuEnAIS] Pipeline complete.
+
+============================================================
+  Step 1: Active space
+============================================================
+
+============================================================
+[Step 1] Active Space Finder -- H4
+         Selector: avas
+============================================================
+  Atoms     : 4 ['H', 'H', 'H', 'H']  Basis: sto-3g
+  Electrons : 4  AOs: 4
+
+-- Phase A: UHF + Classification --
+  UHF energy = -2.09854594 Ha (converged: True)
+  Spin  : 0.0000  contaminated=False
+  Gap   : min=18.4804 eV
+  TM    : False  ->  Tier 1
+
+-- Phase B: MP2 Density + ASF --
+  MP2 used: True  E_corr: -0.041198 Ha
+  Selector: avas (PySCF) -- skipping ASF/DMRG.
+  AVAS labels    : ['H 1s']
+  AVAS threshold : 0.2  minao=minao
+/home/loharkar/quenais-standalone/Quenais-Project/quenais/active_space/selectors.py:271: RuntimeWarning: AVAS is running in a minimal basis (sto-3g). The projection onto minao is near-trivial there, so avas_threshold is weakly discriminating. Scan the threshold, and confirm in a polarised basis before concluding the selection is wrong.
+  warnings.warn(
+  AVAS selected 4 orbitals [0, 1, 2, 3] with 4 electrons.
+  Phase C skipped: it can only shrink a selection, and these orbitals were chosen deliberately.
+
+  Active electrons from AVAS: 4 (not recomputed -- mo_list is in the selector's basis)
+
+-- Phase D: Loewdin Population --
+
+     MO    Atom  Symbol    Weight
+  ---------------------------------
+      0       2       H    0.3449
+      1       0       H    0.3562
+      2       0       H    0.3449
+      3       2       H    0.3562
+
+============================================================
+[Step 1] Summary -- H4
+  Tier: 1  Active space: (4e, 4orb)  Orbitals: [0, 1, 2, 3]
+  Selection: automatic (AVAS, PySCF)
+  Selector settings: {'selector': 'avas', 'ao_labels': ['H 1s'], 'threshold': 0.2, 'minao': 'minao', 'openshell_option': 2, 'ncas': 4, 'nelecas': 4}
+  Correlation strength: 0.0227
+============================================================
+
+[Step 1] Saved -> /tmp/ws/b/results/step1_asf.pkl
+
+[QuEnAIS] Pipeline complete.
+
+============================================================
+  Step 0: Classical
+============================================================
+
+============================================================
+[Step 0] Classical Methods -- H4
+============================================================
+  Basis     : sto-3g
+  Charge    : 0   Spin (2S): 0
+  Methods   : ['HF', 'MP2']
+  Electrons : 4   AOs: 4
+  Step 1 loaded: (4e, 4orb)
+
+-- HF --
+  [HF] done in 2.1s
+  RHF energy: -2.09854594 Ha (converged: True)
+
+-- MP2 --
+  [MP2] done in 0.1s
+  E_corr: -0.04119811 Ha   MP2 energy: -2.13974405 Ha
+
+======================================================================================
+[Step 0] Results -- H4 / sto-3g
+======================================================================================
+
+  Method           Energy (Ha)    vs HF (Ha)    kcal/mol                   reproducibility       
+  ------------------------------------------------------------------------------------
+  HF               -2.09854594     +0.000000       +0.00                   deterministic         
+  MP2              -2.13974405     -0.041198      -25.85                   deterministic         
+
+  No exact reference in this run. Add --classical-methods CASCI (cheap, exact in step 1's active space) to get an error column, or FCI/DMRG for a reference that is exact in the basis.
+  'optimizer-dependent' values can differ between runs and machines; see docs/limitations.md.
+  Total time: 3.1s
+======================================================================================
+
+[Step 0] Saved -> /tmp/ws/b/results/step0_classical.pkl
+
+============================================================
+  Step 3: Quantum solver
+============================================================
+
+============================================================
+[Step 3] LASSQD -- H4
+============================================================
+  fragment 0+1        atoms [0, 1]  (2o, 1a+1b, 2S=0)  localisation: min singular value 1.000
+  fragment 2+3        atoms [2, 3]  (2o, 1a+1b, 2S=0)  localisation: min singular value 1.000
+  warm start from /tmp/ws/a/results/step3_lasscf.pkl
+    (lasscf, E = -2.1507655082 Ha, 5 cycles, converged=True, density_fit=False)
+  orbitals kept fixed: this run tests the fragment solver at the start's orbitals
+  SQD: K=15 batches x d=170, 6 iterations, carryover eps=1e-05, 10000 shots on aer_mps
+      LUCJ linear method: E = -1.65004263 (3 it)
+      LUCJ linear method: E = -1.65004263 (3 it)
+    fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (2 distinct)
+    fragment 1: SQD dim 4 (100.0% of FCI), valid shots 100.0% (2 distinct)
+  LAS cycle   0  E = -2.1507655082  |g_orb| = 1.27e-06
+      LUCJ linear method: E = -1.65004263 (3 it)
+      LUCJ linear method: E = -1.65004263 (3 it)
+    fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (2 distinct)
+    fragment 1: SQD dim 4 (100.0% of FCI), valid shots 100.0% (2 distinct)
+  LAS cycle   1  E = -2.1507655082  dE = -1.78e-15  |g_orb| = 1.27e-06
+      LUCJ linear method: E = -1.65004263 (3 it)
+      LUCJ linear method: E = -1.65004263 (3 it)
+    fragment 0: SQD dim 4 (100.0% of FCI), valid shots 100.0% (2 distinct)
+    fragment 1: SQD dim 4 (100.0% of FCI), valid shots 100.0% (2 distinct)
+  LAS cycle   2  E = -2.1507655082  dE = +4.44e-16  |g_orb| = 1.27e-06
+
+  LASSQD converged after 3 cycles: E = -2.1507655082 Ha  |g_orb| = 1.27e-06
+[Step 3] Saved -> /tmp/ws/b/results/step3_lassqd.pkl
+
+[QuEnAIS] Pipeline complete.
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/n2_dz_gqe_mo.log 
+nohup: ignoring input
+[benchmark] n2_dz_gqe_mo: 4 runs over 2 system(s); this shard: 4  -> /home/loharkar/quenais-standalone/benchmark_results/n2_dz
+[1/4] 63c8a8257132 gqe     shots=- seed=4  ok 3164.0 s  E=-108.74259752  err_solver=+22.5268 kcal/mol  subspace=0.00023425348100672777
+[2/4] f5a16fc0163c gqe     shots=- seed=4  ok 4924.2 s  E=-108.77750884  err_solver=+0.6197 kcal/mol  subspace=0.011712674050336387
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ cat $B/baselines_gqe_mo.log 
+nohup: ignoring input
+          R            N         seed       solver      HCI_emb       HCI_mo    CIPSI_emb     CIPSI_mo     ASCI_emb      ASCI_mo    oracle_mo  best_classical  best/solver
+        1.1         1109            4       0.0405       0.0112       0.0002       0.0019       0.0001       0.0019       0.0001       0.0001       0.0001       0.0014
+        1.1         1065            5       0.0455       0.0124       0.0003       0.0024       0.0001       0.0024       0.0001       0.0001       0.0001       0.0017
+        1.1         3616            4      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000          inf
+        1.1         3616            5      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000          inf
+        1.8          964            4       0.0088       0.0510       0.0002       0.0026       0.0001       0.0024       0.0001       0.0001       0.0001       0.0066
+        1.8         1035            5       0.0052       0.0232       0.0002       0.0016       0.0000       0.0016       0.0000       0.0000       0.0000       0.0056
+        1.8         3648            4      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000          inf
+        1.8         3648            5      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000          inf
+        1.8          100            4      22.7618      17.8881       8.3799      10.3704       2.0125       7.8095       1.7589       1.9219       1.7589       0.0773
+        1.8          100            5      21.5137      17.8881       8.3799      10.3704       2.0125       7.8095       1.7589       1.9219       1.7589       0.0818
+        1.8          100            6      21.4853      17.8881       8.3799      10.3704       2.0125       7.8095       1.7589       1.9219       1.7589       0.0819
+        1.8          200            4       0.3340      12.9471       1.5633       2.4999       0.2748       2.2938       0.2446       0.2534       0.2446       0.7323
+        1.8          200            5       0.4311      12.9471       1.5633       2.4999       0.2748       2.2938       0.2446       0.2534       0.2446       0.5673
+        1.8          200            6       0.2651      12.9471       1.5633       2.4999       0.2748       2.2938       0.2446       0.2534       0.2446       0.9228
+        2.1          660            4       0.0013       0.0797       0.0000       0.0026      -0.0000       0.0026      -0.0000      -0.0000      -0.0000      -0.0180
+        2.1          672            5       0.0015       0.0743       0.0000       0.0022      -0.0000       0.0022      -0.0000      -0.0000      -0.0000      -0.0169
+        2.1         1768            4      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000          inf
+        2.1         1768            5      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000      -0.0000          inf
+        2.1          100            4      18.3579      13.7904       6.0958       7.4618       0.6615       6.1445       0.5333       0.5673       0.5333       0.0291
+        2.1          100            5       0.7555      13.7904       6.0958       7.4618       0.6615       6.1445       0.5333       0.5673       0.5333       0.7060
+        2.1          100            6      16.7393      13.7904       6.0958       7.4618       0.6615       6.1445       0.5333       0.5673       0.5333       0.0319
+        2.1          200            4       0.0994      10.9457       5.2378       2.9478       0.0806       2.0536       0.0566       0.0580       0.0566       0.5688
+        2.1          200            5       0.0916      10.9457       5.2378       2.9478       0.0806       2.0536       0.0566       0.0580       0.0566       0.6174
+        2.1          200            6       0.0779      10.9457       5.2378       2.9478       0.0806       2.0536       0.0566       0.0580       0.0566       0.7263
+        2.5          586            4       0.0003       0.1753      -0.0001       0.0019      -0.0001       0.0011      -0.0001      -0.0001      -0.0001      -0.3819
+        2.5          601            5       0.0003       0.1735      -0.0001       0.0017      -0.0001       0.0009      -0.0001      -0.0001      -0.0001      -0.3870
+        2.5         1768            4      -0.0000      -0.0001      -0.0001      -0.0001      -0.0001      -0.0001      -0.0001      -0.0001      -0.0001          inf
+        2.5         1768            5      -0.0000      -0.0001      -0.0001      -0.0001      -0.0001      -0.0001      -0.0001      -0.0001      -0.0001          inf
+        2.5          100            4      21.1372       9.8913       1.5631       1.0373       0.5359       1.0109       0.1025       0.1119       0.1025       0.0048
+        2.5          100            5      49.9277       9.8913       1.5631       1.0373       0.5359       1.0109       0.1025       0.1119       0.1025       0.0021
+        2.5          100            6      24.9821       9.8913       1.5631       1.0373       0.5359       1.0109       0.1025       0.1119       0.1025       0.0041
+        2.5          200            4       0.0651       9.6369       1.3171       0.6274       0.0391       0.3598       0.0116       0.0147       0.0116       0.1788
+        2.5          200            5      17.3070       9.6369       1.3171       0.6274       0.0391       0.3598       0.0116       0.0147       0.0116       0.0007
+        2.5          200            6       0.0349       9.6369       1.3171       0.6274       0.0391       0.3598       0.0116       0.0147       0.0116       0.3335
+
+34 rows -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/selection_baselines.csv
+best/solver > 1 means the quantum solver beat the best classical selection at the same size.
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
+grid            progress  failed  per_run   left      state     changed       log              
+fe2bpym_las     1/5       0       3560 min  ~237.4 h  STALE?    126 min ago   fe2bpym.log      
+fe2bpym_las_df  0/5       0       -         -         STALE?    1263 min ago  fe2bpym_df.log   
+fe2bpym_las     1/5       0       -         -         STALE?    1396 min ago  fe2bpym_w1.log   
+n2_dz_gqe_mo    2/4       0       67 min    ~2.2 h    STALE?    132 min ago   n2_dz_gqe_mo.log 
+n2_gqe_budget   18/18     0       17 min    -         finished  428 min ago   n2_gqe_budget.log
+n2_gqe_mo       16/16     0       36 min    -         finished  734 min ago   n2_gqe_mo.log    
+n2_noise        0/18      0       -         -         STALE?    106 min ago   n2_noise.log     
+n2_sqd_list     36/36     0       1 min     -         finished  1422 min ago  n2_sqd_list.log  
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
