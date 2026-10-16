@@ -1,47 +1,14 @@
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pgrep -af n2_noise
-R=$(ls -t $B/n2_curve/runs | head -1); echo $R; tail -15 $B/n2_curve/runs/$R/run.log
-446917 python tools/run_benchmark.py benchmarks/n2_noise.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-2987b2ef1f8b
-  Ansatz       : LUCJ_OPT
-  Mapping      : JW
-  Backend      : NOISY
-  Embedding    : 10 orbs = 20 qubits
-  Electrons    : 7α + 7β
-  UHF ref      : -107.49650051 Ha
-  MP2 ref      : -107.65142134 Ha
-  Seed         : 1
-
-── SQD (optimised LUCJ, LASSQD machinery) ─────────────────────────
-  LUCJ (optimised): pairs=all, reps=2, linear-method iterations=10
-  SQD: K=1 batches x d=1000000, 6 iterations, carryover eps=1e-05, shots=10000, sampler=aer_noisy, seed=1
-  LUCJ: reusing cached optimised circuit (8c75286d63f6fc893e64e272)
-  LUCJ state: E = -107.64720529 Ha, weight off HF = 0.9998
-  circuit ({cx,rz,sx,x} basis): depth 488, 1204 CX
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-
-python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym --dry-run | head -3
-python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp --dry-run | head -3
-[benchmark] fe2bpym_lassqd_warm: 4 runs over 1 system(s); this shard: 4  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
-  bdc0cb309d41  sys=adff1a56c5a7  lassqd  shots=10000   seed=1    
-  1fbf0919bec7  sys=adff1a56c5a7  lassqd  shots=10000   seed=2    
-[benchmark] h_chain_compare: 84 runs over 12 system(s); this shard: 84  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp
-  b5adb1880707  sys=68a473ca5c3d  lasscf  shots=-       seed=-    {"tag_R": 1.0}
-  9ba01b625793  sys=68a473ca5c3d  lasscf  shots=-       seed=-    {"tag_R": 1.0}
-Traceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1220, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1205, in main
-    print(f"  {r['run_id']}  sys={r['system_id']}  {p['solver']:<7} "
-BrokenPipeError: [Errno 32] Broken pipe
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ kill -0 375594 && echo alive
-alive
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-
-NP=$(pgrep -f n2_noise.json | head -1); echo $NP
-nohup bash -c "while kill -0 $NP 2>/dev/null; do sleep 300; done
+NP=446917
+nohup bash -c "
+while [ ! -f $B/n2_curve/runs/2987b2ef1f8b/row.json ]; do sleep 120; done
+PG=\$(ps -o pgid= $NP | tr -d ' '); kill -TERM -- -\$PG; sleep 60
 export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym > $B/fe2bpym_warm.log 2>&1
-python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1" > /dev/null 2>&1 &
+python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1
+python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve >> $B/n2_noise.log 2>&1
+" > $B/queue_w2.log 2>&1 &
+
+pgrep -af "row.json"
+
+python tools/status.py
+tail -3 $B/n2_noise.log $B/fe2bpym_warm.log $B/h_chain_cmp.log
