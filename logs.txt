@@ -1,11 +1,42 @@
-export OMP_NUM_THREADS=4
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/fe2bpym/runs/506dded29d65/run.log 
+
+  LASSCF NOT converged after 50 cycles: E = -3655.4974221027 Ha  |g_orb| = 6.63e-04
+[Step 3] Saved -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym/runs/506dded29d65/results/step3_lasscf.pkl
+
+[benchmark] row written: energy=-3655.497422102666  err_vs_best_ref=-36.34162668893655 kcal/mol
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (1/1), done.
+remote: Total 3 (delta 2), reused 3 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (3/3), 354 bytes | 13.00 KiB/s, done.
+From https://github.com/AwadhootVijayLoharkar/Quenais-Project
+   116655b..03fcf10  main       -> origin/main
+Updating 116655b..03fcf10
+Fast-forward
+ logs.txt | 57 ++++-----------------------------------------------------
+ 1 file changed, 4 insertions(+), 53 deletions(-)
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
+grid            progress  failed  per_run   left      state     changed       log              
+fe2bpym_las     1/5       0       3560 min  ~237.4 h  running   16 min ago    fe2bpym.log      
+fe2bpym_las_df  0/5       0       -         -         STALE?    1152 min ago  fe2bpym_df.log   
+fe2bpym_las     1/5       0       -         -         STALE?    1286 min ago  fe2bpym_w1.log   
+n2_dz_gqe_mo    2/4       0       67 min    ~2.2 h    running   22 min ago    n2_dz_gqe_mo.log 
+n2_gqe_budget   18/18     0       17 min    -         finished  317 min ago   n2_gqe_budget.log
+n2_gqe_mo       16/16     0       36 min    -         finished  623 min ago   n2_gqe_mo.log    
+n2_sqd_list     36/36     0       1 min     -         finished  1312 min ago  n2_sqd_list.log  
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ export OMP_NUM_THREADS=4
 nohup python -u tools/selection_baselines.py $B/n2_curve --where solver=gqe gqe_basis=mo > $B/baselines_gqe_mo.log 2>&1 &
-
+[2] 445815
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 export OMP_NUM_THREADS=20
-
-cat $B/baselines_gqe_mo.log
-
-OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain > $B/h_chain.log 2>&1 &
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ cat $B/baselines_gqe_mo.log
+nohup: ignoring input
+          R            N         seed       solver      HCI_emb       HCI_mo    CIPSI_emb     CIPSI_mo     ASCI_emb      ASCI_mo    oracle_mo  best_classical  best/solver
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail  -5 $B/baselines_gqe_mo.log 
+nohup: ignoring input
+          R            N         seed       solver      HCI_emb       HCI_mo    CIPSI_emb     CIPSI_mo     ASCI_emb      ASCI_mo    oracle_mo  best_classical  best/solver
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
 ps -u $USER -o pid,ppid,cmd | grep -v grep | grep run_benchmark
 
