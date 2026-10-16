@@ -1,11 +1,16 @@
-git pull
-python -c "
-from pyscf import gto, scf
-from pyscf.mcscf import avas
-for R in (1.0,1.5,2.0):
-  m=gto.M(atom=';'.join(f'H 0 0 {R*i}' for i in range(14)),basis='sto-3g',verbose=0)
-  n,ne,_=avas.avas(scf.RHF(m).run(),['5 H 1s','6 H 1s','7 H 1s','8 H 1s'],threshold=0.2,minao='minao',verbose=0)
-  print(R, n, ne)"
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pgrep -f "run_benchmark.py benchmarks/n2_dz_gqe_mo" | head -1
+375594
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ nohup bash -c 'while kill -0 375594 2>/dev/null; do sleep 60; OMP_NUM_THREADS=4 python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain' > $B/h_chain.log 2>&1 &
+[5] 391573
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ plist
+[5]+  Exit 2                  nohup bash -c 'while kill -0 375594 2>/dev/null; do sleep 60; OMP_NUM_THREADS=4 python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain' > $B/h_chain.log 2>&1
+bash: plist: command not found
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pgrep -l
+pgrep: no matching criteria specified
+Try `pgrep --help' for more information.
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pgrep -af "kill -0"
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+
 
 OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain > $B/h_chain.log 2>&1 &
 
