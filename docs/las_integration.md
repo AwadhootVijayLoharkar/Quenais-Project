@@ -93,6 +93,7 @@ Antiferromagnetic Fe(III) dimer from the paper, (6e,5o) fragments:
 | `--las-no-orbital-opt` | off | LASCI: keep the localised step-1 orbitals |
 | `--las-conv-tol` | 1e-8 / 1e-5 | energy convergence, lasscf / lassqd |
 | `--las-density-fit` | off | for larger basis sets |
+| `--las-init-from PKL` | off | warm start from a finished `step3_lasscf.pkl` (orbitals + fragment RDMs; same molecule, basis, fragments; `$VARS` expanded). With `--las-no-orbital-opt` the run tests only the fragment solver at the LASSCF orbitals, and the benchmark row uses the source energy as `err_solver_kcal` reference |
 | `--lassqd-backend` | `aer_mps` | `aer_statevector`, `ibm` (+ `--lassqd-ibm-backend NAME`) |
 | `--lassqd-shots` | 100000 | per macro cycle, all fragments in one job |
 | `--lassqd-batches` / `--lassqd-samples-per-batch` | 15 / 170 | SQD K and d |
@@ -201,7 +202,7 @@ Engineering gaps, in the order they will bite:
 
 | gap | matters when |
 |---|---|
-| No restart: a run always starts from the step-1 orbitals, and a crashed or timed-out job is lost | multi-day jobs such as the Fe dimer |
+| No restart of a crashed run (it starts again from step 1). `--las-init-from` warm-starts from a *finished* run only | multi-day jobs such as the Fe dimer |
 | SQD batches are solved one after another (K x N_iter x n_frag diagonalisations per cycle) | 10-orbital fragments; negligible for ScF |
 | `--lassqd-backend ibm` has never been executed, and there is no error mitigation (the paper uses dynamical decoupling and gate twirling) | a hardware chapter |
 | No MC-PDFT on the LAS densities (the paper reports LASSQD-tPBE) | comparing with their Table 1 beyond LASSCF |

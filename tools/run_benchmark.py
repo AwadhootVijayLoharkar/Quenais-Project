@@ -739,7 +739,23 @@ def _las_part(params, cfg, load):
         "n_qubits_max_fragment": 2 * max(ncas) if (ncas and r["solver"] == "lassqd") else None,
         "energy_trace_json": json.dumps([h.get("energy") for h in hist]),
         "grad_trace_json": json.dumps([h.get("grad_norm") for h in hist]),
+        "density_fit": s.get("density_fit"),
     }
+    init = r.get("init") or {}
+    if init:
+        # warm start: the start's own energy is this run's exact limit
+        # (LASSCF at the same orbitals/fragments), see quenais/las/stage.py
+        part.update({
+            "las_init_from": init.get("path"),
+            "las_init_solver": init.get("solver"),
+            "las_init_energy_Ha": init.get("energy"),
+            "las_init_density_fit": init.get("density_fit"),
+        })
+        if (r["solver"] == "lassqd" and init.get("solver") == "lasscf"
+                and init.get("energy") is not None
+                and bool(init.get("density_fit")) == bool(s.get("density_fit"))):
+            part["solver_ref_name"] = "LASSCF (warm-start source)"
+            part["solver_ref_energy_Ha"] = init["energy"]
     if r["solver"] == "lassqd":
         dims = [f.get("subspace_dim") for f in frags]
         fulls = [f.get("full_dim") for f in frags]
@@ -780,6 +796,11 @@ LEAD_COLUMNS = [
 ]
 
 
+def _truthy(v):
+    """row.json booleans may be missing (old rows), bool, or CSV strings."""
+    return str(v).strip().lower() in ("true", "1", "yes")
+
+
 def collect(out):
     rows = []
     for p in sorted((Path(out) / "runs").glob("*/row.json")):
@@ -792,11 +813,14 @@ def collect(out):
     for r in rows:
         if r.get("status") == "ok" and r.get("solver") == "lasscf":
             las_ref[(r["system_id"], r.get("las_fragments"),
-                     r.get("orbital_optimization"))] = r
+                     r.get("orbital_optimization"),
+                     _truthy(r.get("density_fit")))] = r
     for r in rows:
-        if r.get("status") == "ok" and r.get("solver") == "lassqd":
+        if (r.get("status") == "ok" and r.get("solver") == "lassqd"
+                and r.get("las_init_energy_Ha") in (None, "")):
             ref = las_ref.get((r["system_id"], r.get("las_fragments"),
-                               r.get("orbital_optimization")))
+                               r.get("orbital_optimization"),
+                               _truthy(r.get("density_fit"))))
             if ref is not None and r.get("energy_Ha") is not None:
                 r["solver_ref_name"] = "LASSCF"
                 r["solver_ref_energy_Ha"] = ref["energy_Ha"]

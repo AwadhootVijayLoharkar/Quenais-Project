@@ -114,6 +114,51 @@ def _initial_dm1s(step1, blocks, mol, nelec_sub):
     return out
 
 
+def load_init(path, C, space, specs, mol_info=None):
+    """
+    Warm start: orbitals and fragment 1-RDMs of a finished LAS run.
+
+    `path` is a step3_<solver>.pkl written by main() below. Checks that it
+    describes the same problem as (C, space, specs): same AO and MO count,
+    same core size, same fragment sizes, electrons and spins. Returns
+    (C_init, dm1s_init, info) where info records where the start came from.
+    """
+    path = os.path.expanduser(os.path.expandvars(str(path)))
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"--las-init-from: {path} not found")
+    with open(path, "rb") as fh:
+        ref = pickle.load(fh)
+
+    c0 = np.asarray(ref.get("mo_coeff"))
+    if c0.shape != C.shape:
+        raise ValueError(f"--las-init-from: orbitals have shape {c0.shape}, this "
+                         f"problem needs {C.shape} (different molecule or basis?)")
+    if int(ref.get("ncore", -1)) != space.ncore:
+        raise ValueError(f"--las-init-from: {ref.get('ncore')} core orbitals, "
+                         f"this problem has {space.ncore}")
+    if list(ref.get("ncas_sub", [])) != list(space.ncas_sub):
+        raise ValueError(f"--las-init-from: fragment sizes {ref.get('ncas_sub')} "
+                         f"!= {list(space.ncas_sub)}")
+    frags = ref.get("fragments") or []
+    want = [(s.norb, tuple(s.nelec), s.spin2s) for s in specs]
+    have = [(f.get("norb"), tuple(f.get("nelec", ())), f.get("spin2s")) for f in frags]
+    if have != want:
+        raise ValueError(f"--las-init-from: fragments {have} != {want} "
+                         f"(norb, (na, nb), 2S)")
+    if mol_info and ref.get("mol_info"):
+        for k in ("basis", "n_electrons", "n_ao"):
+            a, b = ref["mol_info"].get(k), mol_info.get(k)
+            if a is not None and b is not None and str(a).lower() != str(b).lower():
+                raise ValueError(f"--las-init-from: {k} {a!r} != {b!r}")
+
+    dm1s = [np.asarray(d, dtype=float) for d in ref["dm1s"]]
+    info = {"path": path, "solver": ref.get("solver"),
+            "energy": ref.get("energy"), "converged": ref.get("converged"),
+            "n_macro": ref.get("n_macro"), "grad_norm": ref.get("grad_norm"),
+            "density_fit": (ref.get("settings") or {}).get("density_fit")}
+    return c0, dm1s, info
+
+
 def main(cfg, force=False):
     from pyscf import gto
 
@@ -136,11 +181,28 @@ def main(cfg, force=False):
     mol = gto.M(atom=cfg.geometry, basis=cfg.basis, charge=cfg.charge,
                 spin=cfg.spin, verbose=0)
     C, space, nelec_sub, spin2s_sub, specs, svals, dm1s0 = build_problem(cfg, mol, step1)
-    ints = PyscfIntegrals(mol, density_fit=cfg.las.density_fit)
+    s = cfg.las
+    init_info = None
+    if s.init_from:
+        C, dm1s0, init_info = load_init(
+            s.init_from, C, space, specs,
+            mol_info={"basis": cfg.basis, "n_electrons": mol.nelectron,
+                      "n_ao": mol.nao_nr()})
+        print(f"  warm start from {init_info['path']}\n"
+              f"    ({init_info['solver']}, E = {init_info['energy']:.10f} Ha, "
+              f"{init_info['n_macro']} cycles, converged={init_info['converged']}, "
+              f"density_fit={init_info['density_fit']})")
+        if bool(init_info["density_fit"]) != bool(s.density_fit):
+            print("  WARNING: the start was made with different integrals "
+                  "(density fitting on/off); its energy is not this run's exact limit")
+        if not s.orbital_optimization:
+            print("  orbitals kept fixed: this run tests the fragment solver at "
+                  "the start's orbitals")
+
+    ints = PyscfIntegrals(mol, density_fit=s.density_fit)
     if ints.auxbasis:
         print(f"  density fitting with auxbasis {ints.auxbasis}")
 
-    s = cfg.las
     if solver_name == "lassqd":
         from quenais.las.sqd_solver import LassqdFragmentSolver
 
@@ -188,6 +250,7 @@ def main(cfg, force=False):
         "mol_info": {"molecule": cfg.molecule, "basis": cfg.basis,
                      "n_electrons": mol.nelectron, "n_ao": mol.nao_nr()},
         "uhf_energy": step1.get("uhf_energy"),
+        "init": init_info,
         "reproducibility": "stochastic" if solver_name == "lassqd"
         else "optimizer-dependent",
         "provenance": cfg.provenance(),

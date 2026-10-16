@@ -39,6 +39,11 @@ class LasSettings:
     #: uses 1, because each pass is a sampling job
     lasci_max_cycle: int = 50
     density_fit: bool = False
+    #: warm start: path to a finished step3_<solver>.pkl (usually an exact
+    #: LASSCF) whose orbitals and fragment 1-RDMs replace the step-1 start.
+    #: Same molecule, basis and fragments required (checked in las/stage.py).
+    #: Environment variables ($B) and ~ are expanded. None = cold start.
+    init_from: str | None = None
 
     # ── Exact fragment solver (lasscf) ───────────────────────────────────
     fci_spin_penalty: bool = True

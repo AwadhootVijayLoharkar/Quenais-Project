@@ -347,6 +347,12 @@ def build_parser():
                      help="energy convergence (default 1e-8 lasscf, 1e-5 lassqd)")
     las.add_argument("--las-density-fit", action="store_true",
                      help="density-fitted integrals (large basis sets)")
+    las.add_argument("--las-init-from", default=None, metavar="PKL",
+                     help="warm start from a finished step3_lasscf.pkl (its "
+                          "orbitals and fragment RDMs); same molecule, basis "
+                          "and fragments. $VARS and ~ are expanded. Combine "
+                          "with --las-no-orbital-opt to test the fragment "
+                          "solver at fixed LASSCF orbitals")
     las.add_argument("--lassqd-backend", default=None, choices=list(LAS_BACKENDS),
                      help="sampler (default aer_mps)")
     las.add_argument("--lassqd-ibm-backend", default=None,
@@ -513,6 +519,7 @@ def build_las_settings(args):
         "las_fragments": "fragments",
         "las_max_cycles": "max_macro",
         "las_conv_tol": "conv_tol_energy",
+        "las_init_from": "init_from",
         "lassqd_backend": "backend",
         "lassqd_ibm_backend": "ibm_backend_name",
         "lassqd_shots": "shots",
