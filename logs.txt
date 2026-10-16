@@ -5,6 +5,12 @@ cd ~/quenais-standalone/Quenais-Project && source quenais-env/bin/activate && gi
 python -c "import quenais, pyscf, qiskit_aer, ffsim; print('ok')"
 python -m pytest tests/test_las_init.py -q
 
+G=${GQE_QSCI_REPO_PATH:-$PWD/gqe-for-qsci}; echo $G; ls $G | head -3
+cp -r "$G" "${G}_w2"
+export GQE_QSCI_REPO_PATH="${G}_w2"
+python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 --dry-run | head -12
+nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 > $B/h_chain_s1.log 2>&1 &
+
 kill 471629
 NP=446917
 nohup bash -c "
@@ -15,6 +21,7 @@ python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bp
 python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve >> $B/n2_noise.log 2>&1
 " > $B/queue_w2.log 2>&1 &
 
+pgrep -af "375594"
 
 export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
 nohup python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1 &
