@@ -1,7 +1,20 @@
+nvidia-smi
+python -c "import torch; x=torch.ones(3,device='cuda')*2; print('torch ok', torch.cuda.get_device_capability())"
 python -c "
-from pyscf import gto
-m=gto.M(atom=';'.join(f'H 0 0 {1.5*i}' for i in range(10)),basis='sto-3g',verbose=0)
-print(m.search_ao_label(['3 H 1s','4 H 1s','5 H 1s','6 H 1s']))"
+import cudaq; cudaq.set_target('nvidia')
+k=cudaq.make_kernel(); q=k.qalloc(20); k.h(q[0])
+for i in range(19): k.cx(q[i],q[i+1])
+k.mz(q); print(cudaq.sample(k, shots_count=1000))"
+
+python -c "
+from pyscf import gto, scf
+from pyscf.mcscf import avas
+for R in (1.0,1.5,2.0):
+  m=gto.M(atom=';'.join(f'H 0 0 {R*i}' for i in range(10)),basis='sto-3g',verbose=0)
+  mf=scf.RHF(m).run()
+  for lab in (['4 H 1s','5 H 1s'], ['3 H 1s','4 H 1s','5 H 1s','6 H 1s']):
+    n,ne,_=avas.avas(mf,lab,threshold=0.2,minao='minao',verbose=0)
+    print(R, len(lab),'atoms ->', n,'orbitals', ne,'electrons')"
 
 ps -u $USER -o pid,ppid,cmd | grep -v grep | grep run_benchmark
 
