@@ -1,22 +1,21 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -u $USER -o pid,cmd | grep -v grep | grep "n2_gqe"
- 282359 python tools/run_benchmark.py benchmarks/n2_gqe_mo.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ ps -p 282359 -o pid,cmd
-    PID CMD
- 282359 python tools/run_benchmark.py benchmarks/n2_gqe_mo.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-remote: Enumerating objects: 5, done.
-remote: Counting objects: 100% (5/5), done.
-remote: Compressing objects: 100% (1/1), done.
-remote: Total 3 (delta 2), reused 3 (delta 2), pack-reused 0 (from 0)
-Unpacking objects: 100% (3/3), 347 bytes | 11.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   64b13f3..f7c9b42  main       -> origin/main
-Updating 64b13f3..f7c9b42
-Fast-forward
- logs.txt | 35 ++---------------------------------
- 1 file changed, 2 insertions(+), 33 deletions(-)
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ nohup bash -c 'while kill -0 282359 2>/dev/null; do sleep 300; done; OMP_NUM_THREADS=4 python tools/run_benchmark.py benchmarks/n2_gqe_budget.json --out $B/n2_curve --retry-failed' > $B/n2_gqe_budget.log 2>&1 &
-sleep 5; ps -u $USER -o pid,cmd | grep -v grep | grep "kill -0"
-[4] 346387
- 346387 bash -c while kill -0 282359 2>/dev/null; do sleep 300; done; OMP_NUM_THREADS=4 python tools/run_benchmark.py benchmarks/n2_gqe_budget.json --out $B/n2_curve --retry-failed
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
+grid            progress  failed  per_run  left  state     changed       log              
+fe2bpym_las     0/5       0       -        -     STALE?    3395 min ago  fe2bpym.log      
+fe2bpym_las_df  0/5       0       -        -     STALE?    971 min ago   fe2bpym_df.log   
+fe2bpym_las     1/5       0       -        -     STALE?    1105 min ago  fe2bpym_w1.log   
+n2_gqe_budget   18/18     0       17 min   -     finished  136 min ago   n2_gqe_budget.log
+n2_gqe_mo       16/16     0       36 min   -     finished  442 min ago   n2_gqe_mo.log    
+n2_sqd_list     36/36     0       1 min    -     finished  1131 min ago  n2_sqd_list.log  
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/fe2bpym_w1.log 
+nohup: ignoring input
+[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
+[1/5] 506dded29d65 lasscf  shots=- seed=-  skip (running elsewhere)
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/fe2bpym_df.log 
+nohup: ignoring input
+[benchmark] fe2bpym_las_df: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/fe2bpym.log 
+nohup: ignoring input
+[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
+  [system adff1a56c5a7] steps 1, 0 ...
+  [system adff1a56c5a7] ready (1476 s)
 [W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
