@@ -1,17 +1,41 @@
-git rm --cached gqe-for-qsci_w2
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git rm --cached gqe-for-qsci_w2
 grep -q "gqe-for-qsci_w2" .gitignore || echo "gqe-for-qsci_w2/" >> .gitignore
 git add .gitignore && git commit -m "untrack gqe-for-qsci_w2 copy" && git push
-
-
+rm 'gqe-for-qsci_w2'
+[main 8cf91aa] untrack gqe-for-qsci_w2 copy
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+ delete mode 160000 gqe-for-qsci_w2
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 96 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 336 bytes | 112.00 KiB/s, done.
+Total 3 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/AwadhootVijayLoharkar/Quenais-Project.git
+   2b7d975..8cf91aa  main -> main
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 ls $B/h_chain/runs/62bd4b742396/
 tail -30 $B/h_chain/runs/62bd4b742396/run.log
-
-
-pgrep -af run_benchmark
-tail -5 $B/n2_dz_gqe_mo.log
-
-
-kill 471629
+cif_files  results  row.json  run.json  run.log
+Traceback (most recent call last):
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 1162, in main
+    child_run(*a.child_run)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py", line 442, in child_run
+    run_step(3, cfg, args)
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/cli.py", line 605, in run_step
+    return dispatch(cfg, force=args.force)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/__init__.py", line 58, in dispatch
+    return gqe_runner.main(cfg, force=force, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/gqe_runner.py", line 199, in main
+    repo = resolve_repo(cfg=cfg)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/gqe_setup.py", line 126, in resolve_repo
+    raise FileNotFoundError(f"Not a directory: {path}")
+FileNotFoundError: Not a directory: /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ kill 471629
 NP=446917
 nohup bash -c "
 while [ ! -f $B/n2_curve/runs/2987b2ef1f8b/row.json ]; do sleep 120; done
@@ -20,3 +44,30 @@ export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym > $B/fe2bpym_warm.log 2>&1
 python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve >> $B/n2_noise.log 2>&1
 " > $B/queue_w2.log 2>&1 &
+[7] 501261
+[4]   Terminated              nohup bash -c "
+while [ ! -f $B/n2_curve/runs/2987b2ef1f8b/row.json ]; do sleep 120; done
+PG=\$(ps -o pgid= $NP | tr -d ' '); kill -TERM -- -\$PG; sleep 60
+export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
+python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym > $B/fe2bpym_warm.log 2>&1
+python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1
+python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve >> $B/n2_noise.log 2>&1
+" > $B/queue_w2.log 2>&1
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+
+
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+pgrep -af run_benchmark
+tail -5 $B/n2_dz_gqe_mo.log
+294636 python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df --retry-failed
+294658 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df c80c2890f995
+344590 bash -c while pgrep -f n2_gqe_mo.json >/dev/null; do sleep 300; done; OMP_NUM_THREADS=4 python tools/run_benchmark.py benchmarks/n2_gqe_budget.json --out $B/n2_curve
+375594 python tools/run_benchmark.py benchmarks/n2_dz_gqe_mo.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_dz
+393040 bash -c while kill -0 375594 2>/dev/null; do sleep 60; done; OMP_NUM_THREADS=4 python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain
+402351 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/n2_dz 41b16e456119
+nohup: ignoring input
+[benchmark] n2_dz_gqe_mo: 4 runs over 2 system(s); this shard: 4  -> /home/loharkar/quenais-standalone/benchmark_results/n2_dz
+[1/4] 63c8a8257132 gqe     shots=- seed=4  ok 3164.0 s  E=-108.74259752  err_solver=+22.5268 kcal/mol  subspace=0.00023425348100672777
+[2/4] f5a16fc0163c gqe     shots=- seed=4  ok 4924.2 s  E=-108.77750884  err_solver=+0.6197 kcal/mol  subspace=0.011712674050336387
+[3/4] da94ed2d6e59 gqe     shots=- seed=4  ok 9126.3 s  E=-109.10220846  err_solver=+6.2489 kcal/mol  subspace=6.791964833922876e-05
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
