@@ -1,68 +1,19 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_benchmark.py --out $B/n2_curve --collect-only
-python tools/show_rows.py $B/n2_curve --where solver=gqe gqe_basis=mo --cols tag_R gqe_pool_angles gqe_qsci_max_dim seed err_solver_kcal subspace_dim err_cipsi_kcal err_oracle_kcal
-[collect] 365 runs (365 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results.csv
-[collect] 133 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results_agg.csv
- tag_R                    gqe_pool_angles  gqe_qsci_max_dim  seed  err_solver_kcal  subspace_dim  err_cipsi_kcal  err_oracle_kcal
-1.1000                                  -                 -     4           0.0405          1109          0.0019           0.0023
-1.1000                                  -                 -     5           0.0455          1065          0.0024           0.0028
-1.1000  [-1.0, -0.4, -0.1, 0.1, 0.4, 1.0]                 -     4          -0.0000          3616         -0.0000          -0.0000
-1.1000  [-1.0, -0.4, -0.1, 0.1, 0.4, 1.0]                 -     5          -0.0000          3616         -0.0000          -0.0000
-1.8000                                  -                 -     4           0.0088           964          0.0026           0.0025
-1.8000                                  -                 -     5           0.0052          1035          0.0016           0.0016
-1.8000                                  -               100     5          21.5137           100         10.3704           7.9759
-1.8000                                  -               100     6          21.4853           100         10.3704           7.9759
-1.8000                                  -               100     4          22.7618           100         10.3704           7.9759
-1.8000                                  -               200     4           0.3340           200          2.4999           2.6313
-1.8000                                  -               200     5           0.4311           200          2.4999           2.6313
-1.8000                                  -               200     6           0.2651           200          2.4999           2.6313
-1.8000  [-1.0, -0.4, -0.1, 0.1, 0.4, 1.0]                 -     4          -0.0000          3648         -0.0000          -0.0000
-1.8000  [-1.0, -0.4, -0.1, 0.1, 0.4, 1.0]                 -     5          -0.0000          3648         -0.0000          -0.0000
-2.1000                                  -                 -     4           0.0013           660          0.0026           0.0034
-2.1000                                  -                 -     5           0.0015           672          0.0022           0.0033
-2.1000                                  -               100     6          16.7393           100          7.4618           7.4266
-2.1000                                  -               100     5           0.7555           100          7.4618           7.4266
-2.1000                                  -               100     4          18.3579           100          7.4618           7.4266
-2.1000                                  -               200     5           0.0916           200          2.9478           2.0390
-2.1000                                  -               200     4           0.0994           200          2.9478           2.0390
-2.1000                                  -               200     6           0.0779           200          2.9478           2.0390
-2.1000  [-1.0, -0.4, -0.1, 0.1, 0.4, 1.0]                 -     4          -0.0000          1768         -0.0000          -0.0000
-2.1000  [-1.0, -0.4, -0.1, 0.1, 0.4, 1.0]                 -     5          -0.0000          1768         -0.0000          -0.0000
-2.5000                                  -                 -     4           0.0003           586          0.0019           0.0011
-2.5000                                  -                 -     5           0.0003           601          0.0017           0.0010
-2.5000                                  -               100     5          49.9277           100          1.0373           2.3475
-2.5000                                  -               100     4          21.1372           100          1.0373           2.3475
-2.5000                                  -               100     6          24.9821           100          1.0373           2.3475
-2.5000                                  -               200     6           0.0349           200          0.6274           0.3861
-2.5000                                  -               200     4           0.0651           200          0.6274           0.3861
-2.5000                                  -               200     5          17.3070           200          0.6274           0.3861
-2.5000  [-1.0, -0.4, -0.1, 0.1, 0.4, 1.0]                 -     5          -0.0000          1768         -0.0001          -0.0001
-2.5000  [-1.0, -0.4, -0.1, 0.1, 0.4, 1.0]                 -     4          -0.0000          1768         -0.0001          -0.0001
+cd ~/quenais-standalone/Quenais-Project
+git pull
+pytest -q tests/test_asci.py        # expect 4 passed
 
-34 ok rows
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-ps -u $USER -o pid,pcpu,cmd | grep -v grep | grep fe2bpym_las_df
-grep -c "LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
-tail -2 $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
- 294636  0.0 python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df --retry-failed
-36
-      orbital line search stalled at |g| = 1.59e-06
-  LAS cycle  35  E = -3655.4966905136  dE = -2.49e-07  |g_orb| = 6.86e-04
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ grep -c "LAS cycle" $B/fe2bpym/runs/506dded29d65/run.log
-tail -4 $B/fe2bpym/runs/506dded29d65/run.log
-48
-  LAS cycle  46  E = -3655.4974213879  dE = -2.41e-07  |g_orb| = 6.70e-04
-      orbital line search stalled at |g| = 1.36e-06
-  LAS cycle  47  E = -3655.4974216276  dE = -2.40e-07  |g_orb| = 6.67e-04
-      orbital line search stalled at |g| = 1.81e-06
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+QUENAIS_SELECTION_MAX_DET=4000000 OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/n2_dz_gqe_mo.json --out $B/n2_dz > $B/n2_dz_gqe_mo.log 2>&1 &
+sleep 60; tail -3 $B/n2_dz_gqe_mo.log
 
+OMP_NUM_THREADS=4 python tools/selection_baselines.py $B/n2_curve --where solver=gqe gqe_basis=mo
 
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-grep -c "LAS cycle" $B/fe2bpym/runs/506dded29d65/run.log
-tail -4 $B/fe2bpym/runs/506dded29d65/run.log
-48
-  LAS cycle  46  E = -3655.4974213879  dE = -2.41e-07  |g_orb| = 6.70e-04
-      orbital line search stalled at |g| = 1.36e-06
-  LAS cycle  47  E = -3655.4974216276  dE = -2.40e-07  |g_orb| = 6.67e-04
-      orbital line search stalled at |g| = 1.81e-06
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+tail -2 $B/fe2bpym/runs/506dded29d65/run.log
+
+ps -u $USER -o pid,ppid,cmd | grep -v grep | grep run_benchmark
+
+kill <all the numbers>
+
+export OMP_NUM_THREADS=24
+nohup python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve > $B/n2_noise.log 2>&1 &
+
+tail -3 $B/n2_noise.log

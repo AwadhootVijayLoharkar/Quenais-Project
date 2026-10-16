@@ -49,6 +49,8 @@ import time
 import numpy as np
 
 __all__ = [
+    "asci_fixed_size",
+    "hci_fixed_size",
     "cipsi_from_scratch",
     "expand_from_seed",
     "lowest_diagonal_determinant",
@@ -248,3 +250,186 @@ def expand_from_seed(mol, seed_determinants, target_size, space=None,
               f"target {target_size}")
     return _grow(mol, seed, target_size, space, sigma, hdiag,
                  verbose=verbose, label="", **kw)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ASCI: the best determinant set of a FIXED size
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _asci_core(sel0, target_size, space, sigma, hdiag, max_iter=40,
+               denom_floor=1e-3, verbose=False):
+    """
+    Adaptive-sampling CI at fixed size (Tubman et al., J. Chem. Phys. 145,
+    044112 (2016)), with exact candidate search through the full-space
+    sigma vector.
+
+    Every iteration ranks ALL determinants by
+        in the set     |c_i|                       (current coefficient)
+        outside        |<a|H|psi>| / |E0 - H_aa|   (first-order amplitude)
+    and keeps the top `target_size`. Unlike CIPSI's growth loop, a determinant
+    picked early can be dropped again. Stops when the set no longer changes;
+    returns the lowest-energy set seen (energies are variational, so this is
+    always a valid upper bound).
+
+    Returns (selected indices, electronic energy, n_iterations).
+    """
+    n = int(target_size)
+    sel = np.unique(np.asarray(sel0, dtype=np.int64))
+    best_e, best_sel = np.inf, sel
+    full = np.zeros(space.ndet)
+    seen = set()
+    it = 0
+    for it in range(1, max_iter + 1):
+        e, c = _diagonalise_subspace(sel, space, sigma)
+        if e < best_e - 1e-12:
+            best_e, best_sel = e, sel
+        key = sel.tobytes()
+        if key in seen:                     # converged or cycling
+            break
+        seen.add(key)
+        full.fill(0.0)
+        full[sel] = c
+        hpsi = sigma(full.reshape(space.na, space.nb)).reshape(-1)
+        denom = np.abs(e - hdiag)
+        denom = np.where(denom < denom_floor, denom_floor, denom)
+        score = np.abs(hpsi) / denom
+        score[sel] = np.abs(c)              # members keep their coefficient
+        k = min(n, int(np.count_nonzero(score > 0)))
+        if k <= 0:
+            break
+        new = np.sort(np.argpartition(score, -k)[-k:]).astype(np.int64)
+        if verbose:
+            print(f"    ASCI it {it:2d}  N={new.size}  E={e:.10f}  "
+                  f"changed {np.setdiff1d(new, sel).size}")
+        sel = new
+    return best_sel, float(best_e), it
+
+
+def asci_fixed_size(mol, target_size, space=None, seed=None, verbose=False,
+                    **kw):
+    """
+    Classical fixed-size selected CI (ASCI), no quantum input.
+
+    Starts from the CIPSI set of the same size (or from `seed`), then
+    iterates the ASCI ranking until the set stops changing.
+    Returns (selected indices, total energy incl. e_core).
+    """
+    from quenais.quantum.det_analysis import DeterminantSpace, _sigma_operator
+
+    space = space or DeterminantSpace(mol.norb, mol.nelec)
+    sigma = _sigma_operator(mol, space)
+    hdiag = _hdiag(mol, space)
+    if seed is None:
+        seed, _ = _grow(mol, [int(np.argmin(hdiag))], target_size, space,
+                        sigma, hdiag, verbose=False)
+    sel, e, _ = _asci_core(seed, target_size, space, sigma, hdiag,
+                           verbose=verbose, **kw)
+    return sel, e + mol.cas_hamiltonian.e_core
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Heat-bath CI (HCI) at a fixed size -- the standard QSCI baseline
+# ─────────────────────────────────────────────────────────────────────────────
+
+class _Columns:
+    """H e_i for single determinants i (one full-space sigma each), cached."""
+
+    def __init__(self, space, sigma, cache_limit=4000):
+        self.space, self.sigma = space, sigma
+        self.cache, self.limit = {}, cache_limit
+        self._buf = np.zeros(space.ndet)
+
+    def __call__(self, i):
+        i = int(i)
+        col = self.cache.get(i)
+        if col is None:
+            self._buf.fill(0.0)
+            self._buf[i] = 1.0
+            col = self.sigma(self._buf.reshape(self.space.na, self.space.nb)
+                             ).reshape(-1).copy()
+            if len(self.cache) < self.limit:
+                self.cache[i] = col
+        return col
+
+
+def _hb_scores(sel, c, cols, ndet):
+    """Heat-bath score of every determinant: max_i |H_ai c_i| over i in sel."""
+    score = np.zeros(ndet)
+    for i, ci in zip(sel, c):
+        np.maximum(score, np.abs(cols(i) * ci), out=score)
+    score[sel] = -np.inf
+    return score
+
+
+def _hci_threshold(seed, eps, space, sigma, cols, max_iter=60, max_dim=None):
+    """Variational HCI stage at one threshold: add every a with
+    max_i |H_ai c_i| > eps, re-diagonalise, until nothing new is added."""
+    sel = np.unique(np.asarray(seed, dtype=np.int64))
+    for _ in range(max_iter):
+        e, c = _diagonalise_subspace(sel, space, sigma)
+        score = _hb_scores(sel, c, cols, space.ndet)
+        new = np.flatnonzero(score > eps)
+        if new.size == 0:
+            return sel, e, c, score
+        sel = np.union1d(sel, new)
+        if max_dim is not None and sel.size > max_dim:
+            break
+    e, c = _diagonalise_subspace(sel, space, sigma)
+    return sel, e, c, _hb_scores(sel, c, cols, space.ndet)
+
+
+def _hci_core(target_size, space, sigma, hdiag, n_bisect=30, verbose=False):
+    """
+    HCI (Holmes, Tubman, Umrigar, JCTC 12, 3674 (2016)) brought to exactly
+    `target_size` determinants for an equal-budget comparison:
+
+      1. bisect the threshold eps (log scale) for the largest converged HCI
+         set with at most N determinants,
+      2. top it up to exactly N with the highest remaining heat-bath scores,
+         and re-diagonalise.
+
+    Returns (selected indices, electronic energy, eps used).
+    """
+    n = int(target_size)
+    seed = [int(np.argmin(hdiag))]
+    cols = _Columns(space, sigma)
+    lo, hi = -8.0, 1.0                     # log10 eps
+    best = None
+    for _ in range(n_bisect):
+        mid = 0.5 * (lo + hi)
+        sel, e, c, score = _hci_threshold(seed, 10.0 ** mid, space, sigma, cols,
+                                          max_dim=4 * n)
+        if verbose:
+            print(f"    HCI eps=1e{mid:+.2f}  N={sel.size}  E={e:.10f}")
+        if sel.size <= n:
+            best = (sel, e, c, score, 10.0 ** mid)
+            hi = mid                       # allow more determinants
+        else:
+            lo = mid
+        if best is not None and best[0].size == n:
+            break
+    if best is None:                       # even the largest eps overshoots
+        sel, e, c, score = _hci_threshold(seed, 10.0 ** hi, space, sigma, cols)
+        best = (sel, e, c, score, 10.0 ** hi)
+    sel, e, c, score, eps = best
+    while sel.size < n:                    # top up by heat-bath score
+        k = min(n - sel.size, int(np.count_nonzero(score > 0)))
+        if k <= 0:
+            break
+        sel = np.union1d(sel, np.argpartition(score, -k)[-k:])
+        e, c = _diagonalise_subspace(sel, space, sigma)
+        score = _hb_scores(sel, c, cols, space.ndet)
+    return sel.astype(np.int64), float(e), float(eps)
+
+
+def hci_fixed_size(mol, target_size, space=None, verbose=False, **kw):
+    """
+    Heat-bath CI with exactly `target_size` determinants, no quantum input.
+    Returns (selected indices, total energy incl. e_core, eps used).
+    """
+    from quenais.quantum.det_analysis import DeterminantSpace, _sigma_operator
+
+    space = space or DeterminantSpace(mol.norb, mol.nelec)
+    sigma = _sigma_operator(mol, space)
+    hdiag = _hdiag(mol, space)
+    sel, e, eps = _hci_core(target_size, space, sigma, hdiag, verbose=verbose, **kw)
+    return sel, e + mol.cas_hamiltonian.e_core, eps

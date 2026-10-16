@@ -1,0 +1,62 @@
+{
+  "name": "n2_dz_gqe_mo",
+  "description": "DMET+GQE with the fixed MO basis on N2 cc-pVDZ (26 qubits, 2.9 M determinants: too big to fill), CCSD angles, 80 gates, 120 epochs. Budget 200 (the setting where GQE beat CIPSI 6-38x in STO-3G) and the default cap 10000. 2.1 A first. Run with QUENAIS_SELECTION_MAX_DET=4000000 so the CIPSI/oracle columns are computed. Old pre-fix values: 54.6 (1.1 A), 86.0 (2.1 A). --out $B/n2_dz.",
+  "defaults": {
+    "molecule": "N2",
+    "basis": "cc-pvdz",
+    "active_space_method": "avas",
+    "avas_ao_labels": [
+      "N 2s",
+      "N 2p"
+    ],
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASSCF",
+      "CASCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj_opt",
+    "mapping": "jw",
+    "backend": "mps",
+    "sqd_lucj_pairs": "all",
+    "sqd_lucj_reps": 2,
+    "sqd_samples_per_batch": 1000000,
+    "sqd_batches": 1,
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80,
+    "gqe_basis": "mo"
+  },
+  "studies": [
+    {
+      "name": "dz_gqe_mo",
+      "cases": [
+        {
+          "geometry": "N 0 0 0; N 0 0 2.1",
+          "tag_R": 2.1
+        },
+        {
+          "geometry": "N 0 0 0; N 0 0 1.1",
+          "tag_R": 1.1
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200,
+          null
+        ],
+        "seed": [
+          4
+        ]
+      }
+    }
+  ]
+}

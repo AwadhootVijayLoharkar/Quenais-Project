@@ -95,6 +95,35 @@ how to run: `docs/benchmarking.md`.
     120 epochs, 1 107 s): error **0.0013 kcal/mol** with 660 determinants
     (9.4 %, after QSCI's spin-symmetry completion) -- CIPSI at the same size
     0.0026, oracle (top-|c|) 0.0034. Before the fix: 95 kcal/mol.
+17. **Stronger classical baselines (16 Oct).** `det_expansion.hci_fixed_size`:
+    heat-bath CI (Holmes/Tubman/Umrigar 2016; the baseline used by Reinholdt
+    2025 and Kemmoku 2026), eps bisected to the budget and topped up to
+    exactly N by heat-bath score. `det_expansion.asci_fixed_size`:
+    fixed-size ASCI (Tubman 2016) seeded with the growth-CIPSI set, re-ranks
+    members by |c| and candidates by first-order amplitude, can drop
+    determinants. `tools/selection_baselines.py <out> --where ...` recomputes
+    oracle / HCI / CIPSI / ASCI at each finished run's subspace size in BOTH the raw
+    DMET basis (what results.csv uses) and the embedded HF basis (what GQE
+    uses since the fix), and reports the best classical value. No quantum
+    reruns. Reason: the CIPSI column was the simple add-only variant in the
+    raw basis, a handicapped baseline once GQE works in the MO basis.
+
+### GQE after the basis fix (16 Oct, n2_gqe_mo + n2_gqe_budget, kcal/mol)
+
+Budget 200 determinants (~3 % of the space), CCSD angles, 80 gates:
+
+| R | GQE seeds 4/5/6 | CIPSI (emb basis) | oracle (emb) |
+|---|---|---|---|
+| 1.8 | 0.33 / 0.43 / 0.27 | 2.50 | 2.63 |
+| 2.1 | 0.099 / 0.092 / 0.078 | 2.95 | 2.04 |
+| 2.5 | 0.065 / 17.3 / 0.035 | 0.63 | 0.39 |
+
+Budget 100: 1.8 Å 21.5-22.8 (CIPSI 10.4); 2.1 Å 16.7 / 0.76 / 18.4 (7.46);
+2.5 Å 21-50 (1.04). No cap (CCSD angles, ~600-1100 dets): 1.1 Å 0.04 (CIPSI
+0.002), 1.8 Å 0.005-0.009 (0.002), 2.1 Å 0.0013-0.0015 (0.0022-0.0026),
+2.5 Å 0.0003 (0.0017-0.0019). Free angles: exact, 25-51 % of the space.
+TODO: rerun the classical columns with tools/selection_baselines.py (HCI,
+ASCI, MO basis) before claiming the budget-200 advantage.
 
 
 ## Results (all with seed repeats unless stated)
