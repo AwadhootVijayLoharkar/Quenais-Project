@@ -1,19 +1,5 @@
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/fe2bpym/runs/506dded29d65/run.log 
-  LAS cycle  47  E = -3655.4974216276  dE = -2.40e-07  |g_orb| = 6.67e-04
-      orbital line search stalled at |g| = 1.81e-06
-  LAS cycle  48  E = -3655.4974218659  dE = -2.38e-07  |g_orb| = 6.65e-04
-      orbital line search stalled at |g| = 1.11e-06
-  LAS cycle  49  E = -3655.4974221027  dE = -2.37e-07  |g_orb| = 6.63e-04
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid            progress  failed  per_run  left    state     changed       log              
-fe2bpym_las     0/5       0       -        -       STALE?    3534 min ago  fe2bpym.log      
-fe2bpym_las_df  0/5       0       -        -       STALE?    1110 min ago  fe2bpym_df.log   
-fe2bpym_las     1/5       0       -        -       STALE?    1243 min ago  fe2bpym_w1.log   
-n2_dz_gqe_mo    1/4       0       53 min   ~2.6 h  running   61 min ago    n2_dz_gqe_mo.log 
-n2_gqe_budget   18/18     0       17 min   -       finished  275 min ago   n2_gqe_budget.log
-n2_gqe_mo       16/16     0       36 min   -       finished  581 min ago   n2_gqe_mo.log    
-n2_sqd_list     36/36     0       1 min    -       finished  1269 min ago  n2_sqd_list.log  
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+python tools/selection_baselines.py $B/n2_curve --where grid=n2_gqe_mo
+python tools/selection_baselines.py $B/n2_curve --where grid=n2_gqe_budget
 
 
 OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain > $B/h_chain.log 2>&1 &
