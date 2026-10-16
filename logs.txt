@@ -1,56 +1,16 @@
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pgrep -af run_benchmark.py
-[1]-  Terminated              nohup python tools/run_benchmark.py benchmarks/fe2bpym_las.json --out $B/fe2bpym --retry-failed > $B/fe2bpym.log 2>&1
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ pgrep -af selection_baselines
-445815 python -u tools/selection_baselines.py /home/loharkar/quenais-standalone/benchmark_results/n2_curve --where solver=gqe gqe_basis=mo
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-remote: Enumerating objects: 5, done.
-remote: Counting objects: 100% (5/5), done.
-remote: Compressing objects: 100% (1/1), done.
-remote: Total 3 (delta 2), reused 3 (delta 2), pack-reused 0 (from 0)
-Unpacking objects: 100% (3/3), 348 bytes | 7.00 KiB/s, done.
-From https://github.com/AwadhootVijayLoharkar/Quenais-Project
-   d703587..3642f81  main       -> origin/main
-Updating d703587..3642f81
-Fast-forward
- logs.txt | 48 +++---------------------------------------------
- 1 file changed, 3 insertions(+), 45 deletions(-)
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ export OMP_NUM_THREADS=20
-python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve --dry-run
-nohup python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve > $B/n2_noise.log 2>&1 &
-[benchmark] n2_noise: 18 runs over 1 system(s); this shard: 18  -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve
-  2987b2ef1f8b  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
-  9be00d88c7ef  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
-  0a955e41be0f  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
-  96803b7f0fd1  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
-  97b0c8f7d2d6  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
-  345788f9cc85  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
-  8f5594144173  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
-  57fe7acd8f88  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
-  3bc655f4cc29  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
-  e731444bc9fb  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
-  b70b322701fe  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
-  b3b1e4e2dd7a  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
-  653bc9c6c23f  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
-  acd390629118  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
-  c5014be7c462  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
-  eb7fbc03611b  sys=bb6e7d72cdcf  sqd     shots=10000   seed=1    {"tag_R": 1.1}
-  1b2d433309cb  sys=bb6e7d72cdcf  sqd     shots=10000   seed=2    {"tag_R": 1.1}
-  26205be0bcfa  sys=bb6e7d72cdcf  sqd     shots=10000   seed=3    {"tag_R": 1.1}
+git pull
+python -m pytest tests/test_las_init.py tests/test_benchmark_driver.py -q
 
-  first run reproduces with:
-  quenais-run --active-space-method avas --ansatz lucj_opt --avas-ao-labels 'N 2s' 'N 2p' --backend noisy --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASSCF CASCI FCI --dmet-reference casci --geometry 'N 0 0 0; N 0 0 1.1' --mapping jw --molecule N2 --noise-device FakeSherbrooke --noise-scale 1.0 --seed 1 --shots 10000 --solver sqd --sqd-batches 1 --sqd-lucj-pairs all --sqd-lucj-reps 2 --sqd-samples-per-batch 1000000 --steps 1 && quenais-run --active-space-method avas --ansatz lucj_opt --avas-ao-labels 'N 2s' 'N 2p' --backend noisy --basis sto-3g --classical-methods HF MP2 CCSD CCSD_T CASSCF CASCI FCI --dmet-reference casci --geometry 'N 0 0 0; N 0 0 1.1' --mapping jw --molecule N2 --noise-device FakeSherbrooke --noise-scale 1.0 --seed 1 --shots 10000 --solver sqd --sqd-batches 1 --sqd-lucj-pairs all --sqd-lucj-reps 2 --sqd-samples-per-batch 1000000 --steps 0 2 3
-[3] 446917
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid            progress  failed  per_run   left      state     changed       log              
-fe2bpym_las     1/5       0       3560 min  ~237.4 h  running   21 min ago    fe2bpym.log      
-fe2bpym_las_df  0/5       0       -         -         STALE?    1157 min ago  fe2bpym_df.log   
-fe2bpym_las     1/5       0       -         -         STALE?    1290 min ago  fe2bpym_w1.log   
-n2_dz_gqe_mo    2/4       0       67 min    ~2.2 h    running   26 min ago    n2_dz_gqe_mo.log 
-n2_gqe_budget   18/18     0       17 min    -         finished  322 min ago   n2_gqe_budget.log
-n2_gqe_mo       16/16     0       36 min    -         finished  628 min ago   n2_gqe_mo.log    
-n2_noise        0/18      0       -         -         running   0 min ago     n2_noise.log     
-n2_sqd_list     36/36     0       1 min     -         finished  1317 min ago  n2_sqd_list.log  
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+G='H 0 0 0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0'
+A=(--molecule H4 --basis sto-3g --geometry "$G" --active-space-method avas --avas-ao-labels 'H 1s' --las-fragments '0+1:2:1,1' '2+3:2:1,1')
+quenais-run "${A[@]}" --solver lasscf --project-dir /tmp/ws/a --steps 1 && quenais-run "${A[@]}" --solver lasscf --project-dir /tmp/ws/a --steps 0 3
+quenais-run "${A[@]}" --solver lassqd --lassqd-lucj-optimize --lassqd-shots 10000 --las-init-from /tmp/ws/a/results/step3_lasscf.pkl --las-no-orbital-opt --project-dir /tmp/ws/b --steps 1 && quenais-run "${A[@]}" --solver lassqd --lassqd-lucj-optimize --lassqd-shots 10000 --las-init-from /tmp/ws/a/results/step3_lasscf.pkl --las-no-orbital-opt --project-dir /tmp/ws/b --steps 0 3
 
-python tools/status.py
-tail -5 $B/baselines_gqe_mo.log
+
+python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym --dry-run
+python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp --dry-run
+NP=$(pgrep -f n2_noise.json | head -1); echo $NP
+nohup bash -c "while kill -0 $NP 2>/dev/null; do sleep 300; done
+export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
+python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym > $B/fe2bpym_warm.log 2>&1
+python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1" > /dev/null 2>&1 &
