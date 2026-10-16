@@ -1,9 +1,17 @@
-export B=/home/loharkar/quenais-standalone/benchmark_results
-ls $B | head -3
-free -g | head -2
-cd ~/quenais-standalone/Quenais-Project && source quenais-env/bin/activate && git pull
-python -c "import quenais, pyscf, qiskit_aer, ffsim; print('ok')"
-python -m pytest tests/test_las_init.py -q
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ rm -rf /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2/
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ du -sh gqe-for-qsci
+118G    gqe-for-qsci
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ du -sh gqe-for-qsci/* gqe-for-qsci/.[!.]* 2>/dev/null | sort -h | tail -8
+3.0K    gqe-for-qsci/train.py
+4.0K    gqe-for-qsci/README.md
+6.5K    gqe-for-qsci/configs
+12K     gqe-for-qsci/LICENSE
+22K     gqe-for-qsci/NOTICE
+205K    gqe-for-qsci/gqe_qsci
+1.1M    gqe-for-qsci/figs
+118G    gqe-for-qsci/outputs
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+
 
 G=${GQE_QSCI_REPO_PATH:-$PWD/gqe-for-qsci}; echo $G; ls $G | head -3
 cp -r "$G" "${G}_w2"
