@@ -1,16 +1,25 @@
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ rm -rf /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2/
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ du -sh gqe-for-qsci
-118G    gqe-for-qsci
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ du -sh gqe-for-qsci/* gqe-for-qsci/.[!.]* 2>/dev/null | sort -h | tail -8
-3.0K    gqe-for-qsci/train.py
-4.0K    gqe-for-qsci/README.md
-6.5K    gqe-for-qsci/configs
-12K     gqe-for-qsci/LICENSE
-22K     gqe-for-qsci/NOTICE
-205K    gqe-for-qsci/gqe_qsci
-1.1M    gqe-for-qsci/figs
-118G    gqe-for-qsci/outputs
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+G=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
+rsync -a --exclude 'outputs/' "$G/" "${G}_w2/"
+mkdir -p "${G}_w2/outputs"
+du -sh "${G}_w2"
+export GQE_QSCI_REPO_PATH="${G}_w2"
+python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 --dry-run | head -12
+nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 > $B/h_chain_s1.log 2>&1 &
+
+tail -5 $B/h_chain_s1.log
+nvidia-smi | grep MiB
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 G=${GQE_QSCI_REPO_PATH:-$PWD/gqe-for-qsci}; echo $G; ls $G | head -3
