@@ -1,106 +1,20 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid            progress  failed  per_run   left      state     changed       log              
-fe2bpym_las     1/5       0       3560 min  ~237.4 h  STALE?    140 min ago   fe2bpym.log      
-fe2bpym_las_df  0/5       0       -         -         STALE?    1276 min ago  fe2bpym_df.log   
-fe2bpym_las     1/5       0       -         -         STALE?    1410 min ago  fe2bpym_w1.log   
-n2_dz_gqe_mo    2/4       0       67 min    ~2.2 h    STALE?    146 min ago   n2_dz_gqe_mo.log 
-n2_gqe_budget   18/18     0       17 min    -         finished  441 min ago   n2_gqe_budget.log
-n2_gqe_mo       16/16     0       36 min    -         finished  747 min ago   n2_gqe_mo.log    
-n2_noise        0/18      0       -         -         STALE?    120 min ago   n2_noise.log     
-n2_sqd_list     36/36     0       1 min     -         finished  1436 min ago  n2_sqd_list.log  
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+export B=/home/loharkar/quenais-standalone/benchmark_results
+ls $B | head -3
+free -g | head -2
+cd ~/quenais-standalone/Quenais-Project && source quenais-env/bin/activate && git pull
+python -c "import quenais, pyscf, qiskit_aer, ffsim; print('ok')"
+python -m pytest tests/test_las_init.py -q
 
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ NP=446917
+kill 471629
+NP=446917
 nohup bash -c "
 while [ ! -f $B/n2_curve/runs/2987b2ef1f8b/row.json ]; do sleep 120; done
 PG=\$(ps -o pgid= $NP | tr -d ' '); kill -TERM -- -\$PG; sleep 60
 export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
 python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym > $B/fe2bpym_warm.log 2>&1
-python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1
 python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve >> $B/n2_noise.log 2>&1
 " > $B/queue_w2.log 2>&1 &
-[4] 471629
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-pgrep -af "row.json"
-471629 bash -c  while [ ! -f /home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/2987b2ef1f8b/row.json ]; do sleep 120; done PG=$(ps -o pgid= 446917 | tr -d ' '); kill -TERM -- -$PG; sleep 60 export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000 python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym > /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_warm.log 2>&1 python tools/run_benchmark.py benchmarks/h_chain_compare.json --out /home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp > /home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp.log 2>&1 python tools/run_benchmark.py benchmarks/n2_noise.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve >> /home/loharkar/quenais-standalone/benchmark_results/n2_noise.log 2>&1 
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 
 
-
-(base) [loharkar@makaria03:quenais-standalone]$ lscpu
-Architecture:                x86_64
-  CPU op-mode(s):            32-bit, 64-bit
-  Address sizes:             43 bits physical, 48 bits virtual
-  Byte Order:                Little Endian
-CPU(s):                      24
-  On-line CPU(s) list:       0-23
-Vendor ID:                   AuthenticAMD
-  Model name:                AMD Ryzen Threadripper 1920X 12-Core Processor
-    CPU family:              23
-    Model:                   1
-    Thread(s) per core:      2
-    Core(s) per socket:      12
-    Socket(s):               1
-    Stepping:                1
-    Frequency boost:         enabled
-    CPU(s) scaling MHz:      70%
-    CPU max MHz:             3500.0000
-    CPU min MHz:             2200.0000
-    BogoMIPS:                6985.87
-    Flags:                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_
-                             opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid amd_dcm aperfmperf rapl pni pclmulqdq monitor
-                              ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a mis
-                             alignsse 3dnowprefetch osvw skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb hw_pstate ssbd ibpb 
-                             vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt sha_ni xsaveopt xsavec xgetbv1 clzero xsaveerptr arat npt lb
-                             rv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overf
-                             low_recov succor smca sme sev ibpb_exit_to_user
-Virtualization features:     
-  Virtualization:            AMD-V
-Caches (sum of all):         
-  L1d:                       384 KiB (12 instances)
-  L1i:                       768 KiB (12 instances)
-  L2:                        6 MiB (12 instances)
-  L3:                        32 MiB (4 instances)
-NUMA:                        
-  NUMA node(s):              1
-  NUMA node0 CPU(s):         0-23
-Vulnerabilities:             
-  Gather data sampling:      Not affected
-  Indirect target selection: Not affected
-  Itlb multihit:             Not affected
-  L1tf:                      Not affected
-  Mds:                       Not affected
-  Meltdown:                  Not affected
-  Mmio stale data:           Not affected
-  Reg file data sampling:    Not affected
-  Retbleed:                  Mitigation; untrained return thunk; SMT vulnerable
-  Spec rstack overflow:      Mitigation; safe RET
-  Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl and seccomp
-  Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
-  Spectre v2:                Mitigation; Retpolines; IBPB conditional; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
-  Srbds:                     Not affected
-  Tsa:                       Not affected
-  Tsx async abort:           Not affected
-  Vmscape:                   Mitigation; IBPB before exit to userspace
-(base) [loharkar@makaria03:quenais-standalone]$ nvidia-smi 
-Fri Oct 16 15:03:48 2026       
-+-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 580.126.09             Driver Version: 580.126.09     CUDA Version: 13.0     |
-+-----------------------------------------+------------------------+----------------------+
-| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
-|                                         |                        |               MIG M. |
-|=========================================+========================+======================|
-|   0  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:08:00.0 Off |                  N/A |
-| 29%   32C    P8              8W /  250W |       7MiB /  11264MiB |      0%      Default |
-|                                         |                        |                  N/A |
-+-----------------------------------------+------------------------+----------------------+
-
-+-----------------------------------------------------------------------------------------+
-| Processes:                                                                              |
-|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
-|        ID   ID                                                               Usage      |
-|=========================================================================================|
-|  No running processes found                                                             |
-+-----------------------------------------------------------------------------------------+
-(base) [loharkar@makaria03:quenais-standalone]$ 
+export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
+nohup python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1 &
