@@ -1,21 +1,12 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-grid            progress  failed  per_run  left  state     changed       log              
-fe2bpym_las     0/5       0       -        -     STALE?    3395 min ago  fe2bpym.log      
-fe2bpym_las_df  0/5       0       -        -     STALE?    971 min ago   fe2bpym_df.log   
-fe2bpym_las     1/5       0       -        -     STALE?    1105 min ago  fe2bpym_w1.log   
-n2_gqe_budget   18/18     0       17 min   -     finished  136 min ago   n2_gqe_budget.log
-n2_gqe_mo       16/16     0       36 min   -     finished  442 min ago   n2_gqe_mo.log    
-n2_sqd_list     36/36     0       1 min    -     finished  1131 min ago  n2_sqd_list.log  
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/fe2bpym_w1.log 
-nohup: ignoring input
-[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
-[1/5] 506dded29d65 lasscf  shots=- seed=-  skip (running elsewhere)
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/fe2bpym_df.log 
-nohup: ignoring input
-[benchmark] fe2bpym_las_df: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_df
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -10 $B/fe2bpym.log 
-nohup: ignoring input
-[benchmark] fe2bpym_las: 5 runs over 1 system(s); this shard: 5  -> /home/loharkar/quenais-standalone/benchmark_results/fe2bpym
-  [system adff1a56c5a7] steps 1, 0 ...
-  [system adff1a56c5a7] ready (1476 s)
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+# 1. GQE results (both grids)
+python tools/run_benchmark.py --out $B/n2_curve --collect-only
+python tools/show_rows.py $B/n2_curve --where solver=gqe gqe_basis=mo --cols tag_R gqe_pool_angles gqe_qsci_max_dim seed err_solver_kcal subspace_dim err_cipsi_kcal err_oracle_kcal
+
+# 2. Fast Fe2 (W1): still running? which cycle?
+ps -u $USER -o pid,pcpu,cmd | grep -v grep | grep fe2bpym_las_df
+grep -c "LAS cycle" $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
+tail -2 $(ls -td $B/fe2bpym_df/runs/*/ | head -1)run.log
+
+# 3. Exact Fe2 (W2's run): which cycle, finished?
+grep -c "LAS cycle" $B/fe2bpym/runs/506dded29d65/run.log
+tail -4 $B/fe2bpym/runs/506dded29d65/run.log
