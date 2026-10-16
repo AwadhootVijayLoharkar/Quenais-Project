@@ -1,44 +1,63 @@
-G=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ G=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci
 rsync -a --exclude 'outputs/' "$G/" "${G}_w2/"
 mkdir -p "${G}_w2/outputs"
 du -sh "${G}_w2"
 export GQE_QSCI_REPO_PATH="${G}_w2"
 python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 --dry-run | head -12
 nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 > $B/h_chain_s1.log 2>&1 &
+1.4M    /home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2
+[benchmark] h_chain_gqe: 18 runs over 6 system(s); this shard: 9  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain
+  62bd4b742396  sys=18573d96fa75  gqe     shots=-       seed=4    {"tag_R": 1.5}
+  a38c3b68f844  sys=af01cda61c35  gqe     shots=-       seed=4    {"tag_R": 2.0}
+  75ccc6023a8c  sys=4b212334b0f1  gqe     shots=-       seed=5    {"tag_R": 1.0}
+  f9399769471c  sys=4b212334b0f1  gqe     shots=-       seed=5    {"tag_R": 1.0}
+  565602501461  sys=d19d8a3b4ca6  gqe     shots=-       seed=5    {"tag_R": 1.5}
+  f094c92a0d57  sys=d19d8a3b4ca6  gqe     shots=-       seed=5    {"tag_R": 1.5}
+  18307d1bce84  sys=af01cda61c35  gqe     shots=-       seed=4    {"tag_R": 2.0}
+  e2022dd38153  sys=4b212334b0f1  gqe     shots=-       seed=4    {"tag_R": 1.0}
+  2f9ff0b03f4c  sys=af01cda61c35  gqe     shots=-       seed=4    {"tag_R": 2.0}
 
+  first run reproduces with:
+[6] 486511
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 tail -5 $B/h_chain_s1.log
 nvidia-smi | grep MiB
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-G=${GQE_QSCI_REPO_PATH:-$PWD/gqe-for-qsci}; echo $G; ls $G | head -3
-cp -r "$G" "${G}_w2"
-export GQE_QSCI_REPO_PATH="${G}_w2"
-python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 --dry-run | head -12
-nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 > $B/h_chain_s1.log 2>&1 &
-
-kill 471629
-NP=446917
-nohup bash -c "
-while [ ! -f $B/n2_curve/runs/2987b2ef1f8b/row.json ]; do sleep 120; done
-PG=\$(ps -o pgid= $NP | tr -d ' '); kill -TERM -- -\$PG; sleep 60
-export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000
-python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out $B/fe2bpym > $B/fe2bpym_warm.log 2>&1
-python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve >> $B/n2_noise.log 2>&1
-" > $B/queue_w2.log 2>&1 &
-
-pgrep -af "375594"
-
-export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
-nohup python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1 &
+nohup: ignoring input
+[benchmark] h_chain_gqe: 18 runs over 6 system(s); this shard: 9  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain
+[1/9] 62bd4b742396 gqe     shots=- seed=4  skip (failed before; --retry-failed to rerun)
+[2/9] a38c3b68f844 gqe     shots=- seed=4  skip (running elsewhere)
+  [system 4b212334b0f1] steps 1, 0 ...
+| N/A   28C    P0             53W /  400W |      14MiB /  40960MiB |      0%      Default |
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/h_chain_s1.log
+nohup: ignoring input
+[benchmark] h_chain_gqe: 18 runs over 6 system(s); this shard: 9  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain
+[1/9] 62bd4b742396 gqe     shots=- seed=4  skip (failed before; --retry-failed to rerun)
+[2/9] a38c3b68f844 gqe     shots=- seed=4  skip (running elsewhere)
+  [system 4b212334b0f1] steps 1, 0 ...
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ nvidia-smi | grep MiB
+| N/A   28C    P0             53W /  400W |      14MiB /  40960MiB |      0%      Default |
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/h_chain_s1.log
+[1/9] 62bd4b742396 gqe     shots=- seed=4  skip (failed before; --retry-failed to rerun)
+[2/9] a38c3b68f844 gqe     shots=- seed=4  skip (running elsewhere)
+  [system 4b212334b0f1] steps 1, 0 ...
+  [system 4b212334b0f1] ready (76 s)
+  [system 4b212334b0f1] step 2 (casci) ...
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/h_chain_s1.log
+  [system 4b212334b0f1] steps 1, 0 ...
+  [system 4b212334b0f1] ready (76 s)
+  [system 4b212334b0f1] step 2 (casci) ...
+  [system af01cda61c35] ready (263 s)
+  [system af01cda61c35] step 2 (casci) ...
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -15 $B/h_chain_s1.log
+nohup: ignoring input
+[benchmark] h_chain_gqe: 18 runs over 6 system(s); this shard: 9  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain
+[1/9] 62bd4b742396 gqe     shots=- seed=4  skip (failed before; --retry-failed to rerun)
+[2/9] a38c3b68f844 gqe     shots=- seed=4  skip (running elsewhere)
+  [system 4b212334b0f1] steps 1, 0 ...
+  [system 4b212334b0f1] ready (76 s)
+  [system 4b212334b0f1] step 2 (casci) ...
+  [system af01cda61c35] ready (263 s)
+  [system af01cda61c35] step 2 (casci) ...
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ nvidia-smi | grep MiB
+| N/A   28C    P0             53W /  400W |      14MiB /  40960MiB |      0%      Default |
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
