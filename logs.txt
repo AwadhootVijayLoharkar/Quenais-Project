@@ -1,58 +1,9 @@
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/selection_baselines.py $B/n2_curve --where grid=n2_gqe_mo
-python tools/selection_baselines.py $B/n2_curve --where grid=n2_gqe_budget
-no matching rows (run --collect-only first?)
-no matching rows (run --collect-only first?)
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_benchmark.py --out $B/n2_curve --collect-only
-[collect] 365 runs (365 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results.csv
-[collect] 133 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results_agg.csv
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/selection_baselines.py --out $B/n2_curve --where solver=gqe gqe_basis=mo
-usage: selection_baselines.py [-h] [--where [WHERE ...]] [--basis {both,emb,mo}] out
-selection_baselines.py: error: unrecognized arguments: --out
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/selection_baselines.py  $B/n2_curve --where sol
-ver=gqe gqe_basis=mo
-          R            N         seed       solver      HCI_emb       HCI_mo    CIPSI_emb     CIPSI_mo     ASCI_emb      ASCI_mo    oracle_mo  best_classical  best/solver
-        1.1         1109            4       0.0405       0.0112       0.0002       0.0019       0.0001       0.0019       0.0001       0.0001       0.0001       0.0014
-^CTraceback (most recent call last):
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/selection_baselines.py", line 161, in <module>
-    main()
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/selection_baselines.py", line 124, in main
-    res = baselines(p, n, bases, cache)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/tools/selection_baselines.py", line 82, in baselines
-    sel, _ = cipsi_from_scratch(mol, n, space=space, verbose=False)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/det_expansion.py", line 223, in cipsi_from_scratch
-    return _grow(mol, seed, target_size, space, sigma, hdiag,
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/det_expansion.py", line 142, in _grow
-    e_elec, c = _diagonalise_subspace(sel, space, sigma)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/det_expansion.py", line 119, in _diagonalise_subspace
-    vals, vecs = eigsh(op, k=1, which="SA", tol=tol, v0=v0)
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 1779, in eigsh
-    params.iterate()
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/scipy/sparse/linalg/_eigen/arpack/arpack.py", line 592, in iterate
-    self.workd[yslice] = self.OP(self.workd[xslice])
-                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/scipy/sparse/linalg/_interface.py", line 262, in matvec
-    y = self._matvec(x)
-        ^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/scipy/sparse/linalg/_interface.py", line 620, in _matvec
-    return self.__matvec_impl(x)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/det_expansion.py", line 96, in matvec
-    return sigma(buf).reshape(-1)[sel]
-           ^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais/quantum/det_analysis.py", line 192, in sigma
-    return direct_spin1.contract_2e(h2eff, civec_2d, space.norb, space.nelec)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/loharkar/quenais-standalone/Quenais-Project/quenais-env/lib/python3.11/site-packages/pyscf/fci/direct_spin1.py", line 136, in contract_2e
-    libfci.FCIcontract_2e_spin1(
-KeyboardInterrupt
+export OMP_NUM_THREADS=4
+nohup python -u tools/selection_baselines.py $B/n2_curve --where solver=gqe gqe_basis=mo > $B/baselines_gqe_mo.log 2>&1 &
 
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+export OMP_NUM_THREADS=20
 
+cat $B/baselines_gqe_mo.log
 
 OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain > $B/h_chain.log 2>&1 &
 
