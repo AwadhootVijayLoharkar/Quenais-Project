@@ -102,3 +102,15 @@ def test_router_uses_amplitude_estimate_and_depth_hint():
     assert route.startswith("GENIE (") and "deeper" not in route
     d["n_est"] = 50000
     assert "GENIE-MR" in recommend(d, budget=10000)[1]
+
+
+def test_compactness_decides_in_every_regime_with_margin():
+    weak = {"w1_est": 0.95, "ccsd_ok": True, "noon_max": 0.02}
+    assert "GENIE (compact" in recommend(dict(weak, n_est=30), budget=200)[1]
+    assert "deeper circuit" in recommend(dict(weak, n_est=90), budget=200)[1]
+    lab, route, _ = recommend(dict(weak, n_est=500), budget=200)
+    assert lab == "weak" and "GENIE-MR" in route
+    # N2 2.1 A at budget 100: n_est 46 -> 3 x 46 > 100 -> deeper (it failed 2/3)
+    strong = {"w1_est": 0.3, "ccsd_ok": False, "noon_max": 0.5, "n_est": 46}
+    assert "deeper circuit" in recommend(strong, budget=100)[1]
+    assert "GENIE (compact" in recommend(strong, budget=200)[1]

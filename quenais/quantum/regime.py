@@ -53,6 +53,7 @@ class Thresholds:
     strong_w1: float = 0.60     # w1_est below this: strong correlation
     strong_noon: float = 0.40   # noon_max above this: strong correlation
     frac_occ: float = 0.10      # min(n, 2-n) above this: fractional orbital
+    safety: float = 3.0         # n_est is within ~3x of n99: GENIE if 3 n_est <= budget
 
 
 def spin_adapted_hf_weight(t1, t2):
@@ -139,8 +140,11 @@ def recommend(diag, thr=Thresholds(), fragments_separable=None, budget=None):
     fragments_separable: True/False if the user knows whether the system
     splits into weakly coupled fragments (LAS territory), None if unknown.
     budget: determinant budget of the quantum solver (e.g. the QSCI cap).
-    With diag["d_est"] it decides compactness: strong but compact problems
-    (d_est <= budget) stay with GENIE.
+    With diag["n_est"] (or the cruder "d_est") compactness decides the route
+    in every regime: GENIE if safety * n_est <= budget, GENIE with a deeper
+    circuit / larger budget if n_est <= budget, otherwise not GENIE. The
+    regime label (weak / moderate / strong, from w1 and NOONs) is reported
+    alongside but no longer decides on its own.
     """
     w1 = diag.get("w1_est")
     ok = diag.get("ccsd_ok", True)
@@ -152,23 +156,29 @@ def recommend(diag, thr=Thresholds(), fragments_separable=None, budget=None):
             and (nmax is None or nmax <= thr.strong_noon / 2))
 
     d_est = diag.get("n_est", diag.get("d_est"))
-    compact = (budget is not None and d_est is not None and d_est <= budget)
-    if strong and compact:
-        deep = d_est > budget / 2
-        return ("strong", "GENIE (multireference but compact: "
-                f"~{d_est} determinants <= budget {budget})"
-                + ("; use a deeper circuit" if deep else ""),
-                f"n_est {d_est} <= {budget}")
-    if strong:
+    label = "strong" if strong else "weak" if weak else "moderate"
+    if budget is not None and d_est is not None:
+        # Compactness decides the route in every regime (16-17 Oct data:
+        # GENIE tracks n99 / budget, not correlation strength). n_est is
+        # within ~3x of n99, hence the margin.
+        if d_est * thr.safety <= budget:
+            return (label, f"GENIE (compact: ~{d_est} determinants, budget {budget})",
+                    f"{thr.safety:g} x n_est {d_est} <= {budget}")
+        if d_est <= budget:
+            return (label, f"GENIE (~{d_est} determinants close to budget {budget}); "
+                    "use a deeper circuit or a larger budget",
+                    f"n_est {d_est} <= {budget} < {thr.safety:g} x n_est")
+    spread = budget is not None and d_est is not None   # here: n_est > budget
+    if strong or spread:
         why = []
+        if spread:
+            why.append(f"spread: n_est {d_est} > budget {budget}")
         if not ok:
             why.append("CCSD did not converge")
         if w1 is not None and w1 < thr.strong_w1:
             why.append(f"w1_est {w1:.2f} < {thr.strong_w1}")
         if nmax is not None and nmax > thr.strong_noon:
             why.append(f"noon_max {nmax:.2f} > {thr.strong_noon}")
-        if budget is not None and d_est is not None:
-            why.append(f"spread: n_est {d_est} > budget {budget}")
         if fragments_separable:
             route = "LASSQD (weakly coupled fragments)"
         elif fragments_separable is False:
@@ -176,7 +186,7 @@ def recommend(diag, thr=Thresholds(), fragments_separable=None, budget=None):
         else:
             route = ("LASSQD if the fragments are weakly coupled, else "
                      "GENIE-MR (not implemented): GENIE likely unreliable")
-        return "strong", route, "; ".join(why)
+        return label, route, "; ".join(why)
     if weak:
         return ("weak", "GENIE (or classical CCSD(T) may already suffice)",
                 f"w1_est {w1:.2f} >= {thr.weak_w1}")
