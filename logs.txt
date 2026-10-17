@@ -1,15 +1,55 @@
-git pull
-python tools/run_benchmark.py benchmarks/blind_test.json --dry-run
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_benchmark.py benchmarks/blind_test.json --out $B/blind  --dry-run
+[benchmark] blind_test: 18 runs over 6 system(s); this shard: 18  -> /home/loharkar/quenais-standalone/benchmark_results/blind
+  9708eefad758  sys=d57bc1e84270  gqe     shots=-       seed=4    {"tag_R": 0.96}
+  d50b4fa8ac56  sys=d57bc1e84270  gqe     shots=-       seed=5    {"tag_R": 0.96}
+  cf56a73dbb2e  sys=d57bc1e84270  gqe     shots=-       seed=4    {"tag_R": 0.96}
+  cdb5b576b712  sys=000ed89a4332  gqe     shots=-       seed=4    {"tag_R": 1.44}
+  4659f8a1b3f5  sys=000ed89a4332  gqe     shots=-       seed=5    {"tag_R": 1.44}
+  5ea5add40eef  sys=000ed89a4332  gqe     shots=-       seed=4    {"tag_R": 1.44}
+  bd24fddd04c0  sys=4ea2b7df27f1  gqe     shots=-       seed=4    {"tag_R": 1.92}
+  4baefec67e7f  sys=4ea2b7df27f1  gqe     shots=-       seed=5    {"tag_R": 1.92}
+  e328e85a69e6  sys=4ea2b7df27f1  gqe     shots=-       seed=4    {"tag_R": 1.92}
+  307f1e04240d  sys=ba3c7ab6fde9  gqe     shots=-       seed=4    {"tag_R": 1.0}
+  22e5efe3b30e  sys=ba3c7ab6fde9  gqe     shots=-       seed=5    {"tag_R": 1.0}
+  d1e761c53dfa  sys=ba3c7ab6fde9  gqe     shots=-       seed=4    {"tag_R": 1.0}
+  df3c9291f336  sys=d99899ff009b  gqe     shots=-       seed=4    {"tag_R": 1.5}
+  94686c37b7e8  sys=d99899ff009b  gqe     shots=-       seed=5    {"tag_R": 1.5}
+  161d376e7f2e  sys=d99899ff009b  gqe     shots=-       seed=4    {"tag_R": 1.5}
+  fa067354e917  sys=e06e9549329a  gqe     shots=-       seed=4    {"tag_R": 2.0}
+  7ed88cff8fac  sys=e06e9549329a  gqe     shots=-       seed=5    {"tag_R": 2.0}
+  a654333d4604  sys=e06e9549329a  gqe     shots=-       seed=4    {"tag_R": 2.0}
 
-# W1
-export QUENAIS_SELECTION_MAX_DET=4000000
+  first run reproduces with:
+  quenais-run --active-space-method avas --avas-ao-labels 'O 2s' 'O 2p' 'H 1s' --basis 6-31g --classical-methods HF MP2 CCSD CCSD_T CASCI --cudaq-target nvidia --dmet-reference casci --geometry 'O 0 0 0; H 0 0.759062 0.587729; H 0 -0.759062 0.587729' --gqe-basis mo --gqe-ngates 80 --gqe-seed 4 --molecule H2O --solver gqe --steps 1 && quenais-run --active-space-method avas --avas-ao-labels 'O 2s' 'O 2p' 'H 1s' --basis 6-31g --classical-methods HF MP2 CCSD CCSD_T CASCI --cudaq-target nvidia --dmet-reference casci --geometry 'O 0 0 0; H 0 0.759062 0.587729; H 0 -0.759062 0.587729' --gqe-basis mo --gqe-ngates 80 --gqe-seed 4 --molecule H2O --solver gqe --steps 0 2 3
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ export QUENAIS_SELECTION_MAX_DET=4000000
 nohup python tools/run_benchmark.py benchmarks/blind_test.json --out $B/blind > $B/blind_w1.log 2>&1 &
-
-# W2 (same, plus the GQE_QSCI_REPO_PATH=.../gqe-for-qsci_w2 setting you use on W2)
-export QUENAIS_SELECTION_MAX_DET=4000000
-nohup python tools/run_benchmark.py benchmarks/blind_test.json --out $B/blind > $B/blind_w2.log 2>&1 &
-
+[1] 516237
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 pgrep -af "fe2bpym"
-
-python tools/run_benchmark.py benchmarks/h14_gqe_depth.json --out $B/h_chain --collect-only
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/run_benchmark.py benchmarks/h14_gqe_depth.json --out $B/h_chain --collect-only
 python tools/show_rows.py $B/h_chain --where gqe_ngates=160
+[collect] 21 runs (21 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/results.csv
+[collect] 15 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/results_agg.csv
+ tag_R  shots_per_circuit  seed  err_solver_kcal  err_lucj_kcal  subspace_fraction  valid_shot_fraction  n_qubits  circuit_depth_max   t_step3_s
+     2                  -     4           7.9250              -             0.1575                    -        20                  -  13993.2243
+1.5000                  -     4           3.0314              -             0.1575                    -        20                  -   7849.3834
+
+2 ok rows
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+pgrep -af "fe2bpym"
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ export QUENAIS_SELECTION_MAX_DET=4000000
+nohup python tools/run_benchmark.py benchmarks/blind_test.json --out $B/blind > $B/blind_w2.log 2>&1 &
+[8]+  Done                    nohup python tools/run_benchmark.py benchmarks/h14_gqe_depth.json --out $B/h_chain > $B/h14_depth_w2.log 2>&1
+[8] 624255
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+pgrep -af "fe2bpym"
+501261 bash -c  while [ ! -f /home/loharkar/quenais-standalone/benchmark_results/n2_curve/runs/2987b2ef1f8b/row.json ]; do sleep 120; done PG=$(ps -o pgid= 446917 | tr -d ' '); kill -TERM -- -$PG; sleep 60 export OMP_NUM_THREADS=24 OPENBLAS_NUM_THREADS=1 PYSCF_MAX_MEMORY=100000 python tools/run_benchmark.py benchmarks/fe2bpym_lassqd_warm.json --out /home/loharkar/quenais-standalone/benchmark_results/fe2bpym > /home/loharkar/quenais-standalone/benchmark_results/fe2bpym_warm.log 2>&1 python tools/run_benchmark.py benchmarks/n2_noise.json --out /home/loharkar/quenais-standalone/benchmark_results/n2_curve >> /home/loharkar/quenais-standalone/benchmark_results/n2_noise.log 2>&1 
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+
+[M2 job 57124] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+pgrep -af "fe2bpym"
+[M2 job 57124] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
