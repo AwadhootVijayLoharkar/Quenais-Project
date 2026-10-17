@@ -1,0 +1,398 @@
+{
+  "name": "blind_test",
+  "description": "Blind test of the compactness router on systems it was not tuned on (answer to reviewer: generalization). Router rule frozen at the router_margin commit: GENIE if 3 n_est <= N, deeper if n_est <= N < 3 n_est, else not GENIE. Predictions are written with tools/regime_diagnostics.py BEFORE looking at GENIE errors. H2O 6-31G, AVAS O 2s2p + H 1s (full valence, ~24 qubits), symmetric stretch; H12 ring STO-3G, 6-atom impurity (12 embedded orbitals, 24 qubits). CCSD angles, 80 gates, 120 epochs, cap 1e4 (2 seeds) and budget 200 (1 seed). Run on both A100s without --shard (run locks split the work). W2 needs GQE_QSCI_REPO_PATH=.../gqe-for-qsci_w2. Set QUENAIS_SELECTION_MAX_DET=4000000. --out $B/blind.",
+  "defaults": {
+    "active_space_method": "avas",
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80,
+    "gqe_basis": "mo"
+  },
+  "studies": [
+    {
+      "name": "h2o_0.96_cap",
+      "cases": [
+        {
+          "geometry": "O 0 0 0; H 0 0.759062 0.587729; H 0 -0.759062 0.587729",
+          "tag_R": 0.96
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          null
+        ],
+        "seed": [
+          4,
+          5
+        ]
+      },
+      "fixed": {
+        "molecule": "H2O",
+        "basis": "6-31g",
+        "avas_ao_labels": [
+          "O 2s",
+          "O 2p",
+          "H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h2o_0.96_b200",
+      "cases": [
+        {
+          "geometry": "O 0 0 0; H 0 0.759062 0.587729; H 0 -0.759062 0.587729",
+          "tag_R": 0.96
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H2O",
+        "basis": "6-31g",
+        "avas_ao_labels": [
+          "O 2s",
+          "O 2p",
+          "H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h2o_1.44_cap",
+      "cases": [
+        {
+          "geometry": "O 0 0 0; H 0 1.138593 0.881593; H 0 -1.138593 0.881593",
+          "tag_R": 1.44
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          null
+        ],
+        "seed": [
+          4,
+          5
+        ]
+      },
+      "fixed": {
+        "molecule": "H2O",
+        "basis": "6-31g",
+        "avas_ao_labels": [
+          "O 2s",
+          "O 2p",
+          "H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h2o_1.44_b200",
+      "cases": [
+        {
+          "geometry": "O 0 0 0; H 0 1.138593 0.881593; H 0 -1.138593 0.881593",
+          "tag_R": 1.44
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H2O",
+        "basis": "6-31g",
+        "avas_ao_labels": [
+          "O 2s",
+          "O 2p",
+          "H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h2o_1.92_cap",
+      "cases": [
+        {
+          "geometry": "O 0 0 0; H 0 1.518124 1.175457; H 0 -1.518124 1.175457",
+          "tag_R": 1.92
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          null
+        ],
+        "seed": [
+          4,
+          5
+        ]
+      },
+      "fixed": {
+        "molecule": "H2O",
+        "basis": "6-31g",
+        "avas_ao_labels": [
+          "O 2s",
+          "O 2p",
+          "H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h2o_1.92_b200",
+      "cases": [
+        {
+          "geometry": "O 0 0 0; H 0 1.518124 1.175457; H 0 -1.518124 1.175457",
+          "tag_R": 1.92
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H2O",
+        "basis": "6-31g",
+        "avas_ao_labels": [
+          "O 2s",
+          "O 2p",
+          "H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h12ring_1.0_cap",
+      "cases": [
+        {
+          "geometry": "H 1.931852 0.000000 0; H 1.673033 0.965926 0; H 0.965926 1.673033 0; H 0.000000 1.931852 0; H -0.965926 1.673033 0; H -1.673033 0.965926 0; H -1.931852 0.000000 0; H -1.673033 -0.965926 0; H -0.965926 -1.673033 0; H -0.000000 -1.931852 0; H 0.965926 -1.673033 0; H 1.673033 -0.965926 0",
+          "tag_R": 1.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          null
+        ],
+        "seed": [
+          4,
+          5
+        ]
+      },
+      "fixed": {
+        "molecule": "H12ring",
+        "basis": "sto-3g",
+        "avas_ao_labels": [
+          "0 H 1s",
+          "1 H 1s",
+          "2 H 1s",
+          "3 H 1s",
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h12ring_1.0_b200",
+      "cases": [
+        {
+          "geometry": "H 1.931852 0.000000 0; H 1.673033 0.965926 0; H 0.965926 1.673033 0; H 0.000000 1.931852 0; H -0.965926 1.673033 0; H -1.673033 0.965926 0; H -1.931852 0.000000 0; H -1.673033 -0.965926 0; H -0.965926 -1.673033 0; H -0.000000 -1.931852 0; H 0.965926 -1.673033 0; H 1.673033 -0.965926 0",
+          "tag_R": 1.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H12ring",
+        "basis": "sto-3g",
+        "avas_ao_labels": [
+          "0 H 1s",
+          "1 H 1s",
+          "2 H 1s",
+          "3 H 1s",
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h12ring_1.5_cap",
+      "cases": [
+        {
+          "geometry": "H 2.897777 0.000000 0; H 2.509549 1.448889 0; H 1.448889 2.509549 0; H 0.000000 2.897777 0; H -1.448889 2.509549 0; H -2.509549 1.448889 0; H -2.897777 0.000000 0; H -2.509549 -1.448889 0; H -1.448889 -2.509549 0; H -0.000000 -2.897777 0; H 1.448889 -2.509549 0; H 2.509549 -1.448889 0",
+          "tag_R": 1.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          null
+        ],
+        "seed": [
+          4,
+          5
+        ]
+      },
+      "fixed": {
+        "molecule": "H12ring",
+        "basis": "sto-3g",
+        "avas_ao_labels": [
+          "0 H 1s",
+          "1 H 1s",
+          "2 H 1s",
+          "3 H 1s",
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h12ring_1.5_b200",
+      "cases": [
+        {
+          "geometry": "H 2.897777 0.000000 0; H 2.509549 1.448889 0; H 1.448889 2.509549 0; H 0.000000 2.897777 0; H -1.448889 2.509549 0; H -2.509549 1.448889 0; H -2.897777 0.000000 0; H -2.509549 -1.448889 0; H -1.448889 -2.509549 0; H -0.000000 -2.897777 0; H 1.448889 -2.509549 0; H 2.509549 -1.448889 0",
+          "tag_R": 1.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H12ring",
+        "basis": "sto-3g",
+        "avas_ao_labels": [
+          "0 H 1s",
+          "1 H 1s",
+          "2 H 1s",
+          "3 H 1s",
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h12ring_2.0_cap",
+      "cases": [
+        {
+          "geometry": "H 3.863703 0.000000 0; H 3.346065 1.931852 0; H 1.931852 3.346065 0; H 0.000000 3.863703 0; H -1.931852 3.346065 0; H -3.346065 1.931852 0; H -3.863703 0.000000 0; H -3.346065 -1.931852 0; H -1.931852 -3.346065 0; H -0.000000 -3.863703 0; H 1.931852 -3.346065 0; H 3.346065 -1.931852 0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          null
+        ],
+        "seed": [
+          4,
+          5
+        ]
+      },
+      "fixed": {
+        "molecule": "H12ring",
+        "basis": "sto-3g",
+        "avas_ao_labels": [
+          "0 H 1s",
+          "1 H 1s",
+          "2 H 1s",
+          "3 H 1s",
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h12ring_2.0_b200",
+      "cases": [
+        {
+          "geometry": "H 3.863703 0.000000 0; H 3.346065 1.931852 0; H 1.931852 3.346065 0; H 0.000000 3.863703 0; H -1.931852 3.346065 0; H -3.346065 1.931852 0; H -3.863703 0.000000 0; H -3.346065 -1.931852 0; H -1.931852 -3.346065 0; H -0.000000 -3.863703 0; H 1.931852 -3.346065 0; H 3.346065 -1.931852 0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_qsci_max_dim": [
+          200
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H12ring",
+        "basis": "sto-3g",
+        "avas_ao_labels": [
+          "0 H 1s",
+          "1 H 1s",
+          "2 H 1s",
+          "3 H 1s",
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    }
+  ]
+}
