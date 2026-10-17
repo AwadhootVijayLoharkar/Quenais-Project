@@ -1,0 +1,81 @@
+{
+  "name": "h_chain_compare_h14sqd",
+  "description": "The h14_dmet_sqd study of h_chain_compare.json on its own (identical run ids), so it can run without the slow H14 R=2.0 cold LASSQD runs in front of it. --out $B/h_chain_cmp.",
+  "defaults": {
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "lassqd_lucj_pairs": "all",
+    "shots": 10000
+  },
+  "studies": [
+    {
+      "name": "h14_dmet_sqd",
+      "cases": [
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.0; H 0 0 2.0; H 0 0 3.0; H 0 0 4.0; H 0 0 5.0; H 0 0 6.0; H 0 0 7.0; H 0 0 8.0; H 0 0 9.0; H 0 0 10.0; H 0 0 11.0; H 0 0 12.0; H 0 0 13.0",
+          "tag_R": 1.0
+        },
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.5; H 0 0 3.0; H 0 0 4.5; H 0 0 6.0; H 0 0 7.5; H 0 0 9.0; H 0 0 10.5; H 0 0 12.0; H 0 0 13.5; H 0 0 15.0; H 0 0 16.5; H 0 0 18.0; H 0 0 19.5",
+          "tag_R": 1.5
+        },
+        {
+          "geometry": "H 0 0 0.0; H 0 0 2.0; H 0 0 4.0; H 0 0 6.0; H 0 0 8.0; H 0 0 10.0; H 0 0 12.0; H 0 0 14.0; H 0 0 16.0; H 0 0 18.0; H 0 0 20.0; H 0 0 22.0; H 0 0 24.0; H 0 0 26.0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "sqd"
+        ],
+        "ansatz": [
+          "lucj_opt"
+        ],
+        "sqd_lucj_pairs": [
+          "all"
+        ],
+        "sqd_lucj_reps": [
+          2
+        ],
+        "sqd_samples_per_batch": [
+          1000000
+        ],
+        "sqd_batches": [
+          1
+        ],
+        "sqd_subspace": [
+          null,
+          "list"
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ]
+      },
+      "fixed": {
+        "molecule": "H14",
+        "avas_ao_labels": [
+          "5 H 1s",
+          "6 H 1s",
+          "7 H 1s",
+          "8 H 1s"
+        ]
+      }
+    }
+  ]
+}

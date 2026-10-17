@@ -1,0 +1,66 @@
+{
+  "name": "h_chain_compare_h14halves_warm",
+  "description": "H14 R=2.0 \u00c5, two-halves LASSQD (7-orbital fragments). The cold start crawled (~37 min per cycle, dE still 5e-2 after 12 cycles, would need ~30 h per run). Instead: warm start from the finished LASSCF of the same fragments (run 965b34bfdb6a) at FIXED orbitals, at most 10 cycles, seeds 1-3; err_solver is then vs that LASSCF. All other LASSQD rows of h_chain_compare are cold starts; say so in the table. --out $B/h_chain_cmp.",
+  "defaults": {
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "lassqd_lucj_pairs": "all",
+    "shots": 10000
+  },
+  "studies": [
+    {
+      "name": "h14_las_halves_warm",
+      "cases": [
+        {
+          "geometry": "H 0 0 0.0; H 0 0 2.0; H 0 0 4.0; H 0 0 6.0; H 0 0 8.0; H 0 0 10.0; H 0 0 12.0; H 0 0 14.0; H 0 0 16.0; H 0 0 18.0; H 0 0 20.0; H 0 0 22.0; H 0 0 24.0; H 0 0 26.0",
+          "tag_R": 2.0
+        }
+      ],
+      "fixed": {
+        "molecule": "H14",
+        "avas_ao_labels": [
+          "H 1s"
+        ]
+      },
+      "sweep": {
+        "solver": [
+          "lassqd"
+        ],
+        "las_fragments": [
+          [
+            "0+1+2+3+4+5+6:7:4,3",
+            "7+8+9+10+11+12+13:7:3,4"
+          ]
+        ],
+        "las_init_from": [
+          "/home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp/runs/965b34bfdb6a/results/step3_lasscf.pkl"
+        ],
+        "las_no_orbital_opt": [
+          true
+        ],
+        "las_max_cycles": [
+          10
+        ],
+        "seed": [
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  ]
+}
