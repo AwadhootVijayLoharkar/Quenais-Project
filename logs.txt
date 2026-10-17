@@ -1,7 +1,79 @@
-git pull
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 python -m pytest tests/test_regime.py -q
 export OMP_NUM_THREADS=8
 python tools/regime_diagnostics.py $B/h_chain --where solver=gqe gqe_basis=mo --exact
 python tools/regime_diagnostics.py $B/n2_curve --where solver=gqe gqe_basis=mo --exact
+.......                                                                                                                                                                  [100%]
+7 passed in 0.51s
+  molecule           R           N        seed      w1_est    w1_exact    noon_max   noon_frac     ccsd_ok      regime       genie     best_cl  genie/best
+       H10         1.0         113           4      0.9560      0.9556      0.0342      0.0822        True        weak     -0.0000      0.0000           -
+       H10         1.5          20           4      0.0941      0.8397      0.0856      0.1551        True      strong     -0.0000      0.0000           -
+       H10         2.0          20           4      0.6305      0.6278      0.2125      0.5570        True    moderate     -0.0000      0.0000           -
+       H14         1.0        7956           4      0.8993      0.8936      0.0512      0.1995        True    moderate     -0.0000     -0.0000           -
+       H14         1.0        6538           4      0.8993      0.8936      0.0512      0.1995        True    moderate      0.0190      0.0003     55.8125
+       H14         1.0        6273           5      0.8993      0.8936      0.0512      0.1995        True    moderate      0.0249      0.0006     41.0108
+       H14         1.0        7956           5      0.8993      0.8936      0.0512      0.1995        True    moderate     -0.0000     -0.0000           -
+       H14         1.0         200           4      0.8993      0.8936      0.0512      0.1995        True    moderate      4.6029      4.5017      1.0225
+       H14         1.5       10000           4      0.4595      0.4582      0.1300      0.7318        True      strong      3.0406      2.4987      1.2169
+       H14         1.5       10000           4      0.4595      0.4582      0.1300      0.7318        True      strong      3.0984      2.4987      1.2400
+       H14         1.5       10000           5      0.4595      0.4582      0.1300      0.7318        True      strong      3.1861      2.4987      1.2751
+       H14         1.5       10000           5      0.4595      0.4582      0.1300      0.7318        True      strong      3.0934      2.4987      1.2380
+       H14         1.5         200           4      0.4595      0.4582      0.1300      0.7318        True      strong     60.5086     51.7970      1.1682
+       H14         2.0       10000           4      0.1887      0.1437      0.2989      2.0018        True      strong     70.1814      5.9456     11.8038
+       H14         2.0       10000           4      0.1887      0.1437      0.2989      2.0018        True      strong     70.1059      5.9456     11.7911
+       H14         2.0       10000           5      0.1887      0.1437      0.2989      2.0018        True      strong     67.9145      5.9456     11.4226
+       H14         2.0       10000           5      0.1887      0.1437      0.2989      2.0018        True      strong     70.1814      5.9456     11.8038
+       H14         2.0         200           4      0.1887      0.1437      0.2989      2.0018        True      strong    136.0261     44.4239      3.0620
 
+18 rows -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/regime_diagnostics.csv
+thresholds: Thresholds(weak_w1=0.9, strong_w1=0.6, strong_noon=0.4)
+genie/best = GENIE error / best classical error at the same size (1 = tie, >1 classical better).
+  molecule           R           N        seed      w1_est    w1_exact    noon_max   noon_frac     ccsd_ok      regime       genie     best_cl  genie/best
+        N2         1.1        3616           4      0.7828      0.9168      0.1613      0.4715        True    moderate     -0.0000     -0.0000           -
+        N2         1.1        1109           4      0.7828      0.9168      0.1613      0.4715        True    moderate      0.0405      0.0001    704.9316
+        N2         1.1        3616           5      0.7828      0.9168      0.1613      0.4715        True    moderate     -0.0000     -0.0000           -
+        N2         1.1        1065           5      0.7828      0.9168      0.1613      0.4715        True    moderate      0.0455      0.0001    574.2063
+        N2         1.8        3648           4      0.2463      0.4259      0.9835      2.0689       False      strong     -0.0000     -0.0000           -
+        N2         1.8         964           4      0.2463      0.4259      0.9835      2.0689       False      strong      0.0088      0.0001    152.0447
+        N2         1.8        3648           5      0.2463      0.4259      0.9835      2.0689       False      strong     -0.0000     -0.0000           -
+        N2         1.8        1035           5      0.2463      0.4259      0.9835      2.0689       False      strong      0.0052      0.0000    177.1871
+        N2         1.8         100           4      0.2463      0.4259      0.9835      2.0689       False      strong     22.7618      1.7589     12.9410
+        N2         1.8         100           5      0.2463      0.4259      0.9835      2.0689       False      strong     21.5137      1.7589     12.2314
+        N2         1.8         100           6      0.2463      0.4259      0.9835      2.0689       False      strong     21.4853      1.7589     12.2153
+        N2         1.8         200           4      0.2463      0.4259      0.9835      2.0689       False      strong      0.3340      0.2446      1.3656
+        N2         1.8         200           5      0.2463      0.4259      0.9835      2.0689       False      strong      0.4311      0.2446      1.7626
+        N2         1.8         200           6      0.2463      0.4259      0.9835      2.0689       False      strong      0.2651      0.2446      1.0837
+        N2         2.1         660           4      0.3784      0.1916      0.4241      0.9184       False      strong      0.0013     -0.0000           -
+        N2         2.1        1768           4      0.3784      0.1916      0.4241      0.9184       False      strong     -0.0000     -0.0000           -
+        N2         2.1         672           5      0.3784      0.1916      0.4241      0.9184       False      strong      0.0015     -0.0000           -
+        N2         2.1        1768           5      0.3784      0.1916      0.4241      0.9184       False      strong     -0.0000     -0.0000           -
+        N2         2.1         100           4      0.3784      0.1916      0.4241      0.9184       False      strong     18.3579      0.5333     34.4202
+        N2         2.1         100           5      0.3784      0.1916      0.4241      0.9184       False      strong      0.7555      0.5333      1.4165
+        N2         2.1         100           6      0.3784      0.1916      0.4241      0.9184       False      strong     16.7393      0.5333     31.3853
+        N2         2.1         200           4      0.3784      0.1916      0.4241      0.9184       False      strong      0.0994      0.0566      1.7581
+        N2         2.1         200           5      0.3784      0.1916      0.4241      0.9184       False      strong      0.0916      0.0566      1.6197
+        N2         2.1         200           6      0.3784      0.1916      0.4241      0.9184       False      strong      0.0779      0.0566      1.3769
+        N2         2.5         586           4      0.2897      0.0988      0.8768      1.8140       False      strong      0.0003     -0.0001           -
+        N2         2.5        1768           4      0.2897      0.0988      0.8768      1.8140       False      strong     -0.0000     -0.0001           -
+        N2         2.5        1768           5      0.2897      0.0988      0.8768      1.8140       False      strong     -0.0000     -0.0001           -
+        N2         2.5         601           5      0.2897      0.0988      0.8768      1.8140       False      strong      0.0003     -0.0001           -
+        N2         2.5         100           4      0.2897      0.0988      0.8768      1.8140       False      strong     21.1372      0.1025    206.3157
+        N2         2.5         100           5      0.2897      0.0988      0.8768      1.8140       False      strong     49.9277      0.1025    487.3352
+        N2         2.5         100           6      0.2897      0.0988      0.8768      1.8140       False      strong     24.9821      0.1025    243.8453
+        N2         2.5         200           4      0.2897      0.0988      0.8768      1.8140       False      strong      0.0651      0.0116      5.5924
+        N2         2.5         200           5      0.2897      0.0988      0.8768      1.8140       False      strong     17.3070      0.0116   1486.3889
+        N2         2.5         200           6      0.2897      0.0988      0.8768      1.8140       False      strong      0.0349      0.0116      2.9987
+
+34 rows -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/regime_diagnostics.csv
+thresholds: Thresholds(weak_w1=0.9, strong_w1=0.6, strong_noon=0.4)
+genie/best = GENIE error / best classical error at the same size (1 = tie, >1 classical better).
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
 tail -n 3 $B/h_chain/runs/e3b42941ad1f/results/gqe_train.log $B/h_chain/runs/044daa03c7b1/results/gqe_train.log
+==> /home/loharkar/quenais-standalone/benchmark_results/h_chain/runs/e3b42941ad1f/results/gqe_train.log <==
+
+==> /home/loharkar/quenais-standalone/benchmark_results/h_chain/runs/044daa03c7b1/results/gqe_train.log <==
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -n 3 $B/h_chain/runs/e3b42941ad1f/results/gqe_train.log $B/h_chain/runs/044daa03c7b1/results/gqe_train.log
+==> /home/loharkar/quenais-standalone/benchmark_results/h_chain/runs/e3b42941ad1f/results/gqe_train.log <==
+
+==> /home/loharkar/quenais-standalone/benchmark_results/h_chain/runs/044daa03c7b1/results/gqe_train.log <==
+[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
