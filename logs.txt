@@ -1,24 +1,8 @@
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ git pull
-P=$(pgrep -f "h_chain_compare.json" | head -1); PG=$(ps -o pgid= $P | tr -d ' '); echo $P $PG
-kill -TERM -- -$PG; sleep 10; pgrep -af run_benchmark
-Already up to date.
-7642 7642
-[1]+  Terminated              nohup python tools/run_benchmark.py benchmarks/h_chain_compare.json --out $B/h_chain_cmp > $B/h_chain_cmp.log 2>&1
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ pgrep -af run_benchmark
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
-nohup bash -c "python tools/run_benchmark.py benchmarks/h_chain_compare_h14sqd.json --out $B/h_chain_cmp > $B/h_chain_cmp_sqd.log 2>&1
-python tools/run_benchmark.py benchmarks/h_chain_compare_h14halves_warm.json --out $B/h_chain_cmp > $B/h_chain_cmp_warm.log 2>&1" > /dev/null 2>&1 &
-sleep 60; tail -n 3 $B/h_chain_cmp_sqd.log
-[1] 2238663
-  [system 4b212334b0f1] steps 1, 0 ...
-  [system 4b212334b0f1] ready (5 s)
-  [system 4b212334b0f1] step 2 (casci) ...
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ tail -n 3 $B/h_chain_cmp_sqd.log
-  [system 4b212334b0f1] steps 1, 0 ...
-  [system 4b212334b0f1] ready (5 s)
-  [system 4b212334b0f1] step 2 (casci) ...
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ tail -n 3 $B/h_chain_cmp_sqd.log
-  [system 4b212334b0f1] steps 1, 0 ...
-  [system 4b212334b0f1] ready (5 s)
-  [system 4b212334b0f1] step 2 (casci) ...
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+export B=/home/loharkar/quenais-standalone/benchmark_results
+cd ~/quenais-standalone/Quenais-Project && source quenais-env/bin/activate && git pull
+python -c "import quenais, pyscf, qiskit_aer, ffsim; print('ok')"
+free -g | head -2; nproc
+
+export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
+nohup python tools/run_benchmark.py benchmarks/h_chain_compare_h14halves_warm.json --out $B/h_chain_cmp > $B/h_chain_cmp_warm.log 2>&1 &
+sleep 120; tail -n 5 $B/h_chain_cmp_warm.log
