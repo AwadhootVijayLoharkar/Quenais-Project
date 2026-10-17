@@ -244,5 +244,21 @@ def main(cfg, force=False, extra_args=None):
             f"hunk. Re-run: quenais-gqe-setup --repo {repo}"
         )
 
+    expected = getattr(cfg.gqe, "max_iters", None)
+    if (expected and epochs < int(expected)
+            and os.environ.get("QUENAIS_GQE_ALLOW_SHORT") != "1"):
+        # A trainer stopped by SIGTERM (Lightning shuts down gracefully)
+        # exits with code 0 and leaves its best-so-far determinants behind,
+        # which would otherwise be recorded as a finished run (16 Oct: two
+        # H14 runs after 4 and 32 of 120 epochs). Move the log aside so a
+        # rerun is not skipped by the "log already present" check above.
+        short = log_path.with_suffix(log_path.suffix + ".short")
+        os.replace(log_path, short)
+        raise RuntimeError(
+            f"GQE training stopped after {epochs} of {expected} epochs "
+            f"(killed or interrupted?). Log moved to {short}. Set "
+            f"QUENAIS_GQE_ALLOW_SHORT=1 only if early stopping is intended."
+        )
+
     print(f"\n[Step 3] Done -- {epochs} epochs logged to {log_path}")
     return {"log_file": str(log_path), "epochs": epochs, "skipped": False}

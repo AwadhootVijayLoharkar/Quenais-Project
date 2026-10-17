@@ -1,29 +1,7 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ for d in $B/h_chain/runs/*/ $B/n2_dz/runs/*/; do f=$d/results/gqe_train.log; test -f "$f" && echo "$(grep -c '^\[epoch ' "$f") $(basename $d)"; done | sort -n | head -40
-0 044daa03c7b1
-0 e3b42941ad1f
-120 18307d1bce84
-120 2f9ff0b03f4c
-120 36926785223e
-120 36bb83b95e26
-120 41b16e456119
-120 565602501461
-120 62bd4b742396
-120 63c8a8257132
-120 75ccc6023a8c
-120 7707ccda38b7
-120 9c5c4a52452b
-120 a2d26e8a9184
-120 a38c3b68f844
-120 ba7f860366ac
-120 c72fd18fcd03
-120 c956183f4869
-120 cfbff13774ec
-120 d6ea6a3e917f
-120 da94ed2d6e59
-120 e2022dd38153
-120 e9213b597405
-120 ecba03a7aa82
-120 f094c92a0d57
-120 f5a16fc0163c
-120 f9399769471c
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+git pull
+python -m pytest tests/test_regime.py -q
+export OMP_NUM_THREADS=8
+python tools/regime_diagnostics.py $B/h_chain --where solver=gqe gqe_basis=mo --exact
+python tools/regime_diagnostics.py $B/n2_curve --where solver=gqe gqe_basis=mo --exact
+
+tail -n 3 $B/h_chain/runs/e3b42941ad1f/results/gqe_train.log $B/h_chain/runs/044daa03c7b1/results/gqe_train.log
