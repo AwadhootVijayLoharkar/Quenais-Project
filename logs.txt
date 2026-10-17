@@ -11,4 +11,12 @@ h_chain_gqe          9/18      0       95 min    ~14.3 h   finished*  424 min ag
 n2_dz_gqe_mo         4/4       0       116 min   -         finished   975 min ago   n2_dz_gqe_mo.log
 n2_noise             1/18      0       256 min   ~72.5 h   running    26 min ago    n2_noise.log    
 n2_noise             3/18      0       228 min   ~57.0 h   running    26 min ago    n2_noise.log    
-[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/h_chain.log $B/h_chain_s1.log $B/h_chain_cmp.log $B/fe2bpym_warm.log $B/n2_dz
+n2_dz/            n2_dz_cpu.log     n2_dz_gpu.log     n2_dz_gqe_mo.log  n2_dz_sqd.log     
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -5 $B/h_chain.log $B/h_chain_s1.log $B/h_chain_cmp.log $B/fe2bpym_warm.log $B/n2_dz_gqe_mo.log $B/n2_noise.log 
+tail: option used in invalid context -- 5
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ tail -3 $B/h_chain.log $B/h_chain_s1.log $
+B/h_chain_cmp.log $B/fe2bpym_warm.log $B/n2_dz_gqe_mo.log $B/n2_noise.log 
+tail: option used in invalid context -- 3
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$  
