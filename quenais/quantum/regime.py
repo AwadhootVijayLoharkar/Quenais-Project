@@ -19,8 +19,18 @@ Indicators (all from the embedded mean field, no exact solution needed):
             "fractionally occupied" electrons.
   noon_max  the largest min(n, 2 - n) of a single natural orbital (1 = one
             orbital exactly half filled).
-  w1_exact  (optional, for validation only) weight of the leading
-            determinant of the exact embedding ground state.
+  n_frac    number of natural orbitals with min(n, 2 - n) > 0.1 (CCSD
+            natural orbitals when CCSD converges, else MP2).
+  d_est     C(n_frac, n_frac/2)^2: rough number of determinants the
+            strongly correlated orbitals span. COMPACTNESS, not strength:
+            stretched N2 is strongly correlated but compact (6 orbitals,
+            ~400 determinants); stretched H14 spreads over its whole
+            embedding (10 orbitals, ~63 500). GENIE's failures follow
+            compactness, not w1 (16-17 Oct data).
+  w1_exact, ipr_exact, n99_exact  (optional, validation only) leading
+            determinant weight, inverse participation ratio 1/sum c^4
+            (effective number of determinants) and the number of
+            determinants holding 99 % of the weight, from the exact state.
 
 Only compute_diagnostics needs PySCF; everything else is NumPy.
 """
@@ -32,7 +42,7 @@ from dataclasses import dataclass
 import numpy as np
 
 __all__ = ["Thresholds", "spin_adapted_hf_weight", "noon_metrics",
-           "recommend", "compute_diagnostics"]
+           "estimated_dets", "recommend", "compute_diagnostics"]
 
 
 @dataclass(frozen=True)
@@ -41,6 +51,7 @@ class Thresholds:
     weak_w1: float = 0.90       # w1_est above this: weak correlation
     strong_w1: float = 0.60     # w1_est below this: strong correlation
     strong_noon: float = 0.40   # noon_max above this: strong correlation
+    frac_occ: float = 0.10      # min(n, 2-n) above this: fractional orbital
 
 
 def spin_adapted_hf_weight(t1, t2):
@@ -66,13 +77,23 @@ def noon_metrics(occupations):
     return float(dev.sum()), float(dev.max(initial=0.0))
 
 
-def recommend(diag, thr=Thresholds(), fragments_separable=None):
+def estimated_dets(n_frac):
+    """C(n, n/2)^2 for n fractionally occupied orbitals (0 -> 1)."""
+    from math import comb
+    n = int(n_frac)
+    return comb(n, n // 2) ** 2 if n > 0 else 1
+
+
+def recommend(diag, thr=Thresholds(), fragments_separable=None, budget=None):
     """
     Map diagnostics to (regime, route, reason).
 
     diag: dict with w1_est, ccsd_ok, noon_max (missing keys are tolerated).
     fragments_separable: True/False if the user knows whether the system
     splits into weakly coupled fragments (LAS territory), None if unknown.
+    budget: determinant budget of the quantum solver (e.g. the QSCI cap).
+    With diag["d_est"] it decides compactness: strong but compact problems
+    (d_est <= budget) stay with GENIE.
     """
     w1 = diag.get("w1_est")
     ok = diag.get("ccsd_ok", True)
@@ -83,6 +104,12 @@ def recommend(diag, thr=Thresholds(), fragments_separable=None):
     weak = (ok and w1 is not None and w1 >= thr.weak_w1
             and (nmax is None or nmax <= thr.strong_noon / 2))
 
+    d_est = diag.get("d_est")
+    compact = (budget is not None and d_est is not None and d_est <= budget)
+    if strong and compact:
+        return ("strong", "GENIE (multireference but compact: "
+                f"~{d_est} determinants <= budget {budget})",
+                f"d_est {d_est} <= {budget}")
     if strong:
         why = []
         if not ok:
@@ -91,6 +118,8 @@ def recommend(diag, thr=Thresholds(), fragments_separable=None):
             why.append(f"w1_est {w1:.2f} < {thr.strong_w1}")
         if nmax is not None and nmax > thr.strong_noon:
             why.append(f"noon_max {nmax:.2f} > {thr.strong_noon}")
+        if budget is not None and d_est is not None:
+            why.append(f"spread: d_est {d_est} > budget {budget}")
         if fragments_separable:
             route = "LASSQD (weakly coupled fragments)"
         elif fragments_separable is False:
@@ -124,6 +153,7 @@ def compute_diagnostics(mol, exact=False, max_det=2_000_000):
     occ = np.linalg.eigvalsh(np.asarray(pt.make_rdm1()))
     out["noon_frac"], out["noon_max"] = noon_metrics(occ)
 
+    occ_used = occ
     mycc = cc.CCSD(mf)
     mycc.verbose = 0
     mycc.max_cycle = 200
@@ -133,17 +163,28 @@ def compute_diagnostics(mol, exact=False, max_det=2_000_000):
         out["w1_est"] = spin_adapted_hf_weight(mycc.t1, mycc.t2)
         out["t1_diag"] = float(np.linalg.norm(mycc.t1)
                                / np.sqrt(max(1, mol.nelec[0])))
+        if mycc.converged:
+            occ_used = np.linalg.eigvalsh(np.asarray(mycc.make_rdm1()))
     except Exception:              # noqa: BLE001 - divergence is a signal
         out["ccsd_ok"] = False
         out["w1_est"] = None
         out["t1_diag"] = None
+
+    dev = np.minimum(np.clip(occ_used, 0, 2), 2 - np.clip(occ_used, 0, 2))
+    out["n_frac"] = int(np.sum(dev > Thresholds().frac_occ))
+    out["d_est"] = estimated_dets(out["n_frac"])
 
     if exact:
         from math import comb
         ndet = comb(mol.norb, mol.nelec[0]) * comb(mol.norb, mol.nelec[1])
         out["ndet"] = ndet
         if ndet <= max_det:
-            from quenais.quantum.det_analysis import casci_vector
+            from quenais.quantum.det_analysis import (casci_vector, n_for_weight,
+                                                      weight_curve)
             _, flat, _ = casci_vector(mol)
-            out["w1_exact"] = float(np.max(np.asarray(flat) ** 2))
+            w = np.asarray(flat) ** 2
+            out["w1_exact"] = float(np.max(w))
+            out["ipr_exact"] = float(1.0 / np.sum(w * w))
+            _, cum = weight_curve(flat)
+            out["n99_exact"] = int(n_for_weight(cum, (0.99,))[0.99])
     return out

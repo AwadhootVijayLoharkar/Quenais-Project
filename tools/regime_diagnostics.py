@@ -64,6 +64,9 @@ def main(argv=None):
     ap.add_argument("--weak-w1", type=float, default=None)
     ap.add_argument("--strong-w1", type=float, default=None)
     ap.add_argument("--strong-noon", type=float, default=None)
+    ap.add_argument("--budget", type=int, default=None,
+                    help="determinant budget for the compactness test "
+                         "(default: each run's own subspace size N)")
     a = ap.parse_args(argv)
 
     from quenais.quantum.gqe_adapter import load_from_dmet_pickle
@@ -86,8 +89,9 @@ def main(argv=None):
                              _value(r, "gqe_qsci_max_dim"), _value(r, "seed")))
 
     cache, table = {}, []
-    hdr = ["molecule", "R", "N", "seed", "w1_est", "w1_exact", "noon_max",
-           "noon_frac", "ccsd_ok", "regime", "genie", "best_cl", "genie/best"]
+    hdr = ["molecule", "R", "N", "seed", "w1_est", "w1_exact", "n_frac", "d_est",
+           "n99_exact", "ipr_exact", "regime", "route", "genie", "best_cl",
+           "genie/best"]
     print("  ".join(f"{h:>10s}" for h in hdr))
     for r in rows:
         p = out / "runs" / r["run_id"] / "results" / "step2_hamiltonian.pkl"
@@ -100,7 +104,12 @@ def main(argv=None):
                                         cache_dir=Path("/tmp") / "qn_regime")
             cache[key] = compute_diagnostics(mol, exact=a.exact, max_det=max_det)
         d = cache[key]
-        regime, route, why = recommend(d, thr)
+        n_sub = _float(r.get("subspace_dim"))
+        budget = a.budget if a.budget is not None else (int(n_sub) if n_sub else None)
+        regime, route, why = recommend(d, thr, budget=budget)
+        short_route = ("GENIE" if route.startswith("GENIE (") or route == "GENIE"
+                       else "GENIE?" if "GENIE (or" in route
+                       else "not GENIE")
         b = base.get(r["run_id"], {})
         sol = _float(r.get("err_solver_kcal"))
         best = _float(b.get("best_classical"))
@@ -108,7 +117,8 @@ def main(argv=None):
         line = {"run_id": r["run_id"], "molecule": r.get("molecule"),
                 "R": r.get("tag_R"), "N": r.get("subspace_dim"),
                 "seed": _value(r, "seed"), **d, "regime": regime, "route": route,
-                "reason": why, "genie": sol, "best_cl": best, "genie/best": ratio}
+                "reason": why, "budget": budget, "route_short": short_route,
+                "genie": sol, "best_cl": best, "genie/best": ratio}
         table.append(line)
 
         def fmt(v):
@@ -119,7 +129,8 @@ def main(argv=None):
             if isinstance(v, float):
                 return f"{v:10.4f}"
             return f"{str(v):>10}"
-        print("  ".join(fmt(line.get(h)) for h in hdr))
+        shown = dict(line, route=short_route)
+        print("  ".join(fmt(shown.get(h)) for h in hdr))
 
     keys = sorted({k for t in table for k in t})
     with open(out / "regime_diagnostics.csv", "w", newline="") as fh:

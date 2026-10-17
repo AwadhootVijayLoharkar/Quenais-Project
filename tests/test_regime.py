@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from quenais.quantum.regime import (Thresholds, noon_metrics, recommend,
-                                    spin_adapted_hf_weight)
+from quenais.quantum.regime import (Thresholds, estimated_dets, noon_metrics,
+                                    recommend, spin_adapted_hf_weight)
 
 
 def test_hf_weight_two_electrons_two_orbitals():
@@ -51,3 +51,19 @@ def test_thresholds_are_adjustable():
     d = {"w1_est": 0.65, "ccsd_ok": True, "noon_max": 0.2}
     assert recommend(d, Thresholds())[0] == "moderate"
     assert recommend(d, Thresholds(strong_w1=0.7))[0] == "strong"
+
+
+def test_estimated_dets():
+    assert estimated_dets(0) == 1
+    assert estimated_dets(6) == 400          # stretched N2: 3 broken bonds
+    assert estimated_dets(10) == 63504       # H14 embedding, fully spread
+
+
+def test_strong_but_compact_stays_with_genie():
+    d = {"w1_est": 0.25, "ccsd_ok": False, "noon_max": 0.9, "d_est": 400}
+    regime, route, _ = recommend(d, budget=200)
+    assert regime == "strong" and "GENIE-MR" in route        # does not fit 200
+    regime, route, _ = recommend(d, budget=1000)
+    assert regime == "strong" and route.startswith("GENIE (")  # fits 1000
+    d_spread = {"w1_est": 0.19, "ccsd_ok": True, "noon_max": 0.3, "d_est": 63504}
+    assert "GENIE-MR" in recommend(d_spread, budget=10000)[1]
