@@ -1,8 +1,24 @@
-export B=/home/loharkar/quenais-standalone/benchmark_results
-cd ~/quenais-standalone/Quenais-Project && source quenais-env/bin/activate && git pull
-python -c "import quenais, pyscf, qiskit_aer, ffsim; print('ok')"
+[M2 job 57124] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ python -c "import quenais, pyscf, qiskit_aer, ffsim; print('ok')"
 free -g | head -2; nproc
-
-export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
+ok
+               total        used        free      shared  buff/cache   available
+Mem:              62           5          49           0           8          57
+10
+[M2 job 57124] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ export OMP_NUM_THREADS=12 OPENBLAS_NUM_THREADS=1
 nohup python tools/run_benchmark.py benchmarks/h_chain_compare_h14halves_warm.json --out $B/h_chain_cmp > $B/h_chain_cmp_warm.log 2>&1 &
 sleep 120; tail -n 5 $B/h_chain_cmp_warm.log
+[1] 7801
+nohup: ignoring input
+[benchmark] h_chain_compare_h14halves_warm: 3 runs over 1 system(s); this shard: 3  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp
+[M2 job 57124] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ echo $SLURM_JOB_ID
+57123
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ export PS1="[M1 job $SLURM_JOB_ID] $PS1"
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ pkill -f "h_chain_compare_h14halves_warm"
+[1]+  Terminated              nohup bash -c "python tools/run_benchmark.py benchmarks/h_chain_compare_h14sqd.json --out $B/h_chain_cmp > $B/h_chain_cmp_sqd.log 2>&1
+python tools/run_benchmark.py benchmarks/h_chain_compare_h14halves_warm.json --out $B/h_chain_cmp > $B/h_chain_cmp_warm.log 2>&1" > /dev/null 2>&1
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ sleep 2; pgrep -af run_benchmark
+2238665 python tools/run_benchmark.py benchmarks/h_chain_compare_h14sqd.json --out /home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp
+2252626 /home/loharkar/quenais-standalone/Quenais-Project/quenais-env/bin/python /home/loharkar/quenais-standalone/Quenais-Project/tools/run_benchmark.py --_run /home/loharkar/quenais-standalone/benchmark_results/h_chain_cmp ce0abca1ec81
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$
