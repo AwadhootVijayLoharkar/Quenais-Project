@@ -1,0 +1,76 @@
+{
+  "name": "h14_gqe_depth",
+  "description": "Is the H14 GQE plateau a circuit-depth limit? h_chain_gqe gave the SAME subspace (15.7 % of the embedding space) and errors of 3 (1.5 A) and 68-70 kcal/mol (2.0 A) for CCSD and free angles and both seeds, i.e. 80 gates of the excitation pool reach a fixed set of determinants. Rerun with 160 and 320 gates, CCSD angles, seed 4. Run on both A100s without --shard (the run locks split the work). W2 needs GQE_QSCI_REPO_PATH=.../gqe-for-qsci_w2. --out $B/h_chain.",
+  "defaults": {
+    "basis": "sto-3g",
+    "active_space_method": "avas",
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI",
+      "FCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80,
+    "gqe_basis": "mo",
+    "molecule": "H14",
+    "avas_ao_labels": [
+      "5 H 1s",
+      "6 H 1s",
+      "7 H 1s",
+      "8 H 1s"
+    ]
+  },
+  "studies": [
+    {
+      "name": "h14_depth_2.0",
+      "cases": [
+        {
+          "geometry": "H 0 0 0.0; H 0 0 2.0; H 0 0 4.0; H 0 0 6.0; H 0 0 8.0; H 0 0 10.0; H 0 0 12.0; H 0 0 14.0; H 0 0 16.0; H 0 0 18.0; H 0 0 20.0; H 0 0 22.0; H 0 0 24.0; H 0 0 26.0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_ngates": [
+          320,
+          160
+        ],
+        "seed": [
+          4
+        ]
+      }
+    },
+    {
+      "name": "h14_depth_1.5",
+      "cases": [
+        {
+          "geometry": "H 0 0 0.0; H 0 0 1.5; H 0 0 3.0; H 0 0 4.5; H 0 0 6.0; H 0 0 7.5; H 0 0 9.0; H 0 0 10.5; H 0 0 12.0; H 0 0 13.5; H 0 0 15.0; H 0 0 16.5; H 0 0 18.0; H 0 0 19.5",
+          "tag_R": 1.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_ngates": [
+          160
+        ],
+        "seed": [
+          4
+        ]
+      }
+    }
+  ]
+}

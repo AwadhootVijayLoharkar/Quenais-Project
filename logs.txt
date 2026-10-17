@@ -1,82 +1,8 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ git pull
-python tools/run_benchmark.py --out $B/h_chain --collect-only
-python tools/run_benchmark.py --out $B/n2_dz --collect-only
-export OMP_NUM_THREADS=12 QUENAIS_SELECTION_MAX_DET=4000000
-nohup python -u tools/selection_baselines.py $B/h_chain --where solver=gqe gqe_basis=mo --basis mo --methods oracle,cipsi,asci > $B/baselines_h_chain.log 2>&1 &
-nohup python -u tools/selection_baselines.py $B/n2_dz --where solver=gqe gqe_basis=mo --basis mo --methods oracle,cipsi,asci > $B/baselines_n2_dz.log 2>&1 &
-[2]   Terminated              nohup python tools/run_benchmark.py benchmarks/fe2bpym_las_df.json --out $B/fe2bpym_df --retry-failed > $B/fe2bpym_df.log 2>&1
-[4]   Done                    QUENAIS_SELECTION_MAX_DET=4000000 OMP_NUM_THREADS=4 nohup python tools/run_benchmark.py benchmarks/n2_dz_gqe_mo.json --out $B/n2_dz > $B/n2_dz_gqe_mo.log 2>&1
-[5]-  Done                    nohup bash -c 'while kill -0 375594 2>/dev/null; do sleep 60; done; OMP_NUM_THREADS=4 python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain' > $B/h_chain.log 2>&1
-[6]+  Done                    nohup bash -c "while ! grep -q '^\[2/5\]' $B/fe2bpym_df.log; do sleep 300; done
-PG=\$(ps -o pgid= 294636 | tr -d ' '); kill -TERM -- -\$PG" > /dev/null 2>&1
-Already up to date.
-[collect] 18 runs (18 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/results.csv
-[collect] 12 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/results_agg.csv
-[collect] 32 runs (31 ok, 1 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_dz/results.csv
-[collect] 32 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_dz/results_agg.csv
-[1] 430705
-[2] 430706
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
-tail -n 20 $B/h_chain.log $B/h_chain_s1.log
-tail -n 6 $B/n2_dz_gqe_mo.log
-==> /home/loharkar/quenais-standalone/benchmark_results/h_chain.log <==
-  [system adca93348d92] ready (22 s)
-  [system adca93348d92] step 2 (casci) ...
-[3/18] cfbff13774ec gqe     shots=- seed=4  ok  817.6 s  E=-4.13044085  err_solver=-0.0000 kcal/mol  subspace=0.5555555555555556
-[4/18] a38c3b68f844 gqe     shots=- seed=4  ok 8856.6 s  E=-6.11542920  err_solver=+70.1059 kcal/mol  subspace=0.15747039556563366
-[5/18] ecba03a7aa82 gqe     shots=- seed=4  ok 1821.0 s  E=-7.40296327  err_solver=+0.0190 kcal/mol  subspace=0.41181657848324515
-[6/18] 75ccc6023a8c gqe     shots=- seed=5  ok 1700.5 s  E=-7.40295374  err_solver=+0.0249 kcal/mol  subspace=0.39512471655328796
-[7/18] a2d26e8a9184 gqe     shots=- seed=4  ok 7775.0 s  E=-7.40299349  err_solver=-0.0000 kcal/mol  subspace=0.5011337868480725
-[8/18] f9399769471c gqe     shots=- seed=5  skip (done)
-[9/18] d6ea6a3e917f gqe     shots=- seed=4  ok 4448.5 s  E=-6.78010261  err_solver=+3.0984 kcal/mol  subspace=0.15747039556563366
-[10/18] 565602501461 gqe     shots=- seed=5  skip (done)
-[11/18] 7707ccda38b7 gqe     shots=- seed=4  ok 9135.0 s  E=-6.78019477  err_solver=+3.0406 kcal/mol  subspace=0.15747039556563366
-[12/18] f094c92a0d57 gqe     shots=- seed=5  skip (done)
-[13/18] ba7f860366ac gqe     shots=- seed=5  ok 8446.5 s  E=-6.11892136  err_solver=+67.9145 kcal/mol  subspace=0.15747039556563366
-[14/18] 18307d1bce84 gqe     shots=- seed=4  skip (done)
-[15/18] c956183f4869 gqe     shots=- seed=5  ok 9324.7 s  E=-6.11530887  err_solver=+70.1814 kcal/mol  subspace=0.15747039556563366
-[16/18] e2022dd38153 gqe     shots=- seed=4  skip (done)
-[17/18] 36926785223e gqe     shots=- seed=4  ok 1131.5 s  E=-6.68861363  err_solver=+60.5086 kcal/mol  subspace=0.0031494079113126732
-[18/18] 2f9ff0b03f4c gqe     shots=- seed=4  skip (done)
-[collect] 18 runs (18 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/results.csv
-[collect] 12 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/results_agg.csv
+git pull
+nohup python tools/run_benchmark.py benchmarks/h14_gqe_depth.json --out $B/h_chain > $B/h14_depth_w1.log 2>&1 &
 
-==> /home/loharkar/quenais-standalone/benchmark_results/h_chain_s1.log <==
-nohup: ignoring input
-[benchmark] h_chain_gqe: 18 runs over 6 system(s); this shard: 9  -> /home/loharkar/quenais-standalone/benchmark_results/h_chain
-[1/9] 62bd4b742396 gqe     shots=- seed=4  ok 1062.6 s  E=-4.68063240  err_solver=-0.0000 kcal/mol  subspace=0.5555555555555556
-[2/9] a38c3b68f844 gqe     shots=- seed=4  skip (done)
-[3/9] 75ccc6023a8c gqe     shots=- seed=5  skip (done)
-[4/9] f9399769471c gqe     shots=- seed=5  ok 9211.6 s  E=-7.40299349  err_solver=-0.0000 kcal/mol  subspace=0.5011337868480725
-  [system d19d8a3b4ca6] steps 1, 0 ...
-  [system d19d8a3b4ca6] ready (57 s)
-  [system d19d8a3b4ca6] step 2 (casci) ...
-[5/9] 565602501461 gqe     shots=- seed=5  ok 4988.2 s  E=-6.77996286  err_solver=+3.1861 kcal/mol  subspace=0.15747039556563366
-[6/9] f094c92a0d57 gqe     shots=- seed=5  ok 10407.8 s  E=-6.78011055  err_solver=+3.0934 kcal/mol  subspace=0.15747039556563366
-[7/9] 18307d1bce84 gqe     shots=- seed=4  ok 10788.9 s  E=-6.11530887  err_solver=+70.1814 kcal/mol  subspace=0.15747039556563366
-[8/9] e2022dd38153 gqe     shots=- seed=4  ok 1787.8 s  E=-7.39565835  err_solver=+4.6029 kcal/mol  subspace=0.012597631645250693
-[9/9] 2f9ff0b03f4c gqe     shots=- seed=4  ok 1818.6 s  E=-6.01037864  err_solver=+136.0261 kcal/mol  subspace=0.0031494079113126732
-[collect] 14 runs (14 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/results.csv
-[collect] 11 configurations -> /home/loharkar/quenais-standalone/benchmark_results/h_chain/results_agg.csv
-[1/4] 63c8a8257132 gqe     shots=- seed=4  ok 3164.0 s  E=-108.74259752  err_solver=+22.5268 kcal/mol  subspace=0.00023425348100672777
-[2/4] f5a16fc0163c gqe     shots=- seed=4  ok 4924.2 s  E=-108.77750884  err_solver=+0.6197 kcal/mol  subspace=0.011712674050336387
-[3/4] da94ed2d6e59 gqe     shots=- seed=4  ok 9126.3 s  E=-109.10220846  err_solver=+6.2489 kcal/mol  subspace=6.791964833922876e-05
-[4/4] 41b16e456119 gqe     shots=- seed=4  ok 10551.6 s  E=-109.11139648  err_solver=+0.4834 kcal/mol  subspace=0.003395982416961438
-[collect] 32 runs (31 ok, 1 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_dz/results.csv
-[collect] 32 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_dz/results_agg.csv
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+git pull
+export GQE_QSCI_REPO_PATH=/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci_w2
+nohup python tools/run_benchmark.py benchmarks/h14_gqe_depth.json --out $B/h_chain > $B/h14_depth_w2.log 2>&1 &
 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
-tail -n 5 $B/h_chain_cmp.log
-ls -t $B/h_chain_cmp/runs | head -1 | xargs -I{} tail -n 5 $B/h_chain_cmp/runs/{}/run.log
-[59/84] 4a17b3565932 lasscf  shots=- seed=-  ok   24.5 s  E=-6.59857653  err_solver=- kcal/mol  subspace=None
-[60/84] 965b34bfdb6a lasscf  shots=- seed=-  ok   41.2 s  E=-6.63158822  err_solver=- kcal/mol  subspace=None
-[61/84] f7bca11be42a lassqd  shots=10000 seed=1  ok   95.4 s  E=-6.59857653  err_solver=- kcal/mol  subspace=1.0
-[62/84] a3501a353352 lassqd  shots=10000 seed=2  ok   94.5 s  E=-6.59857653  err_solver=- kcal/mol  subspace=1.0
-[63/84] de89bc0baf90 lassqd  shots=10000 seed=3  ok   94.3 s  E=-6.59857653  err_solver=- kcal/mol  subspace=1.0
-    fragment 0: SQD dim 928 (75.8% of FCI), valid shots 100.0% (260 distinct)
-    fragment 1: basis changed too much to transport carryover determinants; starting fresh this cycle
-    fragment 1: SQD dim 675 (55.1% of FCI), valid shots 100.0% (129 distinct)
-  LAS cycle  11  E = -6.4142552999  dE = -5.57e-02  |g_orb| = 3.36e-02
-      LUCJ linear method: E = -6.25237185 (10 it)
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+R=$(ls -t $B/h_chain_cmp/runs | head -1); grep -c "LAS cycle" $B/h_chain_cmp/runs/$R/run.log; ls -l --time-style=+%H:%M $B/h_chain_cmp/runs/$R/run.json
