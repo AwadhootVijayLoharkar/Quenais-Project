@@ -3,8 +3,9 @@
 import numpy as np
 import pytest
 
-from quenais.quantum.regime import (Thresholds, estimated_dets, noon_metrics,
-                                    recommend, spin_adapted_hf_weight)
+from quenais.quantum.regime import (Thresholds, amplitude_count, det_amplitudes,
+                                    estimated_dets, noon_metrics, recommend,
+                                    spin_adapted_hf_weight)
 
 
 def test_hf_weight_two_electrons_two_orbitals():
@@ -67,3 +68,37 @@ def test_strong_but_compact_stays_with_genie():
     assert regime == "strong" and route.startswith("GENIE (")  # fits 1000
     d_spread = {"w1_est": 0.19, "ccsd_ok": True, "noon_max": 0.3, "d_est": 63504}
     assert "GENIE-MR" in recommend(d_spread, budget=10000)[1]
+
+
+def test_det_amplitudes_counts_spin_cases():
+    # 2 occupied, 2 virtual: 4 alpha-beta doubles, 1 alpha-alpha, 1 beta-beta
+    t1 = np.zeros((2, 2))
+    t2 = np.zeros((2, 2, 2, 2))
+    t2[0, 1, 0, 1] = 0.2
+    s, d = det_amplitudes(t1, t2)
+    assert s.size == 2 * 4 and d.size == 16 + 1 + 1
+    # alpha-alpha i<j a<b: (0,1,0,1) - (0,1,1,0) = 0.2
+    assert np.allclose(np.sort(d)[-3:], [0.2, 0.2, 0.2])
+    assert np.count_nonzero(d) == 3
+
+
+def test_amplitude_count_h2_and_quadruples():
+    t2 = np.full((1, 1, 1, 1), 0.3)
+    assert amplitude_count(np.zeros((1, 1)), t2, thr=0.01) == 2      # HF + 1 double
+    # two large doubles -> their product counts as one quadruple
+    t2b = np.zeros((2, 2, 2, 2))
+    t2b[0, 0, 0, 0] = 0.3
+    t2b[1, 1, 1, 1] = 0.3
+    n = amplitude_count(np.zeros((2, 2)), t2b, thr=0.01)
+    assert n == 1 + 2 + 1
+    assert amplitude_count(np.zeros((2, 2)), t2b, thr=0.01, ndet=3) == 3
+
+
+def test_router_uses_amplitude_estimate_and_depth_hint():
+    d = {"w1_est": 0.2, "ccsd_ok": True, "noon_max": 0.3, "n_est": 7000}
+    assert "deeper circuit" in recommend(d, budget=10000)[1]
+    d["n_est"] = 2000
+    route = recommend(d, budget=10000)[1]
+    assert route.startswith("GENIE (") and "deeper" not in route
+    d["n_est"] = 50000
+    assert "GENIE-MR" in recommend(d, budget=10000)[1]

@@ -89,9 +89,9 @@ def main(argv=None):
                              _value(r, "gqe_qsci_max_dim"), _value(r, "seed")))
 
     cache, table = {}, []
-    hdr = ["molecule", "R", "N", "seed", "w1_est", "w1_exact", "n_frac", "d_est",
-           "n99_exact", "ipr_exact", "regime", "route", "genie", "best_cl",
-           "genie/best"]
+    hdr = ["molecule", "R", "N", "seed", "w1_exact", "ccsd_ok", "n_est_mp2",
+           "n_est_cc", "n_est", "n99_exact", "regime", "route", "genie",
+           "best_cl", "genie/best"]
     print("  ".join(f"{h:>10s}" for h in hdr))
     for r in rows:
         p = out / "runs" / r["run_id"] / "results" / "step2_hamiltonian.pkl"
@@ -107,8 +107,9 @@ def main(argv=None):
         n_sub = _float(r.get("subspace_dim"))
         budget = a.budget if a.budget is not None else (int(n_sub) if n_sub else None)
         regime, route, why = recommend(d, thr, budget=budget)
-        short_route = ("GENIE" if route.startswith("GENIE (") or route == "GENIE"
+        short_route = ("GENIE-deep" if "deeper circuit" in route
                        else "GENIE?" if "GENIE (or" in route
+                       else "GENIE" if route.startswith("GENIE (") or route == "GENIE"
                        else "not GENIE")
         b = base.get(r["run_id"], {})
         sol = _float(r.get("err_solver_kcal"))

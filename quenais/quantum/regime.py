@@ -42,7 +42,8 @@ from dataclasses import dataclass
 import numpy as np
 
 __all__ = ["Thresholds", "spin_adapted_hf_weight", "noon_metrics",
-           "estimated_dets", "recommend", "compute_diagnostics"]
+           "estimated_dets", "det_amplitudes", "amplitude_count",
+           "recommend", "compute_diagnostics"]
 
 
 @dataclass(frozen=True)
@@ -84,6 +85,52 @@ def estimated_dets(n_frac):
     return comb(n, n // 2) ** 2 if n > 0 else 1
 
 
+def det_amplitudes(t1, t2):
+    """
+    Determinant-level coefficients implied by closed-shell (R)CC/MP2
+    amplitudes, as two flat arrays of |c|: singles (alpha and beta) and
+    doubles (alpha-beta, alpha-alpha, beta-beta), with C2 = t2 + t1 t1.
+    """
+    t1 = np.asarray(t1, dtype=float)
+    t2 = np.asarray(t2, dtype=float)
+    s = np.abs(t1).ravel()
+    tau = t2 + np.einsum("ia,jb->ijab", t1, t1)
+    ab = np.abs(tau).ravel()
+    nocc, nvir = t1.shape
+    anti = tau - tau.transpose(0, 1, 3, 2)
+    io, jo = np.triu_indices(nocc, k=1)
+    av, bv = np.triu_indices(nvir, k=1)
+    ss = np.abs(anti[io[:, None], jo[:, None], av[None, :], bv[None, :]]).ravel()
+    return np.concatenate([s, s]), np.concatenate([ab, ss, ss])
+
+
+def _pairs_above(v, thr):
+    """Number of unordered pairs k < l with v_k * v_l > thr (v >= 0)."""
+    v = np.sort(np.asarray(v, dtype=float))
+    v = v[v > 0]
+    if v.size < 2:
+        return 0
+    total = 0
+    for k, x in enumerate(v):
+        # partners l > k with v_l > thr / x
+        j = np.searchsorted(v, thr / x, side="right")
+        total += max(0, v.size - max(j, k + 1))
+    return int(total)
+
+
+def amplitude_count(t1, t2, thr=0.01, ndet=None):
+    """
+    Estimated number of determinants with |c| > thr: the reference, singles,
+    doubles, and (disconnected) quadruples approximated by products of two
+    doubles. A cheap stand-in for n99 (the determinants holding 99 % of the
+    exact state). Overlap between doubles is ignored, so the quadruple term
+    is an upper estimate. Capped at ndet.
+    """
+    s, d = det_amplitudes(t1, t2)
+    n = 1 + int(np.sum(s > thr)) + int(np.sum(d > thr)) + _pairs_above(d, thr)
+    return min(n, int(ndet)) if ndet else n
+
+
 def recommend(diag, thr=Thresholds(), fragments_separable=None, budget=None):
     """
     Map diagnostics to (regime, route, reason).
@@ -104,12 +151,14 @@ def recommend(diag, thr=Thresholds(), fragments_separable=None, budget=None):
     weak = (ok and w1 is not None and w1 >= thr.weak_w1
             and (nmax is None or nmax <= thr.strong_noon / 2))
 
-    d_est = diag.get("d_est")
+    d_est = diag.get("n_est", diag.get("d_est"))
     compact = (budget is not None and d_est is not None and d_est <= budget)
     if strong and compact:
+        deep = d_est > budget / 2
         return ("strong", "GENIE (multireference but compact: "
-                f"~{d_est} determinants <= budget {budget})",
-                f"d_est {d_est} <= {budget}")
+                f"~{d_est} determinants <= budget {budget})"
+                + ("; use a deeper circuit" if deep else ""),
+                f"n_est {d_est} <= {budget}")
     if strong:
         why = []
         if not ok:
@@ -119,7 +168,7 @@ def recommend(diag, thr=Thresholds(), fragments_separable=None, budget=None):
         if nmax is not None and nmax > thr.strong_noon:
             why.append(f"noon_max {nmax:.2f} > {thr.strong_noon}")
         if budget is not None and d_est is not None:
-            why.append(f"spread: d_est {d_est} > budget {budget}")
+            why.append(f"spread: n_est {d_est} > budget {budget}")
         if fragments_separable:
             route = "LASSQD (weakly coupled fragments)"
         elif fragments_separable is False:
@@ -152,6 +201,11 @@ def compute_diagnostics(mol, exact=False, max_det=2_000_000):
     pt.kernel()
     occ = np.linalg.eigvalsh(np.asarray(pt.make_rdm1()))
     out["noon_frac"], out["noon_max"] = noon_metrics(occ)
+    from math import comb
+    ndet = comb(mol.norb, mol.nelec[0]) * comb(mol.norb, mol.nelec[1])
+    out["ndet"] = ndet
+    t1_zero = np.zeros((pt.t2.shape[0], pt.t2.shape[2]))
+    out["n_est_mp2"] = amplitude_count(t1_zero, pt.t2, 0.01, ndet)
 
     occ_used = occ
     mycc = cc.CCSD(mf)
@@ -163,21 +217,23 @@ def compute_diagnostics(mol, exact=False, max_det=2_000_000):
         out["w1_est"] = spin_adapted_hf_weight(mycc.t1, mycc.t2)
         out["t1_diag"] = float(np.linalg.norm(mycc.t1)
                                / np.sqrt(max(1, mol.nelec[0])))
+        out["n_est_cc"] = amplitude_count(mycc.t1, mycc.t2, 0.01, ndet)
         if mycc.converged:
             occ_used = np.linalg.eigvalsh(np.asarray(mycc.make_rdm1()))
     except Exception:              # noqa: BLE001 - divergence is a signal
         out["ccsd_ok"] = False
         out["w1_est"] = None
         out["t1_diag"] = None
+        out["n_est_cc"] = None
+    # the router's estimate: CCSD if it converged, else MP2
+    out["n_est"] = (out["n_est_cc"] if out.get("ccsd_ok") and out.get("n_est_cc")
+                    else out["n_est_mp2"])
 
     dev = np.minimum(np.clip(occ_used, 0, 2), 2 - np.clip(occ_used, 0, 2))
     out["n_frac"] = int(np.sum(dev > Thresholds().frac_occ))
     out["d_est"] = estimated_dets(out["n_frac"])
 
     if exact:
-        from math import comb
-        ndet = comb(mol.norb, mol.nelec[0]) * comb(mol.norb, mol.nelec[1])
-        out["ndet"] = ndet
         if ndet <= max_det:
             from quenais.quantum.det_analysis import (casci_vector, n_for_weight,
                                                       weight_curve)
