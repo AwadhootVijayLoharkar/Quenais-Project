@@ -1,3 +1,14 @@
-mkdir -p $B/h_chain/runs_truncated
-mv $B/h_chain/runs/a38c3b68f844 $B/h_chain/runs/75ccc6023a8c $B/h_chain/runs_truncated/
-ls $B/h_chain/runs | wc -l
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
+[8]+  Done                    nohup python tools/run_benchmark.py benchmarks/h_chain_gqe.json --out $B/h_chain --shard 1/2 --retry-failed > $B/h_chain_s1.log 2>&1
+grid                 progress  failed  per_run   left      state      changed       log             
+fe2bpym_las          1/5       0       3560 min  ~237.4 h  STALE?     1297 min ago  fe2bpym.log     
+fe2bpym_las_df       2/5       0       820 min   ~41.0 h   STALE?     794 min ago   fe2bpym_df.log  
+fe2bpym_las          1/5       0       -         -         STALE?     2567 min ago  fe2bpym_w1.log  
+fe2bpym_lassqd_warm  4/4       0       134 min   -         finished   482 min ago   fe2bpym_warm.log
+h_chain_gqe          18/18     0       83 min    -         finished   62 min ago    h_chain.log     
+h_chain_compare      63/84     0       13 min    ~4.4 h    STALE?     274 min ago   h_chain_cmp.log 
+h_chain_gqe          9/18      0       95 min    ~14.3 h   finished*  424 min ago   h_chain_s1.log  
+n2_dz_gqe_mo         4/4       0       116 min   -         finished   975 min ago   n2_dz_gqe_mo.log
+n2_noise             1/18      0       256 min   ~72.5 h   running    26 min ago    n2_noise.log    
+n2_noise             3/18      0       228 min   ~57.0 h   running    26 min ago    n2_noise.log    
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
