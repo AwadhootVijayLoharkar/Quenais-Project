@@ -1,12 +1,16 @@
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ python tools/status.py 
-[1]+  Done                    nohup python tools/run_benchmark.py benchmarks/blind_test.json --out $B/blind > $B/blind_w1.log 2>&1
-grid             progress  failed  per_run   left      state     changed       log            
-blind_test       18/18     0       30 min    -         finished  1396 min ago  blind_w1.log   
-blind_test       18/18     0       51 min    -         finished  1368 min ago  blind_w2.log   
-fe2bpym_las      1/5       0       3560 min  ~237.4 h  STALE?    3409 min ago  fe2bpym.log    
-fe2bpym_las_df   2/5       0       820 min   ~41.0 h   STALE?    2905 min ago  fe2bpym_df.log 
-fe2bpym_las      1/5       0       -         -         STALE?    4679 min ago  fe2bpym_w1.log 
-h_chain_compare  63/84     0       13 min    ~4.4 h    STALE?    2385 min ago  h_chain_cmp.log
-n2_noise         1/18      0       256 min   ~72.5 h   running   73 min ago    n2_noise.log   
-n2_noise         18/18     0       148 min   -         finished  73 min ago    n2_noise.log   
-[W1 job 57092] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
+cd ~/quenais-standalone/Quenais-Project
+export QUENAIS_SELECTION_MAX_DET=4000000
+
+python tools/run_benchmark.py benchmarks/blind_test.json --out $B/blind --collect-only
+python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve --collect-only
+
+nohup sh -c "python tools/regime_diagnostics.py $B/blind --where solver=gqe gqe_basis=mo --exact > $B/blind/router.txt 2>&1; \
+python tools/selection_baselines.py $B/blind --where solver=gqe --basis mo --methods oracle,cipsi,asci > $B/blind/baselines.txt 2>&1; \
+python tools/paper_data.py $B/blind --where solver=gqe gqe_basis=mo > $B/blind/paper_data.txt 2>&1" > $B/blind_analysis.log 2>&1 &
+
+grep -rn "shots" ~/quenais-standalone/Quenais-Project/gqe-for-qsci --include=*.yaml | head
+
+tail -n 3 $B/blind/router.txt $B/blind/baselines.txt $B/blind/paper_data.txt
+
+cd $B
+zip -r blind_noise.zip blind/results.csv blind/selection_baselines.csv blind/regime_diagnostics.csv blind/router.txt blind/paper_data n2_curve/results.csv h_chain_cmp/results.csv
