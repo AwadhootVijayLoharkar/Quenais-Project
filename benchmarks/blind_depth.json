@@ -1,0 +1,90 @@
+{
+  "name": "blind_depth",
+  "description": "Depth follow-up of the blind test: H12 ring at 1.5 A (GENIE 3.5x behind ASCI at N=1e4) and 2.0 A (seed 4 failed, 14x) with 160 operators, CCSD angles, seed 4. Run on both A100s without --shard. W2 needs GQE_QSCI_REPO_PATH=.../gqe-for-qsci_w2. --out $B/blind.",
+  "defaults": {
+    "active_space_method": "avas",
+    "classical_methods": [
+      "HF",
+      "MP2",
+      "CCSD",
+      "CCSD_T",
+      "CASCI"
+    ],
+    "dmet_reference": "casci",
+    "ansatz": "lucj",
+    "mapping": "jw",
+    "backend": "mps",
+    "lassqd_lucj_optimize": true,
+    "lassqd_carryover_eps": 1e-05,
+    "shots": 10000,
+    "cudaq_target": "nvidia",
+    "gqe_ngates": 80,
+    "gqe_basis": "mo"
+  },
+  "studies": [
+    {
+      "name": "h12ring_1.5_d160",
+      "cases": [
+        {
+          "geometry": "H 2.897777 0.000000 0; H 2.509549 1.448889 0; H 1.448889 2.509549 0; H 0.000000 2.897777 0; H -1.448889 2.509549 0; H -2.509549 1.448889 0; H -2.897777 0.000000 0; H -2.509549 -1.448889 0; H -1.448889 -2.509549 0; H -0.000000 -2.897777 0; H 1.448889 -2.509549 0; H 2.509549 -1.448889 0",
+          "tag_R": 1.5
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_ngates": [
+          160
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H12ring",
+        "basis": "sto-3g",
+        "avas_ao_labels": [
+          "0 H 1s",
+          "1 H 1s",
+          "2 H 1s",
+          "3 H 1s",
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    },
+    {
+      "name": "h12ring_2.0_d160",
+      "cases": [
+        {
+          "geometry": "H 3.863703 0.000000 0; H 3.346065 1.931852 0; H 1.931852 3.346065 0; H 0.000000 3.863703 0; H -1.931852 3.346065 0; H -3.346065 1.931852 0; H -3.863703 0.000000 0; H -3.346065 -1.931852 0; H -1.931852 -3.346065 0; H -0.000000 -3.863703 0; H 1.931852 -3.346065 0; H 3.346065 -1.931852 0",
+          "tag_R": 2.0
+        }
+      ],
+      "sweep": {
+        "solver": [
+          "gqe"
+        ],
+        "gqe_ngates": [
+          160
+        ],
+        "seed": [
+          4
+        ]
+      },
+      "fixed": {
+        "molecule": "H12ring",
+        "basis": "sto-3g",
+        "avas_ao_labels": [
+          "0 H 1s",
+          "1 H 1s",
+          "2 H 1s",
+          "3 H 1s",
+          "4 H 1s",
+          "5 H 1s"
+        ]
+      }
+    }
+  ]
+}

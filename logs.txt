@@ -1,2 +1,7 @@
- cd $B
-zip -r blind_noise.zip blind/results.csv blind/selection_baselines.csv blind/regime_diagnostics.csv blind/router.txt blind/paper_data n2_curve/results.csv h_chain_cmp/results.csv
+git pull
+# W1
+export QUENAIS_SELECTION_MAX_DET=4000000
+nohup python tools/run_benchmark.py benchmarks/blind_depth.json --out $B/blind > $B/blind_depth_w1.log 2>&1 &
+# W2 (GQE_QSCI_REPO_PATH already set there)
+export QUENAIS_SELECTION_MAX_DET=4000000
+nohup python tools/run_benchmark.py benchmarks/blind_depth.json --out $B/blind > $B/blind_depth_w2.log 2>&1 &
