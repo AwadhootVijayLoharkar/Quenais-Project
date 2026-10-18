@@ -14,3 +14,45 @@ tail -n 3 $B/blind/router.txt $B/blind/baselines.txt $B/blind/paper_data.txt
 
 cd $B
 zip -r blind_noise.zip blind/results.csv blind/selection_baselines.csv blind/regime_diagnostics.csv blind/router.txt blind/paper_data n2_curve/results.csv h_chain_cmp/results.csv
+
+
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ cd ~/quenais-standalone/Quenais-Project
+export QUENAIS_SELECTION_MAX_DET=4000000
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+python tools/run_benchmark.py benchmarks/blind_test.json --out $B/blind --collect-only
+python tools/run_benchmark.py benchmarks/n2_noise.json --out $B/n2_curve --collect-only
+[collect] 18 runs (18 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/blind/results.csv
+[collect] 12 configurations -> /home/loharkar/quenais-standalone/benchmark_results/blind/results_agg.csv
+[collect] 383 runs (383 ok, 0 failed) -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results.csv
+[collect] 139 configurations -> /home/loharkar/quenais-standalone/benchmark_results/n2_curve/results_agg.csv
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+
+nohup sh -c "python tools/regime_diagnostics.py $B/blind --where solver=gqe gqe_basis=mo --exact > $B/blind/router.txt 2>&1; \
+python tools/selection_baselines.py $B/blind --where solver=gqe --basis mo --methods oracle,cipsi,asci > $B/blind/baselines.txt 2>&1; \
+python tools/paper_data.py $B/blind --where solver=gqe gqe_basis=mo > $B/blind/paper_data.txt 2>&1" > $B/blind_analysis.log 2>&1 &
+[1] 2463031
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+grep -rn "shots" ~/quenais-standalone/Quenais-Project/gqe-for-qsci --include=*.yaml | head
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-10-06-16-50-52/hydra/config.yaml:45:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-10-17-19-42-15/hydra/config.yaml:46:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-08-07-17-08-35/hydra/config.yaml:45:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-10-16-06-48-03/hydra/config.yaml:46:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-10-08-17-44-13/hydra/config.yaml:45:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-08-10-16-40-28/hydra/config.yaml:45:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-10-16-04-31-47/hydra/config.yaml:46:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-10-06-17-52-34/hydra/config.yaml:45:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-10-13-15-56-42/hydra/config.yaml:45:  shots: 100000
+/home/loharkar/quenais-standalone/Quenais-Project/gqe-for-qsci/outputs/gqe-for-qsci/default-2026-10-17-17-37-30/hydra/config.yaml:46:  shots: 100000
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
+tail -n 3 $B/blind/router.txt $B/blind/baselines.txt $B/blind/paper_data.txt
+==> /home/loharkar/quenais-standalone/benchmark_results/blind/router.txt <==
+18 rows -> /home/loharkar/quenais-standalone/benchmark_results/blind/regime_diagnostics.csv
+thresholds: Thresholds(weak_w1=0.9, strong_w1=0.6, strong_noon=0.4, frac_occ=0.1, safety=3.0)
+genie/best = GENIE error / best classical error at the same size (1 = tie, >1 classical better).
+
+==> /home/loharkar/quenais-standalone/benchmark_results/blind/baselines.txt <==
+          R            N         seed       solver      HCI_emb       HCI_mo    CIPSI_emb     CIPSI_mo     ASCI_emb      ASCI_mo    oracle_mo  best_classical  best/solver
+       0.96         1864            4       0.0038  -  -  -       0.0001  -       0.0001       0.0001       0.0001       0.0289
+       0.96         1884            5       0.0053  -  -  -       0.0001  -       0.0001       0.0001       0.0001       0.0191
+tail: cannot open '/home/loharkar/quenais-standalone/benchmark_results/blind/paper_data.txt' for reading: No such file or directory
+[M1 job 57123] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria03:Quenais-Project]$ 
