@@ -1,3 +1,141 @@
-sed -n 1,110p gqe-for-qsci/gqe_qsci/gqe/loss.py
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ sed -n 1,110p gqe-for-qsci/gqe_qsci/gqe/loss.py
 sed -n 55,80p gqe-for-qsci/gqe_qsci/factory.py
 grep -rn "loss" gqe-for-qsci/gqe_qsci/conf* gqe-for-qsci/conf* --include=*.yaml 2>/dev/null | grep -v outputs | head
+# ============================================================================ #
+# Copyright (c) 2025 NVIDIA Corporation & Affiliates.                          #
+# All rights reserved.                                                         #
+#                                                                              #
+# This source code and the accompanying materials are made available under     #
+# the terms of the Apache License 2.0 which accompanies this distribution.     #
+# ============================================================================ #
+# Modifications Copyright (c) 2026 Ryota Kemmoku
+# Modified from the original file in NVIDIA CUDA-QX.
+# Changes made: Delete "ExpLogitMatching" and "GFlowLogitMatching"
+# and add abstract class "GroupRelativeLoss" and "GSPOLoss".
+
+
+from abc import ABC, abstractmethod
+
+import torch
+from torch.nn import functional as F
+
+class Loss(ABC):
+    @abstractmethod
+    def __call__(self, **kwargs) -> torch.Tensor:
+        """Compute and return a scalar tensor."""
+
+    def validate_context(self, context: dict) -> None:
+        missing_keys = self.required_keys - set(context.keys())
+        if missing_keys:
+            raise ValueError(
+                f"{self.__class__.__name__} requires context keys: {sorted(missing_keys)}, "
+                f"but received: {sorted(context.keys())}"
+            )
+    
+class GroupRelativeLoss(Loss):
+    def __init__(self, clip_low: float = 0.2, clip_high: float = 0.28):
+        self.required_keys = {"gate_seqs", "energies", "old_log_probs"}
+        self.clip_low = clip_low
+        self.clip_high = clip_high
+        self.lowest_energy_id = None
+    
+    def __call__(self):
+        pass
+
+    def calc_advantage(self, energies):
+        return (energies.mean() - energies) / (energies.std() + 1e-8)
+
+    def calc_log_propability(self, gate_seqs, gate_logits, inverse_temperature):
+        log_probs = torch.gather(
+            F.log_softmax(-inverse_temperature * gate_logits, dim=-1),
+            2,
+            gate_seqs.unsqueeze(-1)
+        ).squeeze(-1)
+        return log_probs
+    
+
+class GRPOLoss(GroupRelativeLoss):
+    """Generalized-RPO / clipped-PPO variant used in the original code."""
+    def __init__(self, clip_low: float = 0.2, clip_high: float = 0.28):
+        super().__init__(clip_low, clip_high)
+
+    def __call__(self, gate_logits, context):
+        """
+        Compute the loss for the given gate logits and context.
+        Args:
+            gate_logits (torch.Tensor): The logits for the generated gates. (batch, seq_len)
+        """
+        self.validate_context(context)
+        current_log_probs = gate_logits
+
+        # nagative log likelihood loss
+        win_id = torch.argmin(context["energies"])
+        log_prob_mean_win = torch.mean(current_log_probs[win_id])
+        loss = -log_prob_mean_win
+        
+        # If all the generated circuits are identical, we use the inverse log probability as the loss.
+        if torch.std(context["energies"]) == 0:
+            return -log_prob_mean_win
+        
+        advantages = self.calc_advantage(context["energies"])
+        old_log_probs = context["old_log_probs"]
+        ratio = torch.exp(current_log_probs - old_log_probs)
+        clipped_ratio = torch.clamp(ratio, 1.-self.clip_low, 1.+self.clip_high)
+
+        clipped = (clipped_ratio * advantages.unsqueeze(1)).mean()
+        unclipped = (ratio * advantages.unsqueeze(1)).mean()
+        loss -= min(clipped, unclipped)
+        return loss
+
+
+class GSPOLoss(GroupRelativeLoss):
+    def __init__(self, clip_low: float = 0.2, clip_high: float = 0.28):
+        super().__init__(clip_low, clip_high)
+
+    def __call__(self, gate_logits, context):
+        self.validate_context(context)
+        current_token_log_probs = gate_logits
+        current_seq_log_probs = current_token_log_probs.sum(dim=1)
+
+        # nagative log likelihood loss
+        win_id = torch.argmin(context["energies"])
+        log_prob_mean_win = torch.mean(current_token_log_probs[win_id])
+        loss = -log_prob_mean_win
+
+        # If all the generated circuits are identical, we use the inverse log probability as the loss.
+        if torch.std(context["energies"]) == 0:
+            return loss
+
+        advantages = self.calc_advantage(context["energies"])
+        seqence_length = context["gate_seqs"].shape[1]
+        old_seq_log_probs = context["old_log_probs"].sum(dim=1)
+        ratio = torch.exp((current_seq_log_probs - old_seq_log_probs) / seqence_length)
+        clipped_ratio = torch.clamp(ratio, 1.-self.clip_low, 1.+self.clip_high)
+            elif key == "R-CCSD":
+                reference_energies[key] = molecule.compute_ccsd()
+                print(f"CCSD Energy: {reference_energies[key]}")
+        return Logger(reference_energies=reference_energies)
+        
+    def create_loss_fn(self, cfg):
+        loss_fn_name = cfg.trainer.loss.type
+        match loss_fn_name:
+            case "grpo":
+                assert cfg.trainer.batch_size == cfg.trainer.num_samples, "batch_size must be equal to num_samples for GRPO training"
+                return GRPOLoss(cfg.trainer.loss.clip_grpo_low, cfg.trainer.loss.clip_grpo_high)
+            case "gspo":
+                assert cfg.trainer.batch_size == cfg.trainer.num_samples, "batch_size must be equal to num_samples for GSPO training"
+                return GSPOLoss(cfg.trainer.loss.clip_gspo_low, cfg.trainer.loss.clip_gspo_high)
+            case _:
+                raise ValueError(f"Unknown loss function name: {loss_fn_name}")
+    
+    def create_operator_pool(self, cfg):
+        if self.operator_pool is not None:
+            return self.operator_pool
+        molecule = self.create_molecule(cfg)
+        match cfg.operator_pool.spec:
+            case "pauli_evolution":
+                operator_pool = PauliEvolutionPool(
+                    molecule,
+                    params=cfg.operator_pool.params,
+gqe-for-qsci/configs/trainer/default.yaml:14:loss:
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
