@@ -1,4 +1,4 @@
-# 5: training loss
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ # 5: training loss
 grep -n "loss" gqe-for-qsci/src/*/*.py gqe-for-qsci/*.py 2>/dev/null | head -20
 
 # 6: UHF spin check (stretched H14 and N2)
@@ -10,3 +10,28 @@ for f in glob.glob('$B/h_chain/systems/*/step1*.pkl')+glob.glob('$B/n2_curve/sys
 
 # 7: versions
 pip list 2>/dev/null | grep -i -E "pyscf|qiskit|cuda|cudaq|ffsim|torch|numpy|scipy"
+cuda-bindings             13.3.1
+cuda-pathfinder           1.6.0
+cuda-quantum-cu13         0.15.1
+cuda-toolkit              13.0.3.0
+cudaq                     0.15.1
+cupy-cuda13x              13.6.0
+ffsim                     0.0.83
+numpy                     2.4.6
+nvidia-cuda-cupti         13.0.85
+nvidia-cuda-nvrtc         13.0.88
+nvidia-cuda-runtime       13.0.96
+pyscf                     2.14.0
+pyscf-dmrgscf             0.1.0
+pytorch-lightning         2.6.5
+qiskit                    2.5.1
+qiskit-addon-sqd          0.12.1
+qiskit-aer                0.17.2
+qiskit-fermions           0.1.0.dev0+245a827
+qiskit-ibm-runtime        0.50.0
+qiskit-mitigation         0.1.1
+qiskit-qasm3-import       0.6.0
+scipy                     1.17.1
+torch                     2.13.0
+torchmetrics              1.9.0
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
