@@ -1,4 +1,4 @@
-grep -rn "loss" gqe-for-qsci --include=*.py | grep -v outputs | grep -i -E "def |loss *=|logit|beta|temperature" | head -25
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ grep -rn "loss" gqe-for-qsci --include=*.py | grep -v outputs | grep -i -E "def |loss *=|logit|beta|temperature" | head -25
 
 python - <<'EOF'
 import csv, glob, os, pickle
@@ -14,7 +14,32 @@ for grid in ("h_chain", "n2_curve", "blind"):
         seen.add(key)
         d = pickle.load(open(f, "rb"))
         e_uhf = d.get("uhf_energy")
-        e_rhf = float(r["E_HF_Ha"]) if r.get("E_HF_Ha") else None
-        diff = (e_uhf - e_rhf) * 627.5 if (e_uhf is not None and e_rhf) else None
-        print(f"{key[0]:8s} {key[1]:>5s} {key[2]:8s}  UHF {e_uhf}  RHF {e_rhf}  UHF-RHF {diff} kcal/mol")
-EOF
+EOF     print(f"{key[0]:8s} {key[1]:>5s} {key[2]:8s}  UHF {e_uhf}  RHF {e_rhf}  UHF-RHF {diff} kcal/mol")
+gqe-for-qsci/gqe_qsci/train_pipeline.py:154:        loss = self.loss_fn(full_log_probs, context)
+gqe-for-qsci/gqe_qsci/gqe/loss.py:61:        Compute the loss for the given gate logits and context.
+gqe-for-qsci/gqe_qsci/gqe/loss.py:71:        loss = -log_prob_mean_win
+gqe-for-qsci/gqe_qsci/gqe/loss.py:100:        loss = -log_prob_mean_win
+gqe-for-qsci/gqe_qsci/factory.py:60:    def create_loss_fn(self, cfg):
+H14        2.0 sto-3g    UHF -5.540671676224125  RHF -5.540671674061041  UHF-RHF -1.3573351687057311e-06 kcal/mol
+H14        1.5 sto-3g    UHF -6.438614549227719  RHF -6.438614546663008  UHF-RHF -1.6093562216212831e-06 kcal/mol
+H10        1.5 sto-3g    UHF -4.594075895135011  RHF -4.594075893785441  UHF-RHF -8.468547640916313e-07 kcal/mol
+H14        1.0 sto-3g    UHF -7.294620477704353  RHF -7.294620477812263  UHF-RHF 6.771360361312873e-08 kcal/mol
+H10        2.0 sto-3g    UHF -3.9544999400969782  RHF -3.954499940026656  UHF-RHF -4.412731513525614e-08 kcal/mol
+H10        1.0 sto-3g    UHF -5.214068803000018  RHF -5.214068803026056  UHF-RHF 1.6338743691335367e-08 kcal/mol
+N2         1.8 sto-3g    UHF -107.01732690729638  RHF -107.01732690729885  UHF-RHF 1.5516121720793308e-09 kcal/mol
+N2         2.0 sto-3g    UHF -106.87150404560059  RHF -106.87150404560707  UHF-RHF 4.066293968207901e-09 kcal/mol
+N2         1.6 sto-3g    UHF -107.18484646079841  RHF -107.18484646080191  UHF-RHF 2.1936585881121573e-09 kcal/mol
+N2         2.5 sto-3g    UHF -106.61695908275864  RHF -106.61695908276677  UHF-RHF 5.100702082927455e-09 kcal/mol
+N2         1.4 sto-3g    UHF -107.35781544529009  RHF -107.35781544528966  UHF-RHF -2.675193400136777e-10 kcal/mol
+N2         1.0 sto-3g    UHF -107.41953245168193  RHF -107.41953245168187  UHF-RHF -3.566924533515703e-11 kcal/mol
+N2         1.2 sto-3g    UHF -107.48778392804367  RHF -107.48778392804589  UHF-RHF 1.3911005680711241e-09 kcal/mol
+N2        2.25 sto-3g    UHF -106.72587367020925  RHF -106.72587367021991  UHF-RHF 6.687983500341943e-09 kcal/mol
+N2         2.1 sto-3g    UHF -106.8084114757907  RHF -106.80841147579909  UHF-RHF 5.261213686935662e-09 kcal/mol
+N2         1.1 sto-3g    UHF -107.49650051179715  RHF -107.49650051179778  UHF-RHF 3.923616986867273e-10 kcal/mol
+H12ring    1.5 sto-3g    UHF -5.52320805035173  RHF -5.514882979234468  UHF-RHF -5.223982126082181 kcal/mol
+H12ring    1.0 sto-3g    UHF -6.232532554048145  RHF -6.147213197023401  UHF-RHF -53.537896533026945 kcal/mol
+H2O       1.44 6-31g     UHF -75.79450360203037  RHF -75.79450360189712  UHF-RHF -8.361762837694187e-08 kcal/mol
+H2O       1.92 6-31g     UHF -75.58670629437502  RHF -75.5867062907277  UHF-RHF -2.2886903749963494e-06 kcal/mol
+H12ring    2.0 sto-3g    UHF -4.7571424885218025  RHF -4.757142481999308  UHF-RHF -4.09286532665476e-06 kcal/mol
+H2O       0.96 6-31g     UHF -75.98394027840787  RHF -75.98394027842879  UHF-RHF 1.3126282283337787e-08 kcal/mol
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
