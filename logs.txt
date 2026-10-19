@@ -1,2 +1,33 @@
-sed -n 1,40p gqe-for-qsci/configs/trainer/default.yaml
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ sed -n 1,40p gqe-for-qsci/configs/trainer/default.yaml
 grep -n -A4 "loss:\|temperature\|beta" $(ls -t gqe-for-qsci/outputs/gqe-for-qsci/*/hydra/config.yaml | head -1)
+seed: 32
+max_iters: 100
+num_samples: 10     # number of samples to generate in each iteration
+batch_size: 10       # batch size should be equal to num_samples for online training
+step_per_epoch: 30   # number of policy updates in each iteration
+warmup_size: 10
+buffer_size: 10      # buffer size should be equal to num_samples for online training
+load_checkpoint: true
+checkpoint_every_n_iters: 10
+optimizer: 
+  lr: 5e-6
+  cls: AdamW
+  weight_decay: 0.01
+loss:
+  type: "grpo"
+  clip_grpo_low: 0.2
+  clip_grpo_high: 0.28
+temperature_scheduler:
+  _target_: gqe_qsci.gqe.scheduler.VarBasedScheduler
+  initial: 0.5
+  delta: 0.02
+  target_var: 1e-523:  loss:
+24-    type: grpo
+25-    clip_grpo_low: 0.2
+26-    clip_grpo_high: 0.28
+27:  temperature_scheduler:
+28-    _target_: gqe_qsci.gqe.scheduler.VarBasedScheduler
+29-    initial: 0.5
+30-    delta: 0.02
+31-    target_var: 1.0e-05
+[W2 job 57094] (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@erebos03:Quenais-Project]$ 
