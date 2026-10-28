@@ -11,7 +11,7 @@ QuEnAIS — Quantum Embedding for Strongly Correlated Molecules
 # ─────────────────────────────────────────────────────────────────────────
 from quenais import _threads as _threads  # noqa: F401  (imported for side effect)
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __author__ = "Awadhoot Loharkar"
 
 __all__ = ["__version__", "Config", "provenance"]

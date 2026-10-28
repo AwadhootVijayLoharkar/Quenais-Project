@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper and this software version."
+title: "QuEnAIS: quantum embedding with learned and sampled impurity solvers (GENIE)"
+version: 0.3.0
+date-released: 2026-10-28
+license: Apache-2.0
+repository-code: "https://github.com/AwadhootVijayLoharkar/Quenais-Project"
+authors:
+  - family-names: Loharkar
+    given-names: Awadhoot Vijay
+    affiliation: "Fraunhofer Institute for Industrial Mathematics ITWM"
+# After Zenodo has minted the DOI, add it here:
+# doi: 10.5281/zenodo.XXXXXXX
+preferred-citation:
+  type: article
+  title: "GENIE: learned quantum circuits as embedding impurity solvers, and why compactness, not correlation strength, decides when they work"
+  authors:
+    - family-names: Loharkar
+      given-names: Awadhoot Vijay
+  year: 2026
+  # journal / arXiv id: fill in after submission
