@@ -1,31 +1,11 @@
- create mode 100644 docs/submodules-paper.txt
- create mode 100644 requirements-paper.txt
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git add requirements-paper.txt docs/submodules-paper.txt 
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git commit -m "record exact env and submodule commits"
-On branch main
-Your branch is ahead of 'origin/main' by 1 commit.
-  (use "git push" to publish your local commits)
-
-nothing to commit, working tree clean
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git status
-On branch main
-Your branch is ahead of 'origin/main' by 1 commit.
-  (use "git push" to publish your local commits)
-
-nothing to commit, working tree clean
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ ls -la requirements-paper.txt docs/submodules-paper.txt 
--rw-r--r-- 1 loharkar itwm-guest   133 Oct 28 16:57 docs/submodules-paper.txt
--rw-r--r-- 1 loharkar itwm-guest 15611 Oct 28 16:56 requirements-paper.txt
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git check-ignore -v requirements-paper.txt docs/submodules-paper.txt
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git log --oneline -3
-7bcd1a2 (HEAD -> main) record exact env and submodule commits
-cdc9a7c (origin/main, origin/HEAD) final data
-ae013fe training loss
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git branch -vv
-  lassqd     cc8e758 [origin/lassqd] Docs: licensing matrix, LAS physics chapter, LAS validation and ScF results
-* main       7bcd1a2 [origin/main: ahead 1] record exact env and submodule commits
-  references 4c7496e [origin/references] no libmkl matching version
-(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git remote -v
-origin  https://github.com/AwadhootVijayLoharkar/Quenais-Project.git (fetch)
-origin  https://github.com/AwadhootVijayLoharkar/Quenais-Project.git (push)
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git push
+Everything up-to-date
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git status -sb 
+## main...origin/main
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git push origin main
+Everything up-to-date
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git fetch origin
+(/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ git log --oneline -2 origin/main 
+89915b5 (HEAD -> main, origin/main, origin/HEAD) commit lags
+7bcd1a2 record exact env and submodule commits
 (/home/loharkar/quenais-standalone/Quenais-Project/quenais-env) [loharkar@makaria04:Quenais-Project]$ 
