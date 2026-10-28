@@ -1,0 +1,2 @@
+ c27379919971bb98dbf23f22e2f4053a314abf30 external/pyci (v1.0.3)
+ 0a201eafb94a85dc49b9dbfe33338087efe1e969 gqe-for-qsci (heads/main)
