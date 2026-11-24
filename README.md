@@ -1,4 +1,4 @@
-# QuEnAIS — Quantum Embedding for Strongly Correlated Molecules
+# QuEmbAIS — Quantum Embedding for Strongly Correlated Molecules
 
 A Python package combining density matrix embedding theory (DMET) with
 quantum solvers for strongly correlated molecules, in particular
