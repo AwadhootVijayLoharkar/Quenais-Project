@@ -59,7 +59,7 @@ it.
 ## Install
 
 ```bash
-git clone --recurse-submodules https://github.com/AwadhootVijayLoharkar/quenais.git
+git clone --recurse-submodules https://github.com/AwadhootVijayLoharkar/Quenais-Project.git
 cd quenais
 
 mamba env create -f environment.yml -p ./quenais-env
